@@ -300,9 +300,13 @@ def genseq_details_at_base(row, assets: Path, root: Path) -> str:
 #: picture drawn per *file* put above each scenario inside it, which is still what the
 #: committed diagrams of a repository that has not been through the generator split look
 #: like, and what `renderDiagram` still writes when handed several scenarios at once.
+#:
+#: The generator heads the picture `Test: <scenario>` (12 Oct 2026), so the drawing says
+#: what it is a recording of. The scenario is what follows: the row naming a test on the
+#: Sequence tab, and the Tests tab's pairing, already say it is a test.
 GENSEQ_HANDLE = re.compile(
     r"^(?:title|==)\s*\[\[src://(?P<path>[^\s:{\]]+):(?P<line>\d+)"
-    r"(?:\{(?P<tip>[^}]*)\})?\s*(?P<title>[^\]]*?)\s*\]\]")
+    r"(?:\{(?P<tip>[^}]*)\})?\s*(?:Test:\s*)?(?P<title>[^\]]*?)\s*\]\]")
 
 
 @functools.lru_cache(maxsize=None)

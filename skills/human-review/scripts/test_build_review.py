@@ -4318,6 +4318,12 @@ def test_the_scenario_handle_is_read_from_the_title_and_from_a_divider(tmp_path)
         "Browser -> Backend: [[src://src/main/java/Owner.java:14{tip} Owner.find]]\n"
         "@enduml\n", encoding="utf-8")
     assert build._scenarios_drawn(titled, rel, tmp_path) == [(4, "remembers the vet")]
+    # The picture's heading says "Test: …"; the row that names the scenario does not repeat it.
+    prefixed = rel + ".prefixed.genseq.puml"
+    (tmp_path / prefixed).write_text(
+        f"@startuml\ntitle [[src://{rel}:4{{Click to open the test}} Test: remembers the vet]]\n"
+        "@enduml\n", encoding="utf-8")
+    assert build._scenarios_drawn(prefixed, rel, tmp_path) == [(4, "remembers the vet")]
     divided = rel + ".genseq.puml"
     (tmp_path / divided).write_text(
         "@startuml\n"
