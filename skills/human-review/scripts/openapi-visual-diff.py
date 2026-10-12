@@ -676,7 +676,7 @@ TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpenAPI visual diff</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui.css">
 <style>
   /* `:host` beside every `:root`: embedded in another page (the review's API tab), this
      stylesheet is moved into a shadow root on a host element, where `:root` matches
@@ -1426,7 +1426,7 @@ TEMPLATE = r"""<!doctype html>
 <div id="swagger-ui"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui-bundle.js"></script>
 <script>
 // One function scope for all of it: embedded, this script runs in the host page's global
 // scope, where a top-level `const root` or `function apply` would clash with the page's own.
@@ -1843,11 +1843,13 @@ async function revealTarget(op, c, run) {
 
 // Open the tree down to the node `steps` names -- and that node too when `openLast`, which
 // is what a removed property needs: its ghost row lives inside its parent's body.
-// Booted on "Schema" (`defaultModelRendering: 'model'`), an `array<object>` response body's
-// `Items` node ignores its own toggle: it stays collapsed however often it is clicked, and
-// a walk through it gave up ("could not be opened") on 9 of test-pr's 25 changes. The same
-// tree drawn again by a tab switch -- Example Value, then Schema -- opens normally, which
-// is the path the walk always took before the page opened on Schema. So once per walk.
+// Booted on "Schema" (`defaultModelRendering: 'model'`), Swagger UI 5.29.1 froze an
+// `array<object>` response body's tree: `Items`, the root's caret and "Collapse all" all
+// ignored their clicks, and a walk through it gave up ("could not be opened") on 9 of
+// test-pr's 25 changes. The reader's own clicks did nothing either (Victor, 12 Oct 2026),
+// which is why the page loads 5.33.1, where the same tree opens. The same tree drawn again
+// by a tab switch -- Example Value, then Schema -- opened even on 5.29.1, so it stays as
+// the walk's second try, once per walk.
 async function redrawSchema(host) {
   const tab = name => [...host.querySelectorAll('.tab li button')]
     .find(b => b.textContent.trim() === name);
@@ -2328,13 +2330,13 @@ root.getElementById('dv-expand').onchange = async e => {
 // `domNode`, not `dom_id`: Swagger UI looks a `dom_id` up on the document, and embedded
 // our node is in a shadow root the document's lookups never enter.
 //
-// Swagger UI itself comes off cdnjs, and when that one request fails nothing else on the
+// Swagger UI itself comes off jsdelivr, and when that one request fails nothing else on the
 // page says so: the bar above renders, the space under it stays empty, and the reader is
 // left asking where the rows went (Victor, 9 Oct 2026 — "I see there are no rows"). So a
 // missing bundle is fetched once more from a second CDN, and if that fails too the
 // changed endpoints are listed plainly from DATA, with the reason on top.
-const FALLBACK = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui-bundle.js';
-const FALLBACK_CSS = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui.css';
+const FALLBACK = 'https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui-bundle.js';
+const FALLBACK_CSS = 'https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui.css';
 let booted = false, retried = false;
 function boot() {
   if (booted) return;
@@ -2381,7 +2383,7 @@ function plainList() {
   const box = root.getElementById('swagger-ui');
   box.className = 'dv-global dv-plain';
   box.innerHTML = '<h2>Changed endpoints</h2>'
-    + '<p class="dv-plain-why">Swagger UI could not be loaded (cdnjs and jsdelivr both '
+    + '<p class="dv-plain-why">Swagger UI could not be loaded (jsdelivr and unpkg both '
     + 'unreachable — offline?), so this is the plain list. Reload to try again.</p>'
     + ops.map(([key, e]) => `<div class="dv-plain-op"><span class="dot ${e.state}"></span>`
       + `<b>${md(key)}</b> · ${LABELS[e.state]}`

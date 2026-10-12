@@ -589,17 +589,27 @@ def test_the_tab_keeps_the_box_tint_and_its_words_carry_the_colour():
 
 def test_a_bundle_that_never_arrives_is_retried_then_listed_plainly():
     """Victor, 9 Oct 2026: the API tab showed its bar and chips and then nothing -- the
-    Swagger UI bundle from cdnjs had not run, and the page said nothing about it. A missing
-    bundle is fetched once more from jsdelivr (its stylesheet too, when that never loaded),
+    Swagger UI bundle from the CDN had not run, and the page said nothing about it. A missing
+    bundle is fetched once more from unpkg (its stylesheet too, when that never loaded),
     and if that fails the changed endpoints are listed from DATA with the reason on top."""
     t = ovd.TEMPLATE
     boot = t[t.index("function boot() {"):]
     assert "if (typeof SwaggerUIBundle !== 'function') { retryBundle(); return; }" in boot
-    assert "cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui-bundle.js" in t
-    assert "cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui.css" in t
+    assert "unpkg.com/swagger-ui-dist@5.33.1/swagger-ui-bundle.js" in t
+    assert "unpkg.com/swagger-ui-dist@5.33.1/swagger-ui.css" in t
     assert "s.onerror = () => { clearTimeout(timer); plainList(); };" in t
     assert "setTimeout(plainList, 15000)" in t
     assert "function plainList()" in t and "Swagger UI could not be loaded" in t
+
+
+def test_swagger_ui_is_one_whose_array_trees_open():
+    """Victor, 12 Oct 2026: on an `array<object>` response body opened on Schema, Swagger UI
+    5.29.1 ignored every click on `Items`, on the root's caret and on "Collapse all".
+    5.33.1 opens them; cdnjs stops at 5.29.1, so the bundle comes off jsdelivr."""
+    t = ovd.TEMPLATE
+    assert "cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui-bundle.js" in t
+    assert "cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui.css" in t
+    assert "5.29.1/swagger-ui" not in t
     # one retry, never a loop: the second miss goes straight to the plain list
     assert "if (retried) { plainList(); return; }" in t
 
