@@ -190,6 +190,7 @@
     // and wants a reload, but one that starts the server and opens the page from it.
     var serve = cmd.id === 'hr-serve';
     if (serve && location.protocol === 'file:') { serveHere(cmd); return; }
+    if (serve) { flash(SERVE_OFF); return; }
     copyCommand(cmd, serve, runhere);
   });
 
@@ -243,11 +244,21 @@
   }
 
   // The chip's hover says what a click does on *this* copy: off disk, start the server and
-  // reload from it; anywhere else (GitHub Pages, the zip under another server) the build's
-  // own words, since nothing on this Mac can be asked from there.
+  // reload from it. Anywhere else (GitHub Pages, the zip under another server) it is greyed
+  // out and says why: the command it would copy names folders on the Mac that built the
+  // page, and nothing on the reader's machine can be asked from there (12 Oct 2026, Victor).
+  var SERVE_OFF = 'Serve works only on a report opened from disk (file://): it starts the '
+    + 'review server on the folder this page sits in. This copy is served from '
+    + (location.host || 'elsewhere') + ', so there is nothing here for it to start.';
   (function () {
     var chip = document.getElementById('hr-serve');
-    if (!chip || location.protocol !== 'file:') return;
+    if (!chip) return;
+    if (location.protocol !== 'file:') {
+      chip.classList.add('off');
+      chip.setAttribute('aria-disabled', 'true');
+      chip.setAttribute('data-tip', SERVE_OFF);
+      return;
+    }
     chip.classList.add('launches');
     chip.setAttribute('data-tip', 'Start the review server and reload this tab from it, so '
       + 'buttons run their action instead of copying a command. Without the launcher '

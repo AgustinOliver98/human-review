@@ -100,9 +100,32 @@
       ev.preventDefault(); ev.stopPropagation();
       var now = i.getAttribute('aria-pressed') !== 'true';
       i.setAttribute('aria-pressed', now ? 'true' : 'false');
-      box.hidden = !now; setOn(k, now); notch();
+      setOn(k, now);
+      if (now) { box.hidden = false; notch(); wipe(true); }
+      else wipe(false, function () { box.hidden = true; });
       if (now && !head) { try { box.scrollIntoView({block: 'nearest', behavior: 'smooth'}); } catch (e) {} }
     });
+    // Opened, the panel first shows only its top edge (and the tab around the (i)), then
+    // wipes down over its contents while what lies under it slides down in step; closed,
+    // the same backwards. A click alone would make the page jump by the panel's height
+    // with nothing to say where the lines came from (12 Oct 2026, Victor).
+    var anim = [];
+    function wipe(open, done) {
+      anim.forEach(function (a) { a.cancel(); }); anim = [];
+      var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (still || !box.animate) { if (done) done(); return; }
+      var H = box.getBoundingClientRect().height, edge = 12,
+          mb = parseFloat(getComputedStyle(box).marginBottom) || 0,
+          // the tab sits above the box and the floating panel casts a shadow: keep both
+          shut = 'inset(-40px -20px ' + Math.max(0, H - edge) + 'px -20px)',
+          full = 'inset(-40px -20px -40px -20px)',
+          o = {duration: open ? 420 : 260, easing: open ? 'cubic-bezier(.2,.7,.2,1)' : 'ease-in'};
+      var clip = [{clipPath: shut}, {clipPath: full}], push = [{marginBottom: (mb - H + edge) + 'px'}, {marginBottom: mb + 'px'}];
+      if (!open) { clip.reverse(); push.reverse(); }
+      anim.push(box.animate(clip, o));
+      if (!box.classList.contains('hrx-float')) anim.push(box.animate(push, o));
+      anim[0].onfinish = function () { anim = []; if (done) done(); };
+    }
   }
   function run() { document.querySelectorAll('button.hrx-i[data-explain]').forEach(wire); }
   // A draw.io card redrawn in place (`rerun.js`) brings a new (i) with it; an open panel is

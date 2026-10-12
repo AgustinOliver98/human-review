@@ -367,6 +367,7 @@ span.tabre > button.chip-rerun span.rr-mark { font-size:9px; line-height:1; colo
    and while the server comes up it says it is working. */
 .titlerow button.chip-serve.launches { cursor:pointer; }
 .titlerow button.chip-serve.starting { cursor:progress; opacity:.6; }
+.titlerow button.chip-serve.off, .titlerow button.chip-serve.off:hover { cursor:not-allowed; opacity:.45; border-color:var(--line); color:var(--muted); }
 .titlerow .chip-vsc[hidden], .titlerow .chip-mode[hidden], .titlerow .chip-serve[hidden], .titlerow .chip-rerun[hidden] { display:none; }
 /* Stop: the ⏹️ after the word `Served`, inside its pill. A bare glyph with no ring of its
    own — the pill's border is the only border — at about the text's cap height, and its own
