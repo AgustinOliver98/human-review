@@ -165,6 +165,17 @@ def _theme_diagram_colors(svg: str) -> str:
     return DIAGRAM_STYLE_COLOR.sub(fix_style, svg)
 
 
+# PlantUML writes `target="_top"` on every link it draws, so an outward one (the packages
+# caption's "ArchUnit") would replace the review page with archunit.org. `c2-from-sequence.py`
+# already fixes its own SVGs the same way; doing it here covers every diagram a `.puml` in
+# the project draws. In-page handles (`#sequence`, `genseq://`, `src://`) are left alone.
+EXTERNAL_LINK = re.compile(r'(<a\b[^>]*\bhref="https?://[^"]*"[^>]*)\btarget="_top"')
+
+
+def _external_links_open_away(svg: str) -> str:
+    return EXTERNAL_LINK.sub(r'\1target="_blank" rel="noopener noreferrer"', svg)
+
+
 def inline_svg(path: Path, root: Path) -> str:
     """Inline rather than <img src>: the guide must survive being emailed as one file."""
     svg = path.read_text(encoding="utf-8")
@@ -173,4 +184,5 @@ def inline_svg(path: Path, root: Path) -> str:
     svg = _scope_entity_links(svg)
     svg = _theme_diagram_colors(svg)
     svg = TEXT_LENGTH_ATTRS.sub("", svg)
+    svg = _external_links_open_away(svg)
     return _plain_svg_title(resolve_source_links(svg, root))

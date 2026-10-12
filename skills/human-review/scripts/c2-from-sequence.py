@@ -89,6 +89,9 @@ LINK_COLOR = "#1A4FA0"
 #: Simon Brown's own description of the four levels. The page links out to it rather than
 #: explaining C4 in a caption, because the caption has one line and the site has the answer.
 C4_URL = "https://c4model.com/diagrams/container"
+#: The review page's Sequence tab: the caption points the reader at the diagrams this one
+#: was projected from. An in-page fragment, so `EXTERNAL_LINK` leaves it alone.
+SEQUENCE_TAB = "#sequence"
 
 #: What this picture is called, on the page and in the filenames — and it is a *view key*,
 #: not a level. `C2` on its own names the level in the C4 model, the way `C3` does; it is
@@ -1084,9 +1087,13 @@ def main(argv=None) -> int:
     # came from — and no count. How many tests each side was traced from goes in the line
     # under the card instead (`coverage_note`), and only when the two differ: that is when
     # the ops counts on the lines mean something other than they appear to.
+    # "sequence diagrams" links to the page's own Sequence tab, where those diagrams are:
+    # a fragment link, so tabs.js switches tabs instead of the browser leaving the page
+    # (Victor, 12 Oct 2026).
     title = (f"[[{C4_URL}{{What is a C2 diagram?}} "
              f"{title}]]")
-    caption = "Diagram generated from sequence diagrams of the test traces"
+    caption = (f"Diagram generated from [[{SEQUENCE_TAB}{{Open the Sequence tab}} "
+               f"sequence diagrams]] of the test traces")
 
     # Two popup indexes, not one, and they are the two the manifest's `new_details` /
     # `old_details` columns name. The page inlines both and merges them work-tree-first,

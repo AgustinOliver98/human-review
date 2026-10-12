@@ -192,3 +192,15 @@ if __name__ == "__main__":
     import sys
     import pytest
     raise SystemExit(pytest.main([__file__, "-q"]))
+
+
+def test_an_outward_diagram_link_opens_away_and_an_in_page_one_stays(tmp_path):
+    """PlantUML writes `target="_top"` on every link: the packages caption's "ArchUnit"
+    would replace the review page with archunit.org. In-page handles stay as drawn."""
+    svg = tmp_path / "d.svg"
+    svg.write_text('<svg><a href="https://www.archunit.org/" target="_top">ArchUnit</a>'
+                   '<a href="#sequence" target="_top">sequence diagrams</a></svg>',
+                   encoding="utf-8")
+    out = build.inline_svg(svg, tmp_path)
+    assert 'href="https://www.archunit.org/" target="_blank" rel="noopener noreferrer"' in out
+    assert 'href="#sequence" target="_top"' in out

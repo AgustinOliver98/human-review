@@ -123,9 +123,9 @@ from hrbuild.shared.filemark import (
 )
 from hrbuild.shared.svg import (
     CREOLE_IN_TITLE, CREOLE_LINK, DIAGRAM_COLOR_VARS, DIAGRAM_FILL_ATTR, DIAGRAM_STYLE_COLOR,
-    ENTITY_BLOCK, ENTITY_SOLE_ANCHOR, ENTITY_TITLE_BAND, inline_svg, resolve_source_links,
-    SRC_HANDLE, SVG_TITLE, TEXT_LENGTH_ATTRS, _plain_svg_title, _scope_entity_links,
-    _theme_diagram_colors
+    ENTITY_BLOCK, ENTITY_SOLE_ANCHOR, ENTITY_TITLE_BAND, EXTERNAL_LINK, inline_svg,
+    resolve_source_links, SRC_HANDLE, SVG_TITLE, TEXT_LENGTH_ATTRS, _external_links_open_away,
+    _plain_svg_title, _scope_entity_links, _theme_diagram_colors
 )
 from hrbuild.shared.genseq import (
     genseq_by_test, GENSEQ_CALL_TITLE, genseq_details, genseq_details_at_base,

@@ -234,7 +234,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
     'diagram.packages': {
         "li": [
             'The Java packages and who depends on whom.',
-            'ArchUnit, a test library, fails the build on an import the drawing lacks.',
+            '<a href="https://www.archunit.org/" target="_blank" rel="noopener noreferrer">'
+            'ArchUnit</a>, a test library, fails the build on an import the drawing lacks.',
             'A new arrow is new coupling: ask why.',
         ],
         "ex": 'e.g. <code>..domain</code> → <code>..rest</code>: not drawn, so a test fails.',

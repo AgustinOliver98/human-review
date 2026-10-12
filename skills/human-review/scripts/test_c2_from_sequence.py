@@ -635,10 +635,13 @@ def test_a_link_out_of_the_page_does_not_replace_the_page():
     # No `title=` in the fixture: this repo's tooltip guard scans source lines for the
     # native attribute, and a fake SVG carrying one trips it as loudly as the real thing.
     svg = ('<a href="https://c4model.com/x" target="_top">c4</a>'
-           '<a href="genseq://c2-abc" target="_top">HTTP</a>')
+           '<a href="genseq://c2-abc" target="_top">HTTP</a>'
+           '<a href="#sequence" target="_top">sequence diagrams</a>')
     out = c2._external_links_open_away(svg)
     assert 'href="https://c4model.com/x" target="_blank" rel="noopener noreferrer"' in out
     assert 'href="genseq://c2-abc" target="_top"' in out
+    # The caption's link to the Sequence tab stays in the page: tabs.js switches to it.
+    assert 'href="#sequence" target="_top"' in out
 
 
 # --------------------------------------------------------------------------- rendering
@@ -762,7 +765,9 @@ def test_end_to_end_writes_a_manifest_the_page_can_read(tmp_path):
     title_line = next(l for l in puml.splitlines() if l.startswith("title "))
     caption_line = next(l for l in puml.splitlines() if l.startswith("caption "))
     assert title_line == f"title [[{c2.C4_URL}{{What is a C2 diagram?}} C2 Containers]]"
-    assert caption_line == "caption Diagram generated from sequence diagrams of the test traces"
+    # "sequence diagrams" links to the page's own Sequence tab, an in-page fragment.
+    assert caption_line == ("caption Diagram generated from [[#sequence{Open the Sequence tab} "
+                            "sequence diagrams]] of the test traces")
 
 
 def test_end_to_end_says_nothing_to_draw_rather_than_drawing_nothing(tmp_path):
