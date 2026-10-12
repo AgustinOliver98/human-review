@@ -3,7 +3,7 @@
 hide footbox
 skinparam hyperlinkUnderline false
 skinparam hyperlinkColor #1A4FA0
-title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256{Click to open the test} VisitTest: create_withVet()]]
+title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256{Click to open the test} Test: VisitTest: create_withVet()]]
 footer traced because this branch wrote it in petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java — generated from real traces of end-to-end test runs, do not edit ❗
 participant Test
 participant Backend
