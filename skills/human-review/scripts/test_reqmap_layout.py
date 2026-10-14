@@ -98,7 +98,7 @@ def test_the_title_row_over_the_card_offers_all_tests_where_the_filters_stood(tm
     head, cats, side = _order(out, 'class="tabtitle rm-head"', 'class="rm-cats"',
                               'class="rm-side"')
     assert head < cats < side
-    assert "lab.innerHTML = '<input type=\"checkbox\"> All tests';" in T.REQMAP_CHAPTERS_JS
+    assert "lab.innerHTML = '<input type=\"checkbox\"> Show all tests';" in T.REQMAP_CHAPTERS_JS
     assert "head.insertBefore(lab, head.querySelector('.tledger'))" in T.REQMAP_CHAPTERS_JS
     assert ".reqmap .rm-code > .rm-tkhead > .rm-allf{margin-left:auto;" in T.REQMAP_CSS
     assert '<label class="rm-catf"' not in out and "data-catoff=yes" not in out

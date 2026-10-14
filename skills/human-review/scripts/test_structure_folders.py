@@ -83,6 +83,7 @@ def repo(tmp_path):
     folders.maven_modules.cache_clear()
     folders._tree_base.cache_clear()
     folders.github_blob_base.cache_clear()
+    folders._branch_files.cache_clear()
     yield r
     folders._packages.cache_clear()
     folders.maven_modules.cache_clear()
@@ -296,3 +297,53 @@ def test_a_gallery_card_links_its_boxes_and_a_sequence_card_does_not(repo, tmp_p
     card = diagrams.render_puml({"src": "shop-api/docs/packages.puml", "name": "Java packages"},
                                 repo, out)
     assert 'data-folder-name="..web.dto"' in card
+
+
+def _box(name: str, label: str) -> str:
+    return (f'<g class="entity" data-qualified-name="{name}" id="e">'
+            f'<rect fill="#ECEFF1" height="36" rx="2.5" ry="2.5" width="100" x="10" y="20"/>'
+            f'<text>{label}</text></g>')
+
+
+def test_a_box_is_shaded_by_its_share_of_the_lines_added_and_lists_its_files(repo, monkeypatch):
+    """Victor, 14 Oct 2026: the packages the branch grew show it, as a bar behind the box as
+    wide as its share of the lines added, and hovering one lists its files, each a diff link.
+    A file is counted once, in the deepest box that holds it: web/dto is not also web."""
+    from hrbuild.shared import snippets
+    import html as _html
+    base = _git(repo, "rev-parse", "HEAD")
+    src = "shop-api/src/main/java/com/acme/shop"
+    _write(repo, f"{src}/web/A.java", "class X {}\n" + "int a;\n" * 2)   # +3 −1: the line had no newline
+    _write(repo, f"{src}/web/dto/D.java", "\n".join(["x"] * 6) + "\n")  # +6, added
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-qm", "two")
+    monkeypatch.setattr(snippets, "SNIPPET_BASE", base)
+    svg = _box("..web", "..web") + _box("..web.dto", "..web.dto") + _box("dom", "Domain")
+    out = folders.link_folders(svg, "shop-api/docs/packages.puml", repo)
+    web, dto, dom = out.split("</g>")[:3]
+    assert 'data-impact="0.333"' in web and 'data-impact="0.667"' in dto
+    assert "data-impact" not in dom and "pkg-impact" not in dom, "a box the branch left alone"
+    assert 'class="pkg-impact" x="10" y="20" width="66.7" height="36"' in dto
+    # The bar is drawn over the box's own shape and under its name.
+    assert dto.index('class="pkg-impact"') < dto.index("<text>")
+    pop = _html.unescape(dto.split('data-tip-pop="')[1].split('"')[0])
+    assert "<b>..web.dto</b> +6 in 1 file · 67% of the lines added" in pop
+    assert ">D.java</a>" in pop, "named relative to the box the reader hovered"
+    assert f'data-diff-path="{src}/web/dto/D.java"' in pop and f'data-diff-base="{base}"' in pop
+    assert "D.java" not in _html.unescape(web), "counted in the deepest box only"
+
+
+def test_a_box_named_by_a_folder_path_maps_to_that_folder(tmp_path):
+    """The frontend has folders, not packages: `[owners] <<src/app/owners>>`, relative to the
+    module the diagram sits in (the nearest package.json)."""
+    r = tmp_path / "repo"
+    r.mkdir()
+    _git(r, "init", "-q", "-b", "main")
+    _write(r, "web/package.json", "{}")
+    _write(r, "web/src/app/owners/owner.ts", "export {}")
+    _write(r, "web/src/app/app.module.ts", "export {}")
+    _write(r, "web/docs/frontend-packages.puml",
+           "@startuml\n[owners] <<src/app/owners>>\n[app] <<src/app>>\n"
+           "[ghost] <<src/app/ghost>>\n@enduml\n")
+    got = folders.package_folders("web/docs/frontend-packages.puml", r)
+    assert got == {"owners": "web/src/app/owners", "app": "web/src/app"}

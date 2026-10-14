@@ -8,6 +8,7 @@ import re
 import urllib.parse
 from pathlib import Path
 
+from .changes import changed_files, files_pop
 from .util import PENCIL, _git
 
 # What a diffstat must never count. Every path below is written by a generator -- a
@@ -484,10 +485,23 @@ def diffstat_chips(root: Path, state: dict | None, extra: list[str] | None,
     # The signs are the page's, not this chip's: `+` added, `-` removed, a pencil for
     # changed, and a zero is dropped rather than printed. A row of chips is read as a row
     # of signed numbers, and `-0` is noise that costs a glance to dismiss.
+    # Each number opens onto the files it counts (Victor, 14 Oct 2026: "when I hover + or
+    # - or edited I should see a list of what files"): one walk-in list per sign, read off
+    # the same range and pathspecs as the count, each file a link to its diff.
+    listed = changed_files(root, rng, gen + books)
+
+    def counted(cls: str, face: str, n: int, code: str, what: str) -> str:
+        if not n:
+            return ""
+        pop = files_pop(f"{n} file{'s' if n != 1 else ''} {what}",
+                        [f for f in listed if f["status"] == code], start, root)
+        return (f'<span class="{cls}" tabindex="0" data-tip-pop="{html.escape(pop, quote=True)}">'
+                f'{face}{n}</span>')
+
     files_value = " / ".join(piece for piece in (
-        f'<span class="added">+{a}</span>' if a else "",
-        f'<span class="removed">−{d}</span>' if d else "",
-        f'<span class="changed">{PENCIL}{e}</span>' if e else "",
+        counted("added", "+", a, "A", "added"),
+        counted("removed", "−", d, "D", "deleted"),
+        counted("changed", PENCIL, e, "M", "edited"),
     ) if piece) or "none"
     lines_value = " / ".join(piece for piece in (
         f'<span class="added">+{adds}</span>' if adds else "",

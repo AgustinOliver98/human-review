@@ -1,7 +1,8 @@
 """The folder behind a box: a Java package's directory, a Maven module's.
 
 The Structure tab draws the code's shape — `packages.puml`'s boxes are packages, the
-module graph's are Maven modules — and a reader looking at `..mcp` wants to see what is
+frontend's are folders named by path (`<<src/app/owners>>`), the module graph's are Maven
+modules — and a reader looking at `..mcp` wants to see what is
 in it. So every such box carries the folder it stands for, relative to the checkout
 (`data-folder`), and a link to that folder on github.com at the reviewed commit. Served,
 `FOLDERS_JS` turns the click into "reveal it in the VS Code window that has this
@@ -24,6 +25,7 @@ import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path, PurePosixPath
 
+from .changes import changed_files, files_pop
 from .snippets import github_blob_base
 
 #: A component declaration, in the spellings PlantUML accepts: `[Label]`, `[Label] as a`,
@@ -74,7 +76,8 @@ def _module_dir(rel: str, root: Path) -> str:
     """The build module a diagram belongs to: its nearest ancestor with a build file."""
     for parent in PurePosixPath(rel).parents:
         d = root / parent
-        if any((d / f).is_file() for f in ("pom.xml", "build.gradle", "build.gradle.kts")):
+        if any((d / f).is_file() for f in ("pom.xml", "build.gradle", "build.gradle.kts",
+                                           "package.json")):
             return "" if str(parent) == "." else str(parent)
     return ""
 
@@ -116,14 +119,23 @@ def package_folders(rel: str, root: Path) -> dict[str, str]:
     src = root / rel
     if not src.is_file():
         return {}
-    wanted = {}
+    wanted, paths = {}, {}
+    module = _module_dir(rel, root)
     for box in puml_boxes(src.read_text(encoding="utf-8", errors="replace")):
-        p = box["stereotype"] and _pattern(box["stereotype"])
+        st = box["stereotype"]
+        # A folder spelled as a path, relative to the module (`<<src/app/owners>>`): how a
+        # language without packages — the Angular frontend — names its parts.
+        if st and "/" in st and not re.search(r"[*\s]", st):
+            folder = str(PurePosixPath(module or ".") / st.strip("/"))
+            if (root / folder).is_dir():
+                paths[box["name"]] = folder
+            continue
+        p = st and _pattern(st)
         if p:
             wanted[box["name"]] = p
     if not wanted:
-        return {}
-    pkgs = _packages(root, _module_dir(rel, root))
+        return paths
+    pkgs = _packages(root, module)
     # For each box, every package its pattern could mean, keyed by the root it implies.
     options: dict[str, dict[str, str]] = {}
     for name, (pkg, relative) in wanted.items():
@@ -139,7 +151,7 @@ def package_folders(rel: str, root: Path) -> dict[str, str]:
     # gets its folder when its own pattern has exactly one answer.
     votes = Counter(base for hits in options.values() for base in hits)
     common = min(votes, key=lambda b: (-votes[b], b.count("."), b)) if votes else None
-    out = {}
+    out = dict(paths)
     for name, hits in options.items():
         if common in hits:
             out[name] = hits[common]
@@ -205,23 +217,99 @@ def folder_targets(rel: str, root: Path) -> dict[str, tuple[str, str]]:
     return out
 
 
+_RECT = re.compile(r'<rect\b[^>]*?/?>')
+_ATTR = re.compile(r'\b(x|y|width|height|rx|ry)="([\d.]+)"')
+
+
+@functools.lru_cache(maxsize=None)
+def _branch_files(root: Path, base: str) -> tuple[dict, ...]:
+    """What the branch changed since the page's base, under the header's own rules: the
+    generated files and the review's bookkeeping left out, as `files +N` leaves them."""
+    from .chips import REVIEW_BOOKKEEPING, _project_cfg, generated_globs
+    specs = [f":(exclude,glob){p}" for p in generated_globs(_project_cfg(root))]
+    specs += [f":(exclude,glob){p}" for p in REVIEW_BOOKKEEPING]
+    return tuple(changed_files(root, f"{base}...HEAD", specs))
+
+
+def box_impact(targets: dict[str, tuple[str, str]], root: Path, base: str) -> dict[str, dict]:
+    """Box name → `{files, adds, dels, share}`: the files the branch changed in the box's
+    folder, each counted once, in the deepest box that holds it (`..rest.dto` is not also
+    `..rest`). `share` is the box's part of the lines added across every box drawn — the
+    bar behind it (Victor, 14 Oct 2026: "see in what package the PR added more lines")."""
+    folders = sorted(((f.rstrip("/"), name) for name, (_, f) in targets.items()),
+                     key=lambda t: -len(t[0]))
+    out: dict[str, dict] = {}
+    for f in _branch_files(root, base):
+        for folder, name in folders:
+            if folder == "." or f["path"].startswith(folder + "/"):
+                box = out.setdefault(name, {"files": [], "adds": 0, "dels": 0})
+                box["files"].append(f)
+                box["adds"] += f["adds"] or 0
+                box["dels"] += f["dels"] or 0
+                break
+    total = sum(b["adds"] for b in out.values())
+    for b in out.values():
+        b["share"] = b["adds"] / total if total else 0.0
+    return out
+
+
+def _impact_bar(inner: str, share: float) -> str:
+    """A bar across the bottom of the box's own shape, as wide as its share, under the
+    name: PlantUML's first `<rect>` is the box, and what comes after it is drawn on top."""
+    m = _RECT.search(inner)
+    if not m or share <= 0:
+        return inner
+    a = {k: float(v) for k, v in _ATTR.findall(m.group(0))}
+    if not all(k in a for k in ("x", "y", "width", "height")):
+        return inner
+    w = max(a["width"] * share, 3.0)
+    r = min(a.get("rx", 0.0), w / 2)
+    bar = (f'<rect class="pkg-impact" x="{a["x"]:g}" y="{a["y"]:g}" width="{w:.1f}" '
+           f'height="{a["height"]:g}" rx="{r:g}" ry="{r:g}" fill="var(--dgm-diff-add)" '
+           'fill-opacity=".45" pointer-events="none"/>')
+    return inner[:m.end()] + bar + inner[m.end():]
+
+
+def _impact_pop(label: str, box: dict, base: str, root: Path, folder: str) -> str:
+    n = len(box["files"])
+    pct = round(box["share"] * 100)
+    nums = " ".join(x for x in (f"+{box['adds']}" if box["adds"] else "",
+                                f"−{box['dels']}" if box["dels"] else "") if x)
+    head = (f"<b>{html.escape(label)}</b> {nums} in {n} file{'s' if n != 1 else ''}"
+            f" · {pct}% of the lines added across this diagram")
+    return files_pop(head, box["files"], base, root, strip=folder)
+
+
 def link_folders(markup: str, rel: str, root: Path) -> str:
     """Every box in `markup` (inlined SVGs of `rel`) that is a package or a module carries
     `data-folder` / `data-folder-name`, and its shapes are wrapped in a link to the folder
-    on github.com when the checkout has a remote there. Boxes already linked are left be."""
+    on github.com when the checkout has a remote there. Boxes already linked are left be.
+
+    A box the branch changed files in is shaded, left to right, by its share of the lines
+    added, and hovering it lists those files, each a link to its diff (`data-tip-pop`)."""
     targets = folder_targets(rel, root) if rel else {}
     if not targets:
         return markup
     tree = _tree_base(root)
+    from . import snippets
+    base = snippets.SNIPPET_BASE
+    impact = box_impact(targets, root, base)
 
     def one(m: re.Match) -> str:
-        hit = targets.get(html.unescape(m["q"]))
+        name = html.unescape(m["q"])
+        hit = targets.get(name)
         if not hit or "<a " in m["inner"] or "<g" in m["inner"] or "data-folder=" in m[1]:
             return m.group(0)
         label, folder = hit
         attrs = (f' data-folder="{html.escape(folder, quote=True)}"'
                  f' data-folder-name="{html.escape(label, quote=True)}"')
         inner = m["inner"]
+        box = impact.get(name)
+        if box:
+            pop = _impact_pop(label, box, base, root, folder)
+            attrs += (f' data-impact="{box["share"]:.3f}"'
+                      f' data-tip-pop="{html.escape(pop, quote=True)}"')
+            inner = _impact_bar(inner, box["share"])
         if tree:
             href = tree if folder == "." else f"{tree}/{urllib.parse.quote(folder)}"
             tip = html.escape(f"Open {label} on GitHub", quote=True)

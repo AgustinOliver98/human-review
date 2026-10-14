@@ -8,7 +8,7 @@
 // left and still lights the rows a sentence click picks, it just no longer files them.
 //
 // The chapters replace the E2E/API/UNIT filter checkboxes: a chapter that is closed is the
-// filter. In their place, one checkbox: "All tests". Off, the card lists what it always
+// filter. In their place, one checkbox: "Show all tests". Off, the card lists what it always
 // did by default. On, it also lists what used to sit behind the fold buttons, and every
 // other test the coverage run executed (`#rm-all-tests`, written by tests.py
 // `all_tests_inventory`): name, badge and file link only - no preview to open, so the
@@ -118,7 +118,7 @@
   });
   var lab = document.createElement('label');
   lab.className = 'rm-allf';
-  lab.innerHTML = '<input type="checkbox"> All tests';
+  lab.innerHTML = '<input type="checkbox"> Show all tests';
   var head = map.querySelector('.rm-code > .rm-tkhead');
   if (head) head.insertBefore(lab, head.querySelector('.tledger'));
   var box = head ? lab.querySelector('input') : null;
@@ -183,13 +183,16 @@
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t .rm-st[data-st]'), function (s) {
         if (s.dataset.st in st) st[s.dataset.st]++;
       });
+      // Three slots, always, an empty one kept (Victor, 14 Oct 2026: "align in columns"):
+      // a `+`, a `−` and a ✍️ column, so the chapters' counts and the card title's stand
+      // one under the other instead of sliding right whenever a sign is missing.
       sec.querySelector('.rm-chled').innerHTML =
         (st.new ? '<span class="added" data-tip="' + st.new + ' new ' + c[0].toUpperCase()
-          + ' test' + (st.new === 1 ? '' : 's') + '">+' + st.new + '</span>' : '')
+          + ' test' + (st.new === 1 ? '' : 's') + '">+' + st.new + '</span>' : '<span></span>')
         + (st.deleted ? '<span class="removed" data-tip="' + st.deleted + ' ' + c[0].toUpperCase()
-          + ' test' + (st.deleted === 1 ? '' : 's') + ' gone">\u2212' + st.deleted + '</span>' : '')
+          + ' test' + (st.deleted === 1 ? '' : 's') + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
         + (st.edited ? '<span class="changed" data-tip="' + st.edited + ' ' + c[0].toUpperCase()
-          + ' test' + (st.edited === 1 ? '' : 's') + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '');
+          + ' test' + (st.edited === 1 ? '' : 's') + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>');
     });
   }
   function setAll(on) {

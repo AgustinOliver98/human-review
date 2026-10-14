@@ -2058,11 +2058,13 @@ def test_the_ledger_is_one_line_of_counts_and_nothing_to_unfold():
     for gone in ("<details", "<summary", "tledger-body", "tgroup", "<h3", "<li"):
         assert gone not in out, gone
     # Signs and counts only (Victor, 5 Oct 2026); the word each stands for is its hover.
-    assert ('>1 stopped running</span> · '
-            '<span class="added" data-tip="1 new test">+1</span> '
+    # Three slots in a `.tmoves` grid, so the chapters' counts stand under them in columns
+    # (Victor, 14 Oct 2026); no dot between "stopped" and the counts, which sit apart.
+    assert ('>1 stopped running</span><span class="tmoves">'
+            '<span class="added" data-tip="1 new test">+1</span>'
             '<span class="removed" data-tip="2 tests gone: VisitTest.java: parked, obsolete">'
-            '\u22122</span> '
-            f'<span class="changed" data-tip="1 test edited">{build.PENCIL}1</span></p>') in out
+            '\u22122</span>'
+            f'<span class="changed" data-tip="1 test edited">{build.PENCIL}1</span></span></p>') in out
     # The untouched rest is a hover on the counts, not a sentence under them.
     assert 'data-tip="1 more test in the files this change set touched' in out
     css = (HERE / "hrbuild" / "assets" / "css" / "tests.css").read_text(encoding="utf-8")
@@ -2487,9 +2489,9 @@ def test_the_diffstat_counts_the_code_and_leaves_the_generated_files_out(tmp_pat
     r = _drifting_repo(tmp_path)
     files, lines = build.diffstat_chips(r, build.base_state(r, "main"), None)
     assert files["label"] == "files" and lines["label"] == "lines"
-    assert '<span class="added">+1</span>' in files["value"]   # VetPicker.java, new
-    assert f'{build.PENCIL}1' in files["value"]            # Visit.java, edited
-    assert "±" not in files["value"], "the pencil replaced the range sign, it did not join it"
+    assert '<span class="added">+1</span>' in _chip_face(files["value"])   # VetPicker.java, new
+    assert f'{build.PENCIL}1' in _chip_face(files["value"])            # Visit.java, edited
+    assert "±" not in _chip_face(files["value"]), "the pencil replaced the range sign, it did not join it"
     assert '<span class="added">+6</span>' in lines["value"]
     assert "−" not in lines["value"], "a zero is dropped, not printed as −0"
     assert "1 added, 1 edited, 0 deleted" in files["tip"]
@@ -2518,7 +2520,7 @@ def test_a_change_set_with_no_generated_files_says_so_rather_than_going_quiet(tm
 def test_the_content_file_can_add_exclusions_but_never_drop_the_default_ones(tmp_path):
     r = _drifting_repo(tmp_path)
     files, _ = build.diffstat_chips(r, build.base_state(r, "main"), ["*/VetPicker.java"])
-    assert "+1" not in files["value"], "the extra pathspec was not applied"
+    assert "+1" not in _chip_face(files["value"]), "the extra pathspec was not applied"
     assert "3 generated left out" in files["tip"], \
         "an `exclude` list must add to the built-in list, not replace it"
 
@@ -2551,7 +2553,7 @@ def test_a_regenerated_openapi_spec_is_not_counted_as_hand_written(tmp_path):
     files, lines = build.diffstat_chips(r, build.base_state(r, "main"), None)
     # Top-level openapi.yaml is the springdoc output; `*` stops at a slash, so a nested
     # api/openapi.yaml is somebody's hand-written file and is still counted.
-    assert '<span class="added">+2</span>' in files["value"], files["value"]
+    assert '<span class="added">+2</span>' in _chip_face(files["value"]), files["value"]
     assert '<span class="added">+7</span>' in lines["value"], lines["value"]
     assert "1 generated left out" in lines["tip"]
 
@@ -2563,7 +2565,7 @@ def test_review_bookkeeping_is_left_out_of_the_code_chips_and_named(tmp_path):
     _commit_on_feature(r, {"review-points.md": "# Review\n" * 196,
                            "review-cost.json": "{}\n"})
     files, lines = build.diffstat_chips(r, build.base_state(r, "main"), None)
-    assert '<span class="added">+1</span>' in files["value"]
+    assert '<span class="added">+1</span>' in _chip_face(files["value"])
     assert '<span class="added">+6</span>' in lines["value"]
     assert "review bookkeeping left out" in lines["tip"]
     assert "review-cost.json, review-points.md" in lines["tip"]
@@ -2577,7 +2579,7 @@ def test_the_projects_generated_list_is_honoured_by_the_header(tmp_path):
     r = _drifting_repo(tmp_path)
     (r / "human-review.json").write_text(json.dumps({"generated": ["src/VetPicker.java"]}))
     files, _ = build.diffstat_chips(r, build.base_state(r, "main"), None)
-    assert "+1" not in files["value"], "the project's list was not applied"
+    assert "+1" not in _chip_face(files["value"]), "the project's list was not applied"
     # The project said what it generates: docs/generated/** and the genseq pair are its
     # own call now, and are counted.
     assert "1 generated left out" in files["tip"]
@@ -2730,8 +2732,8 @@ def test_the_page_measures_from_the_base_the_review_audited(tmp_path):
     assert st["diffBase"] == plan and st["diffBaseSource"] == "audited"
     assert st["mergeBase"] != plan, "the fork point is still known — the ref chip warns off it"
     files, lines = build.diffstat_chips(r, st, None)
-    assert '<span class="added">+1</span>' in files["value"]      # Clinic.java
-    assert f"{build.PENCIL}1" in files["value"]                   # plan.md, edited
+    assert '<span class="added">+1</span>' in _chip_face(files["value"])      # Clinic.java
+    assert f"{build.PENCIL}1" in _chip_face(files["value"])                   # plan.md, edited
     assert "Visit.java" not in files["tip"] and "1 added, 1 edited" in files["tip"], \
         "VetPicker.java and Visit.java changed before the review: not this page's to count"
     assert plan[:8] not in lines["tip"], "which base it counts from is not the hover's business"
@@ -6507,3 +6509,45 @@ def test_a_capabilitys_spec_cited_by_its_path_is_linked_like_its_siblings(tmp_pa
     item = {"title": "t", "severity": "info", "why": "specified: specs/owner-list/spec.md:2."}
     assert build.link_spec_citations({"findings": [item]}, tmp_path, root=tmp_path) == 1
     assert 'class="specref"' in item["why"] and "The paginator stays to go back." in item["why"]
+
+
+def _chip_face(value: str) -> str:
+    """A files chip's value with each count's walk-in list (`data-tip-pop`) taken off: the
+    face the reader sees. The lists themselves are tested on their own."""
+    return re.sub(r' tabindex="0" data-tip-pop="[^"]*"', "", value)
+
+
+def test_each_files_count_opens_onto_the_files_it_counts(tmp_path):
+    """Victor, 14 Oct 2026: hovering `+`, `−` or the pencil on the files chip lists the files
+    added, deleted or edited — one list per number, each file a link to its diff, read off
+    the same range as the count."""
+    import html as _html
+    r = tmp_path / "repo"
+    r.mkdir()
+    def git(*a):
+        subprocess.run(["git", "-C", str(r), *a], check=True, capture_output=True)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@t"); git("config", "user.name", "t")
+    (r / "Old.java").write_text("class Old {}\n")
+    (r / "Gone.java").write_text("class Gone {}\n")
+    git("add", "."); git("commit", "-qm", "base")
+    base = subprocess.run(["git", "-C", str(r), "rev-parse", "HEAD"], capture_output=True,
+                          text=True).stdout.strip()
+    (r / "Old.java").write_text("class Old { int x; }\n")
+    (r / "New.java").write_text("class New {}\nclass Two {}\n")
+    (r / "Gone.java").unlink()
+    git("add", "-A"); git("commit", "-qm", "change")
+    head = subprocess.run(["git", "-C", str(r), "rev-parse", "HEAD"], capture_output=True,
+                          text=True).stdout.strip()
+    files = build.diffstat_chips(r, {"diffBase": base, "head": head}, None, None)[0]
+    pops = {m[1]: _html.unescape(m[2]) for m in re.finditer(
+        r'<span class="(added|removed|changed)" tabindex="0" data-tip-pop="([^"]*)"',
+        files["value"])}
+    assert set(pops) == {"added", "removed", "changed"}
+    assert "1 file added" in pops["added"] and "New.java</a>" in pops["added"]
+    assert "+2" in pops["added"]
+    assert 'data-diff-path="New.java"' in pops["added"] and f'data-diff-base="{base}"' in pops["added"]
+    assert "Old.java</a>" in pops["changed"] and "New.java" not in pops["changed"]
+    # Deleted: no working-tree side to open, so the name alone.
+    assert "Gone.java" in pops["removed"] and "<a " not in pops["removed"]
+    assert _chip_face(files["value"]).count("<span") == 3

@@ -244,15 +244,21 @@ def render_test_ledger(rows, root: Path) -> tuple[str, int]:
             tip += ": " + _names_by_file(items)
         return (f'<span class="{cls}" data-tip="{html.escape(tip, quote=True)}">'
                 f'{face}{n}</span>') if n else ""
-    moves = " ".join(x for x in (count("added", "+", new, "new tests"),
-                                 count("removed", "−", gone, "tests gone", named=True),
-                                 count("changed", PENCIL, edited, "tests edited")) if x)
+    # Three slots, an empty one kept, so the chapters' counts under it (testchapters.js)
+    # line up with these column by column (Victor, 14 Oct 2026).
+    slots = (count("added", "+", new, "new tests"),
+             count("removed", "−", gone, "tests gone", named=True),
+             count("changed", PENCIL, edited, "tests edited"))
+    moves = (f'<span class="tmoves">{"".join(x or "<span></span>" for x in slots)}</span>'
+             if any(slots) else "")
     stopped = ""
     if off:
         why = f"Still written; never runs: {_names_by_file(off)}"
         stopped = (f'<span class="toff" data-tip="{html.escape(why, quote=True)}">'
                    f'{len(off)} stopped running</span>')
-    face = " · ".join(x for x in (stopped, moves) if x) or "no test moved"
+    # No dot between them: the counts sit at the row's right end, under the chapters'
+    # columns, and "stopped running" at its left (CSS), so a dot would float between.
+    face = "".join(x for x in (stopped, moves) if x) or "no test moved"
     rest = (f'{untouched} more test{"s" if untouched != 1 else ""} in the files this '
             "change set touched, left exactly as they were") if untouched else ""
     tip = f' data-tip="{html.escape(rest, quote=True)}"' if rest else ""
@@ -1383,8 +1389,11 @@ REQMAP_CSS = """
 .reqmap .rm-ch[data-open=yes] > .rm-chh .rm-chcaret{transform:rotate(90deg)}
 .reqmap .rm-chsub{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reqmap .rm-chn{font-weight:400;color:var(--muted,#6b6b6b);font-variant-numeric:tabular-nums}
-.reqmap .rm-chled{flex:0 0 auto;display:inline-flex;gap:.6rem;font-size:13px;font-weight:400;
-  font-variant-numeric:tabular-nums}
+/* The counts are a grid of three fixed columns, `+`, `−`, ✍️, right-aligned and empty when
+   zero, here and in the card title's `.tmoves` alike: the numbers stand in columns. */
+.reqmap .rm-chled,.reqmap .rm-code > .rm-tkhead .tmoves{flex:0 0 auto;display:inline-grid;
+  grid-template-columns:repeat(3,43px);gap:0;justify-items:end;font-size:13px;font-weight:400;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
 .reqmap .rm-chled [data-tip]{cursor:help}
 .reqmap .rm-ch[data-open=no] > .rm-chb{display:none}
 .reqmap .rm-ch:last-child .rm-chb > .rm-t:last-child,
@@ -1414,7 +1423,11 @@ REQMAP_CSS = """
 .reqmap .rm-code > .rm-tkhead > .rm-allf{margin-left:auto;align-self:center;display:inline-flex;
   align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--muted,#6b6b6b);
   user-select:none;white-space:nowrap}
-.reqmap .rm-code > .rm-tkhead > .rm-allf + .tledger{margin-left:14px}
+/* The counts take a row of their own, right-aligned, so their three columns end where the
+   chapters' do, one column over the other (Victor, 14 Oct 2026). */
+.reqmap .rm-code > .rm-tkhead > .tledger{flex:1 0 100%;margin:2px 0 0}
+.reqmap .rm-code > .rm-tkhead .tmoves{margin-left:auto}
+.reqmap .rm-code > .rm-tkhead .tmoves > :empty{display:block}
 .reqmap .rm-allf,.reqmap .rm-allf *{cursor:pointer}
 .reqmap .rm-allf:hover,.reqmap .rm-allf:has(input:checked){color:var(--fg,#1c1c1c)}
 .reqmap .rm-allf input{margin:0;width:12px;height:12px}
@@ -1465,7 +1478,7 @@ REQMAP_CSS = """
 }
 /* The changed-tests counts (`+54 −9 ✍️7`) sit on the card's title row, at its right end. */
 .reqmap .rm-code > .rm-tkhead{flex-wrap:wrap}
-.reqmap .rm-code > .rm-tkhead > .tledger{margin:0 0 0 auto;font-weight:400}
+.reqmap .rm-code > .rm-tkhead > .tledger{font-weight:400}
 /* Stacked, the grid is one column: title, ticket, card. The gutter the two columns shared
    becomes the gap between them, which `row-gap:0` above gave up for the title's sake. */
 @media (max-width:900px){

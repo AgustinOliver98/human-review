@@ -125,13 +125,129 @@
     show(el);
   }
 
-  document.addEventListener('pointerover', trigger);
-  document.addEventListener('focusin', trigger);   // focus/blur do not bubble
+  // ---- `data-tip-pop`: a tip you can walk into ------------------------------------------
+  // The bubble above lets the pointer through, which is right for a label and wrong for a
+  // list of files the reader wants to click: the files a package box or a `+26` chip
+  // stands for. Those carry their list in `data-tip-pop` (the page's own markup, built at
+  // build time), and get a second bubble that takes the pointer, scrolls when the list is
+  // long, and holds its links in the Tab order: Tab or ↓ from the owner walks into it,
+  // Escape walks back out. It stays open while the pointer is on the owner or on it, with
+  // a quarter-second grace for the gap between the two.
+  var pop = document.createElement('div');
+  pop.className = 'tip tippop';
+  pop.setAttribute('role', 'dialog');
+  pop.tabIndex = -1;
+  css.textContent +=
+    '.tip.tippop{pointer-events:auto;width:max-content;max-width:calc(100vw - 16px);' +
+    'max-height:min(60vh,28rem);overflow:auto;overscroll-behavior:contain;padding:.55rem .8rem .65rem}' +
+    '.tip.tippop:not(.visible){visibility:hidden}' +
+    '.tip.tippop .tippophead{margin:0 0 .3rem;font-size:13px;opacity:.75}' +
+    '.tip.tippop ul.tiplist{padding-left:1.1rem}' +
+    '.tip.tippop ul.tiplist li{white-space:nowrap}' +
+    '.tip.tippop a{color:#8ab4f8;text-decoration:none;cursor:pointer}' +
+    '.tip.tippop a:hover,.tip.tippop a:focus-visible{text-decoration:underline}' +
+    '.tip.tippop .tipnum{font-family:-apple-system,system-ui,sans-serif;font-size:12px;' +
+    'opacity:.7;margin-left:.45rem;font-variant-numeric:tabular-nums}' +
+    '[data-tip-pop]{cursor:help}';
+  document.body.appendChild(pop);
+  var popFor = null, popShow = null, popHide = null;
+
+  function popClose(refocus) {
+    clearTimeout(popShow); clearTimeout(popHide);
+    var was = popFor;
+    popFor = null;
+    pop.classList.remove('visible');
+    if (refocus && was && pop.contains(document.activeElement)) ownerFocus(was);
+  }
+  // A package box is focused through the link it wraps; a chip's number through itself.
+  function ownerFocus(el) {
+    var t = el.matches('a,button,[tabindex]') ? el : el.querySelector('a,button,[tabindex]');
+    (t || el).focus();
+  }
+  function popSoon() { clearTimeout(popHide); popHide = setTimeout(function () { popClose(false); }, 250); }
+  function popOpen(el) {
+    clearTimeout(popHide);
+    if (popFor === el) return;
+    hide();
+    popFor = el;
+    pop.innerHTML = el.getAttribute('data-tip-pop');
+    pop.scrollTop = 0;
+    pop.classList.remove('visible');
+    var keep = bubble;
+    bubble = pop; place(el); bubble = keep;     // the same placement rule as the plain tip
+    pop.classList.add('visible');
+  }
+  function popOwner(t) { return t && t.closest && t.closest('[data-tip-pop]'); }
+
+  document.addEventListener('pointerover', function (ev) {
+    if (pop.contains(ev.target)) { clearTimeout(popHide); return; }
+    var el = popOwner(ev.target);
+    if (!el) return;
+    clearTimeout(popHide);
+    if (el === popFor) return;
+    clearTimeout(popShow);
+    popShow = setTimeout(function () { popOpen(el); }, 150);
+  });
+  document.addEventListener('pointerout', function (ev) {
+    var to = ev.relatedTarget;
+    if (!popFor && !popShow) return;
+    if (to && (pop.contains(to) || (popFor && popFor.contains(to)))) return;
+    if (pop.contains(ev.target) || popOwner(ev.target)) { clearTimeout(popShow); popShow = null; popSoon(); }
+  });
+  document.addEventListener('focusin', function (ev) {
+    if (pop.contains(ev.target)) { clearTimeout(popHide); return; }
+    var el = popOwner(ev.target);
+    if (el) popOpen(el); else if (popFor) popClose(false);
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (!popFor) return;
+    if (ev.key === 'Escape') { popClose(true); return; }
+    var inside = pop.contains(document.activeElement);
+    if (!inside && popFor.contains(document.activeElement)
+        && ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'ArrowDown')) {
+      var first = pop.querySelector('a,button,[tabindex]');
+      ev.preventDefault();
+      (first || pop).focus();
+    } else if (inside && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+      var links = Array.prototype.slice.call(pop.querySelectorAll('a,button'));
+      var i = links.indexOf(document.activeElement);
+      if (i < 0) return;
+      ev.preventDefault();
+      var next = links[i + (ev.key === 'ArrowDown' ? 1 : -1)];
+      if (next) next.focus();
+    } else if (inside && ev.key === 'Tab' && ev.shiftKey
+               && document.activeElement === pop.querySelector('a,button')) {
+      ev.preventDefault();
+      ownerFocus(popFor);
+    }
+  });
+  pop.addEventListener('focusout', function (ev) {
+    var to = ev.relatedTarget;
+    if (!pop.contains(to) && !(popFor && to && popFor.contains(to))) popClose(false);
+  });
+
+  document.addEventListener('pointerover', function (ev) {
+    // Inside the walk-in bubble, or on its owner, the plain tip stays down.
+    if (pop.contains(ev.target) || popOwner(ev.target)) return;
+    trigger(ev);
+  });
+  document.addEventListener('focusin', function (ev) {
+    if (pop.contains(ev.target) || popOwner(ev.target)) return;
+    trigger(ev);
+  });   // focus/blur do not bubble
   document.addEventListener('pointerout', function (ev) {
     if (current && !current.contains(ev.relatedTarget)) hide();
   });
   document.addEventListener('focusout', hide);
-  document.addEventListener('touchstart', hide, {passive: true});
-  window.addEventListener('scroll', hide, true);   // a fixed bubble would float away
+  document.addEventListener('touchstart', function (ev) {
+    hide();
+    if (!pop.contains(ev.target)) popClose(false);
+  }, {passive: true});
+  // A fixed bubble would float away from what it explains. Scrolling inside the walk-in
+  // bubble is the one scroll that must not close it.
+  window.addEventListener('scroll', function (ev) {
+    hide();
+    if (!(ev.target instanceof Node && pop.contains(ev.target))) popClose(false);
+  }, true);
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') hide(); });
 })();

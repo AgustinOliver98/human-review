@@ -96,6 +96,12 @@ PIECES: dict[str, tuple[str, str]] = {
         "the package diagram, kept as PlantUML, enforced on the code by ArchUnit and "
         "diffed base against branch", PETCLINIC + "src/test/java/victor/training/petclinic/"
         "guardrail/PackagesArchTest.java, scripts/puml-diff.sh, puml-diff/puml_diff.py"),
+    "diagram.frontend": (
+        "the frontend's folders and who imports whom, kept as PlantUML, enforced on the "
+        "code by a node:test that reads every import, and diffed base against branch",
+        "https://github.com/victorrentea/petclinic/blob/main/petclinic-frontend/scripts/"
+        "packages-arch.test.mjs, scripts/puml-diff.sh, "
+        "puml-diff/puml_diff.py"),
     "diagram.modules": (
         "the module graph generated from your build files, committed as PlantUML and "
         "diffed base against branch",
@@ -240,6 +246,14 @@ EXPLAIN: dict[str, dict[str, object]] = {
         ],
         "ex": 'e.g. <code>..domain</code> → <code>..rest</code>: not drawn, so a test fails.',
     },
+    'diagram.frontend': {
+        "li": [
+            'The frontend folders and who imports whom.',
+            'A test reads every <code>import</code> and fails on one the drawing lacks.',
+            'A new arrow is new coupling: ask why.',
+        ],
+        "ex": 'e.g. <code>parts</code> → <code>owners</code>: not drawn, so a test fails.',
+    },
     'diagram.modules': {
         "li": [
             'The Maven modules and who depends on whom, from <code>mvn dependency:tree</code>.',
@@ -355,6 +369,7 @@ DIAGRAM_KINDS = (
     ("diagram.domain", re.compile(r"domain\s*model", re.I)),
     ("diagram.db", re.compile(r"\bDB\b|\bERD\b|\bschema\b", re.I)),
     ("diagram.c2", re.compile(r"\bC2\b", re.I)),
+    ("diagram.frontend", re.compile(r"\bfrontend\b", re.I)),
     ("diagram.modules", re.compile(r"\bmodules?\b", re.I)),
     ("diagram.packages", re.compile(r"\bpackages?\b", re.I)),
 )

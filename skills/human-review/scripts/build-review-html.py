@@ -138,8 +138,9 @@ from hrbuild.shared.genseq import (
 from hrbuild.shared.folders import (
     folder_targets, link_folders, maven_modules, package_folders, puml_boxes, _artifact_id,
     _DECL, _ENTITY, _KEYWORD, _ls_files, _module_dir, _packages, _pattern, _SOURCE_DIR,
-    _STEREO, _tree_base
+    _STEREO, _tree_base, box_impact, _branch_files, _impact_bar, _impact_pop, _RECT, _ATTR
 )
+from hrbuild.shared.changes import changed_files, file_link, files_pop, _numbers
 from hrbuild.shared.diagrams import (
     CARD_NAME, card_rerun_html, card_rerun_id, REFRESH_CARD,
     CM_LEGEND_NEW, CM_LEGEND_TODO, DEFAULT_FOCUS, DGM_SRC_ANCHOR, dgm_views_html, DRAWIO_TOKEN,

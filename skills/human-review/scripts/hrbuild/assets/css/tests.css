@@ -75,6 +75,10 @@ ul.req-tests li { list-style:none; }
 .tledger { display:inline-flex; gap:.6rem; align-items:baseline; }
 .rm-who[data-tip] { cursor:help; }
 .tledger[data-tip], .tledger [data-tip] { cursor:help; }
+/* The three counts, `+ − ✍️`, each in its slot; an empty slot holds a column only on the
+   covering card (tests.py), anywhere else it takes no room. */
+.tmoves { display:inline-flex; gap:.6rem; }
+.tmoves > :empty { display:none; }
 .tledger .toff { color:#b26a00; }
 @media (prefers-color-scheme: dark) {
   .tledger .toff { color:#e0a458; }
