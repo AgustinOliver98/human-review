@@ -1,22 +1,15 @@
 {
  "schema": "test-mapping/1",
- "note": "0 links by script (unconfirmed), 34 by model, 9 script links rejected by the model; 0 sentences not paired yet",
+ "note": "0 links by script (unconfirmed), 28 by model, 9 script links rejected by the model; 0 sentences not paired yet",
  "sentences": [
   {
    "id": "sde7c7e",
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
-     "strength": "asserted",
-     "why": "creates a visit with a vet and asserts the stored visit's vetId equals that vet's id",
-     "line": "assertThat(created.getVetId()).isEqualTo(vet.getId());",
-     "by": "model"
-    },
-    {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
      "strength": "asserted",
-     "why": "PUTs a vetId on an existing visit and asserts the reloaded visit's vetId equals it",
+     "why": "PUTs a vetId, reads the visit back and compares its vetId to the vet's id",
      "line": "assertThat(callGet(visitId).getVetId()).isEqualTo(vet.getId());",
      "by": "model",
      "evidence": [
@@ -24,56 +17,50 @@
       "vet (name)",
       "≈link (name)"
      ]
+    },
+    {
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
+     "strength": "asserted",
+     "why": "creates a visit with a vet and compares the stored vetId to the vet's id",
+     "line": "assertThat(created.getVetId()).isEqualTo(vet.getId());",
+     "by": "model"
     }
    ],
    "by": "model",
    "rejected": [
     {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:7",
-     "why": "only formats a name from vet fields already on the visit; never checks the visit-to-vet link"
+     "why": "only formats vet names already on a Visit object; it never links a visit to a vet"
     }
    ]
   },
   {
    "id": "s076ab2",
-   "coverage": "covered",
+   "coverage": "partial",
    "tests": [
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "strength": "asserted",
-     "why": "asserts the owner endpoint returns vetId and vetLastName for the visit booked with a vet",
-     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetId\")",
-     "by": "model"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:415",
-     "strength": "asserted",
-     "why": "asserts GET /api/visits returns the vet's first name for the visit",
-     "line": ".andExpect(jsonPath(\"$[?(@.id == %d)].vetFirstName\", visitId).value(\"James\"))",
-     "by": "model"
-    },
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts the vet cells of the visit list read 'No vet' and 'Helen Leary'",
+     "why": "asserts the vet cells of the visit list read ['No vet', 'Helen Leary']",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
      "by": "model"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "asserts the all-visits screen's vet cells hold each visit's vet or 'No vet'",
+     "why": "asserts the vet cells of the all-visits grid",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
      "by": "model"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/mcp/ListVisitsToolTest.java:81",
      "strength": "asserted",
-     "why": "asserts the MCP listVisits tool returns vetName 'Helen Leary' for the visit with a vet",
-     "line": "tuple(\"seen by Helen\", \"Helen Leary\"),",
+     "why": "asserts the MCP listVisits view carries the vet name, or null when there is none",
+     "line": ".extracting(PetClinicMcp.VisitView::description, PetClinicMcp.VisitView::vetName)",
      "by": "model"
     }
    ],
+   "gap": "\"Everywhere\" is open-ended; only the visit list, the all-visits screen and the MCP view are asserted, not the add/edit forms or other places.",
    "by": "model"
   },
   {
@@ -81,9 +68,23 @@
    "coverage": "covered",
    "tests": [
     {
+     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
+     "strength": "asserted",
+     "why": "asserts the vets are offered and the form starts with vetId null",
+     "line": "expect(component.visit.vetId).toBeNull();",
+     "by": "model",
+     "evidence": [
+      "≈create (name)",
+      "visit (name)",
+      "≈choose (name)",
+      "vet (name)",
+      "≈none (name)"
+     ]
+    },
+    {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
      "strength": "asserted",
-     "why": "asserts the booking form submits the chosen vetId to addVisit",
+     "why": "asserts addVisit is called with vetId 2",
      "line": "expect(visitService.addVisit).toHaveBeenCalledWith(jasmine.objectContaining({vetId: 2}));",
      "by": "model",
      "evidence": [
@@ -96,8 +97,8 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
      "strength": "asserted",
-     "why": "books with a vet and asserts the owner endpoint returns that vet's id",
-     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetId\")",
+     "why": "books with a vet and reads back vetId and vetLastName on the owner page",
+     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetLastName\")",
      "by": "model",
      "evidence": [
       "book (name)",
@@ -106,35 +107,14 @@
      ]
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
-     "strength": "asserted",
-     "why": "creates a visit with a vet and asserts the stored vetId equals it",
-     "line": "assertThat(created.getVetId()).isEqualTo(vet.getId());",
-     "by": "model"
-    },
-    {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
      "strength": "asserted",
-     "why": "books without a vet, gets 201, and asserts the stored visit's vet is null",
-     "line": ".isNull();",
+     "why": "books without a vet, gets 201 and the stored visit has a null vet",
+     "line": ".extracting(Visit::getVet)",
      "by": "model",
      "evidence": [
       "book (name)",
       "visit (name)",
-      "vet (name)",
-      "≈none (name)"
-     ]
-    },
-    {
-     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
-     "strength": "asserted",
-     "why": "asserts the booking form starts with no vet chosen (vetId null) and offers the vets",
-     "line": "expect(component.visit.vetId).toBeNull();",
-     "by": "model",
-     "evidence": [
-      "≈create (name)",
-      "visit (name)",
-      "≈choose (name)",
       "vet (name)",
       "≈none (name)"
      ]
@@ -144,11 +124,11 @@
    "rejected": [
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
-     "why": "asserts only a 404 for an unknown vet id, not that choosing or skipping works"
+     "why": "checks the 404 for an unknown vet, not choosing or not choosing"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
-     "why": "tests the edit form sending null, not the booking form"
+     "why": "concerns editing a visit, not booking"
     }
    ]
   },
@@ -159,8 +139,8 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
      "strength": "asserted",
-     "why": "owner-page booking without a vetId returns 201 and the stored vet is null",
-     "line": ".isNull();",
+     "why": "owner-page booking without a vet returns 201 and stores a null vet",
+     "line": ".extracting(Visit::getVet)",
      "by": "model",
      "evidence": [
       "vet (name)",
@@ -171,7 +151,7 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277",
      "strength": "asserted",
-     "why": "creates a visit without a vet (201) and asserts vetId is null on read-back",
+     "why": "POST /api/visits without a vet is created and reads back with null vetId",
      "line": "assertThat(created.getVetId()).isNull();",
      "by": "model",
      "evidence": [
@@ -183,7 +163,7 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
      "strength": "asserted",
-     "why": "asserts the booking form's default visit has no vet chosen",
+     "why": "booking form starts with vetId null",
      "line": "expect(component.visit.vetId).toBeNull();",
      "by": "model",
      "evidence": [
@@ -197,15 +177,15 @@
    "rejected": [
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
-     "why": "checks the 404 for an unknown vet id, not that the vet is optional"
+     "why": "asserts 404 for an unknown vet id, not optionality"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "why": "books with a vet; the null vet it checks belongs to a different, pre-existing visit"
+     "why": "focuses on a booking with a vet shown on the owner page"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
-     "why": "submits with a vet chosen, so it says nothing about the vet being optional"
+     "why": "books with a chosen vet, so it does not show optionality"
     }
    ]
   },
@@ -216,14 +196,14 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
      "strength": "asserted",
-     "why": "PUTs a vetId on an existing visit and asserts the reloaded vetId equals it",
+     "why": "PUT assigns a vet and the read-back vetId equals it",
      "line": "assertThat(callGet(visitId).getVetId()).isEqualTo(vet.getId());",
      "by": "model"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
      "strength": "asserted",
-     "why": "PUTs a null vetId on a visit that had a vet and asserts it reads back null",
+     "why": "PUT with null vetId on a visit that had a vet reads back null",
      "line": "assertThat(updated.getVetId()).isNull();",
      "by": "model",
      "evidence": [
@@ -236,7 +216,7 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
      "strength": "asserted",
-     "why": "asserts the edit form sends vetId null when the vet is cleared",
+     "why": "edit form submits a cleared vet as null in the PUT body",
      "line": "expect(body.vetId).toBeNull();",
      "by": "model",
      "evidence": [
@@ -257,7 +237,7 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
      "strength": "asserted",
-     "why": "after flushAndClear, a fresh GET asserts the cleared vetId is null",
+     "why": "after PUT with a null vet and a fresh read, vetId is null",
      "line": "assertThat(updated.getVetId()).isNull();",
      "by": "model",
      "evidence": [
@@ -268,8 +248,9 @@
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
-     "strength": "exercised",
-     "why": "asserts only that the cleared field is sent as null, not that it persists",
+     "strength": "asserted",
+     "why": "the cleared vet is sent as null rather than omitted or ''",
+     "line": "expect(body.vetId).toBeNull();",
      "by": "model",
      "evidence": [
       "clear (name)",
@@ -287,7 +268,7 @@
    "rejected": [
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "why": "shares only incidental words; it books with a vet and reads it back, nothing about an old value returning"
+     "why": "shares only the words pet and value; the sentence is history, not a claim"
     }
    ]
   },
@@ -298,8 +279,8 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
      "strength": "asserted",
-     "why": "asserts the owner detail response carries vetLastName 'Herriot' on the visit",
-     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetId\")",
+     "why": "owner endpoint returns vetId and vetLastName on the visit",
+     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetLastName\")",
      "by": "model",
      "evidence": [
       "visit (name)",
@@ -308,23 +289,16 @@
      ]
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:415",
-     "strength": "asserted",
-     "why": "asserts GET /api/visits returns vetFirstName 'James' for the visit",
-     "line": ".andExpect(jsonPath(\"$[?(@.id == %d)].vetFirstName\", visitId).value(\"James\"))",
-     "by": "model"
-    },
-    {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts the rendered vet cell of each listed visit",
+     "why": "visit list renders a vet cell per visit",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
      "by": "model"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "asserts the all-visits screen renders each visit's vet in td.visit-vet",
+     "why": "all-visits grid renders a vet cell per visit",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
      "by": "model"
     }
@@ -338,8 +312,8 @@
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
      "strength": "asserted",
-     "why": "asserts the owner page's data carries vetId and vetLastName per visit",
-     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetId\")",
+     "why": "owner page API returns vet fields per visit",
+     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetLastName\")",
      "by": "model",
      "evidence": [
       "owner (name)",
@@ -350,38 +324,31 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts the per-pet visit list's vet cells",
+     "why": "visit list shows the vet per visit",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
      "by": "model"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "asserts the all-visits screen's vet cells",
+     "why": "all-visits screen shows the vet per visit",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
      "by": "model",
      "evidence": [
       "page (name)",
       "visit (name)"
      ]
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:415",
-     "strength": "asserted",
-     "why": "asserts the all-visits endpoint returns the vet names",
-     "line": ".andExpect(jsonPath(\"$[?(@.id == %d)].vetLastName\", visitId).value(\"Herriot\"))",
-     "by": "model"
     }
    ],
    "by": "model",
    "rejected": [
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
-     "why": "checks the repository's stored vet is null, never what the owner page shows"
+     "why": "checks the stored vet of a booking, not what a page shows"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
-     "why": "asserts only a 404 on an unknown vet, nothing about the owner page"
+     "why": "only checks the 404 for an unknown vet"
     }
    ]
   },
@@ -392,7 +359,7 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12",
      "strength": "asserted",
-     "why": "asserts the pipe returns NO_VET for a visit with a null vetId",
+     "why": "pipe returns NO_VET for a null vetId and for a missing one",
      "line": "expect(pipe.transform({vetId: null} as Visit)).toBe(NO_VET);",
      "by": "model",
      "evidence": [
@@ -403,17 +370,17 @@
      ]
     },
     {
-     "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
+     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "asserts the rendered cell reads 'No vet' for the visit without a vet",
-     "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
+     "why": "vet-less visits render \"No vet\" in the grid",
+     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
      "by": "model"
     },
     {
-     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
+     "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts the all-visits cells read 'No vet' for visits without a vet",
-     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
+     "why": "vet-less visit renders \"No vet\" in the list",
+     "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
      "by": "model"
     }
    ],
@@ -424,24 +391,17 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
-     "strength": "asserted",
-     "why": "asserts the cell text is exactly 'No vet', not 'Unknown' or blank",
-     "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);",
-     "by": "model"
-    },
-    {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12",
      "strength": "asserted",
-     "why": "asserts a visit with no vet fields at all still maps to NO_VET, not blank",
+     "why": "a missing or null vet yields exactly NO_VET, for both shapes",
      "line": "expect(pipe.transform({} as Visit)).toBe(NO_VET);",
      "by": "model"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "reads the owner page containing a vet-less visit and asserts 200",
-     "line": ".andExpect(status().isOk())",
+     "why": "the cell text equals exactly 'No vet', so neither Unknown nor blank, and the page renders",
+     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);",
      "by": "model"
     }
    ],
@@ -451,7 +411,7 @@
    "id": "saa032f",
    "coverage": "missing",
    "tests": [],
-   "gap": "No test shows that rows existing before the change keep a null vet after migration; the vet-less visits tested are created fresh by the tests.",
+   "gap": "No test runs the migration over pre-existing rows or checks that they stay without a vet.",
    "by": "model"
   },
   {
@@ -462,9 +422,5 @@
    "gap": "Out of scope, per the ticket — nothing to cover.",
    "gapKind": "requirement"
   }
- ],
- "stale": {
-  "why": "test-mapping.json (07 Oct 14:38) is older than test-coverage.json (07 Oct 23:27)",
-  "command": "rerun-model.py"
- }
+ ]
 }
