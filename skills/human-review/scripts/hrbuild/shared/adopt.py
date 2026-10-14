@@ -243,6 +243,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
             '<a href="https://www.archunit.org/" target="_blank" rel="noopener noreferrer">'
             'ArchUnit</a>, a test library, fails the build on an import the drawing lacks.',
             'A new arrow is new coupling: ask why.',
+            '<b>Green bar</b> in a box = its share of the lines this PR added here.',
+            'Hover a box for its changed files; click one for its diff.',
         ],
         "ex": 'e.g. <code>..domain</code> → <code>..rest</code>: not drawn, so a test fails.',
     },
@@ -251,6 +253,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'The frontend folders and who imports whom.',
             'A test reads every <code>import</code> and fails on one the drawing lacks.',
             'A new arrow is new coupling: ask why.',
+            '<b>Green bar</b> in a box = its share of the lines this PR added here.',
+            'Hover a box for its changed files; click one for its diff.',
         ],
         "ex": 'e.g. <code>parts</code> → <code>owners</code>: not drawn, so a test fails.',
     },
@@ -258,6 +262,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             'The Maven modules and who depends on whom, from <code>mvn dependency:tree</code>.',
             'A new arrow or a cycle between modules: ask why.',
+            '<b>Green bar</b> in a box = its share of the lines this PR added here.',
+            'Hover a box for its changed files; click one for its diff.',
         ],
     },
     'diagram.c2': {
@@ -288,6 +294,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'AI matched them by meaning, so it can be wrong.',
             '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test, so ask for one.',
             'E2E and API tests weigh most: they prove the feature, not one method.',
+            '<b>+ − ✍️</b>: new, deleted, edited tests; <b>Show all tests</b> adds the rest.',
         ],
     },
     'sequence': {

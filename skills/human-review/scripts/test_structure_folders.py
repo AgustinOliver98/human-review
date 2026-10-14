@@ -327,7 +327,8 @@ def test_a_box_is_shaded_by_its_share_of_the_lines_added_and_lists_its_files(rep
     # The bar is drawn over the box's own shape and under its name.
     assert dto.index('class="pkg-impact"') < dto.index("<text>")
     pop = _html.unescape(dto.split('data-tip-pop="')[1].split('"')[0])
-    assert "<b>..web.dto</b> +6 in 1 file · 67% of the lines added" in pop
+    assert pop.startswith('<p class="tippophead">Green bar: <b>67%</b> of the lines this PR '
+                          "added in this diagram are in <b>..web.dto</b><br>+6 in 1 file")
     assert ">D.java</a>" in pop, "named relative to the box the reader hovered"
     assert f'data-diff-path="{src}/web/dto/D.java"' in pop and f'data-diff-base="{base}"' in pop
     assert "D.java" not in _html.unescape(web), "counted in the deepest box only"

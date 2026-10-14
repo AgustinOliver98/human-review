@@ -38,6 +38,14 @@ git push origin HEAD:test-pr         # NEVER a bare `git push`: test-pr may trac
 `~/workspace/petclinic` is a third checkout on whatever branch it happens to be on — ask
 before touching it, and never assume it is `main`.
 
+## Every visible change is explained in its card's ⓘ panel
+
+Anything a reviewer can newly see on a card — a colour, a bar, a column, a control, what a
+hover or a click does — gets a line in that card's ⓘ explainer (`EXPLAIN` in
+`scripts/hrbuild/shared/adopt.py`) in the same commit, and a tooltip that shows numbers
+says in its first line what they mean (Victor, 14 Oct 2026: "they won't fully get it").
+`test_adopt.py` keeps the panel short: at most six one-sentence bullets of 90 characters.
+
 ## Where the page is built: one module per tab
 
 `build-review-html.py` was one file of ten and a half thousand lines: the Logging tab's

@@ -275,8 +275,11 @@ def _impact_pop(label: str, box: dict, base: str, root: Path, folder: str) -> st
     pct = round(box["share"] * 100)
     nums = " ".join(x for x in (f"+{box['adds']}" if box["adds"] else "",
                                 f"−{box['dels']}" if box["dels"] else "") if x)
-    head = (f"<b>{html.escape(label)}</b> {nums} in {n} file{'s' if n != 1 else ''}"
-            f" · {pct}% of the lines added across this diagram")
+    # The first line says what the green is (Victor, 14 Oct 2026: "they won't get it"),
+    # the second what is under it and what a click does.
+    head = (f"Green bar: <b>{pct}%</b> of the lines this PR added in this diagram are in "
+            f"<b>{html.escape(label)}</b><br>{nums} in {n} file{'s' if n != 1 else ''}"
+            " · click a file for its diff")
     return files_pop(head, box["files"], base, root, strip=folder)
 
 
