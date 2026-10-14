@@ -518,7 +518,8 @@ def test_the_built_page_shows_the_real_per_tab_numbers(built_page):
 
 def test_the_built_page_shows_a_script_made_tab_as_a_measured_zero(built_page):
     panel = _panel(built_page)
-    assert '<tr class="costquiet"><td>Structure</td><td>–</td></tr>' in panel, \
+    assert re.search(r'<tr class="costquiet"><td>Structure</td><td><span class="costnil" '
+                     r'data-tip="[^"]*no model call[^"]*">–</span></td></tr>', panel), \
         "a script-made tab by name, with a dash (Victor, 4 Oct 2026)"
 
 
@@ -1040,7 +1041,7 @@ def test_the_fold_under_the_four_rows_is_the_guide_row_split_by_tab_and_sums_to_
     # The Tests tab carries the mapping, and is not also listed as spending nothing.
     assert "Tests<span class=\"costsub\">requirements↔tests mapping, claude -p" in fold
     assert "tokens not recorded" in fold and ">$0.16</span></td>" in fold
-    assert '<tr class="costquiet"><td>Review</td><td>–</td></tr>' in fold, \
+    assert '<tr class="costquiet"><td>Review</td><td><span class="costnil"' in fold, \
         "a tab with no spend by name, with a dash"
     assert "Step 9" not in out and "step&rsquo;s window" not in out, "no skill jargon"
 

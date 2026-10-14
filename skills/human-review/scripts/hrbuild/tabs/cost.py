@@ -352,23 +352,33 @@ def _span(a: str | None, b: str | None) -> str:
     return f"{x} &rarr; {y}" if y else x
 
 
-def _cost_cell(money: str, tokens: float, models=None) -> str:
+def _cost_cell(money: str, tokens: float, models=None, model_usd=None) -> str:
     """The one number column: the price, its tokens on the hover, the model under it.
 
     Tokens were a column of their own beside the price; Victor (4 Oct 2026) wanted one
-    column, the tokens on the price's hover and the model name under the price."""
+    column, the tokens on the price's hover and the model name under the price. The hover
+    is a list, one model per line with its tokens and its price (Victor, 14 Oct 2026: a
+    percentage of tokens said nothing about where the money went); a model whose price
+    could not be split off the row's (`harness_cost.model_costs`) shows its tokens alone."""
     names = [(str(k), float(v)) for k, v in (models or {}).items()
              if isinstance(v, (int, float)) and v > 0] if isinstance(models, dict) else []
     total = sum(v for _k, v in names)
     names.sort(key=lambda kv: -kv[1])
     big = [(k, v) for k, v in names if total and v / total >= 0.005] or names[:1]
-    tip = f"{_cost_tokens(tokens)} tokens"
-    if len(big) > 1:
-        tip += " · " + " / ".join(f"{k} {v / total * 100:.0f}%" for k, v in big)
+    usd = model_usd if isinstance(model_usd, dict) else {}
+    head = f"{_cost_tokens(tokens)} tokens"
+    if names:
+        items = "".join(
+            f"<li>{html.escape(k)}: {_cost_tokens(v)} tokens"
+            + (f" &middot; {_cost_money(usd[k])}" if isinstance(usd.get(k), (int, float)) else "")
+            + "</li>" for k, v in names)
+        tip = (f'<p class="tipfoot">{head}</p><ul class="tiplist prose">{items}</ul>')
+        attr = f'data-tip-html="{html.escape(tip, quote=True)}"'
+    else:
+        attr = f'data-tip="{html.escape(head, quote=True)}"'
     model = (f'<span class="costsub">{" · ".join(html.escape(k) for k, _ in big)}</span>'
              if big else "")
-    return (f'<span class="costmoney" data-tip="{html.escape(tip, quote=True)}">{money}</span>'
-            + model)
+    return f'<span class="costmoney" {attr}>{money}</span>' + model
 
 
 def _instants(win) -> list:
@@ -504,7 +514,10 @@ def cost_ledger_html(led: dict | None, tabs: list[dict], voices: dict | None = N
     # "Prompt to get this page" pill goes at its right end, as on the other tabs
     # (`adopt.PLACES`), out of the table's header where it crowded the time column.
     body = _cost_ledger_body(led, tabs, voices)
-    return COST_TITLE + body + tooling_investment_html() if body else ""
+    # The title and the table in one box as wide as the table, centred: the title stands
+    # over the table's left edge (Victor, 14 Oct 2026), not at the panel's.
+    return (f'<div class="costwrap">{COST_TITLE}{body}</div>' + tooling_investment_html()
+            if body else "")
 
 
 #: The tab's title row.
@@ -803,6 +816,11 @@ def _legacy_ledger_html(led: dict, tabs: list[dict]) -> str:
     )
 
 
+#: The hover on a fold tab's dash: scripts drew it, no model call was made.
+FREE_TAB_TIP = ("Nothing spent: scripts built this tab, with no model call, so it "
+                "consumed no tokens.")
+
+
 def _cost_tab_rows(costs: dict, tabs: list[dict], one_col: bool = False) -> str:
     """The per-tab half of the ledger.
 
@@ -860,7 +878,9 @@ def _cost_tab_rows(costs: dict, tabs: list[dict], one_col: bool = False) -> str:
     out = "".join(paid_row(l, r) for l, r in paid)
     if free and one_col:
         # Each tab by name with a dash: plainly nothing spent there (Victor, 4 Oct 2026).
-        out += "".join(f'<tr class="costquiet"><td>{html.escape(str(l))}</td><td>–</td></tr>'
+        # The dash explains itself (Victor, 14 Oct 2026): no model, so no tokens.
+        out += "".join(f'<tr class="costquiet"><td>{html.escape(str(l))}</td><td>'
+                       f'<span class="costnil" data-tip="{FREE_TAB_TIP}">–</span></td></tr>'
                        for l, _ in free)
     elif free:
         out += (f'<tr class="costquiet"><td>{len(free)} tab{"s" if len(free) != 1 else ""} '
@@ -921,35 +941,17 @@ def _minutes(secs) -> str:
     return f"{m:.0f} min" if m >= 1 else f"{secs:.0f} s"
 
 
-#: The time column's header hover: which time it is, since two honest ones exist.
-BUSY_TIP = ("Agent busy time: each prompt to its last reply, summed. "
-            "Waiting for the next prompt is left out.")
-
-#: The "you" column's header hover (Victor, 8 Oct 2026: "collect not only tokens, but the
-#: time it took to vibe" — his own time, estimated from what he dictated).
-HUMAN_TIP = ("Your time, a floor: speaking each prompt (Wispr Flow's own duration where it "
-             "logged the dictation, else words at 121 wpm spoken / 40 wpm typed) plus "
-             "reading the agent's reply before it at 250 wpm. Looking at diffs, testing by "
-             "hand and thinking leave no trace and are not in it.")
-
-
-def _human_cell(h: dict | None, cls: str = "costtime") -> str:
-    """The "you" column: the human's estimated time, its parts on the hover. `—` when no
-    Claude conversation of this row is on disk; `none` for a `claude -p` run."""
-    if not h:
-        return "<td>—</td>"
-    if not h.get("prompts"):
-        return (f'<td><span class="{cls}" data-tip="No prompt from a person in this window '
-                '— a scripted claude -p run, or the agent working on alone.">none</span></td>')
-    n, m = h["prompts"], h.get("measured") or 0
-    parts = [f"speaking {_duration(h.get('speak'))}"
-             + (f" (Wispr-measured, {m} of {n} prompt{'s' if n != 1 else ''})" if m else ""),
-             f"{'typing / unlogged speech' if h.get('type') else 'typing'} "
-             f"{_duration(h.get('type'))} (estimated)",
-             f"reading replies {_duration(h.get('read'))} (estimated)"]
-    tip = f"{n} prompt{'s' if n != 1 else ''}: " + " · ".join(parts)
-    return (f'<td><span class="{cls}" data-tip="{html.escape(tip, quote=True)}">'
-            f'{_duration(h.get("seconds"))}</span></td>')
+#: The time column's header hover: which time it is, since two honest ones exist. "time",
+#: not "agent" (Victor, 14 Oct 2026: it read as the model's thinking alone, and whether it
+#: held the tools' runs was nowhere said). The "you" column beside it is gone the same day:
+#: on every row the agent ran by itself it said `none`.
+BUSY_TIP = ('<p class="tipfoot">How long the agent was busy, summed over its turns:</p>'
+            '<ul class="tiplist prose">'
+            "<li>from each prompt to the turn&rsquo;s last reply</li>"
+            "<li>the model writing and thinking</li>"
+            "<li>plus waiting for its tools: commands, builds, tests, subagents</li>"
+            "<li>not the wait for the next prompt</li></ul>"
+            '<p class="tipfoot">Hover a time for its split.</p>')
 
 
 def _duration(secs) -> str:
@@ -964,10 +966,13 @@ def _duration(secs) -> str:
 
 
 def _split(secs, model_secs) -> str:
-    """`model 15 min · tools 21 min`: how a busy time splits between the model writing and
-    the tools it ran — the rest of the turn (commands, builds, tests, subagents, prompts)."""
+    """How a busy time splits between the model writing and the tools it ran — the rest of
+    the turn (commands, builds, tests, subagents) — as the list the hover shows."""
     model = min(float(model_secs or 0), float(secs))
-    return f"model {_duration(model)} · tools {_duration(secs - model)}"
+    return ('<ul class="tiplist prose">'
+            f"<li>total {_duration(secs)}</li>"
+            f"<li>model thinking and writing {_duration(model)}</li>"
+            f"<li>waiting for tools {_duration(secs - model)}</li></ul>")
 
 
 def _time_cell(secs, model_secs=None, cls: str = "costtime") -> str:
@@ -975,7 +980,7 @@ def _time_cell(secs, model_secs=None, cls: str = "costtime") -> str:
     as a line under every time it doubled the rows' height for a second-order number)."""
     if secs is None:
         return "<td>—</td>"
-    tip = (f' data-tip="{html.escape(_split(secs, model_secs), quote=True)}"'
+    tip = (f' data-tip-html="{html.escape(_split(secs, model_secs), quote=True)}"'
            if model_secs else "")
     return f'<td><span class="{cls}"{tip}>{_duration(secs)}</span></td>'
 
@@ -1021,10 +1026,8 @@ def _entry_row(e: dict) -> str:
     busy = e.get("busySeconds")
     when = (_time_cell(busy, e.get("modelSeconds"), "costsub costtime") if busy is not None
             else "<td></td>")
-    you = (_human_cell(e["human"], "costsub costtime") if e.get("human") is not None
-           else "<td></td>")
     return (f'<tr class="costpart"><td><span class="costsub">{_entry_line(e)}</span></td>'
-            f'{you}{when}<td><span class="costsub">{money}</span></td></tr>')
+            f'{when}<td><span class="costsub">{money}</span></td></tr>')
 
 
 
@@ -1136,18 +1139,10 @@ def voices_row_html(v: dict | None) -> str:
     model = " / ".join(v["models"]) or FISH_DEFAULT_MODEL
     return ('<tr class="costquiet" data-component="voices"><td>Voices'
             f'<span class="costsub">Fish Audio, {n} voice{"s" if n != 1 else ""}</span></td>'
-            '<td></td><td></td>'
+            '<td></td>'
             f'<td><span class="costmoney" data-tip="{html.escape("; ".join(tips), quote=True)}">'
             f'{html.escape(voice_money(v["usd"]))}</span><span class="costsub">{html.escape(model)}</span>'
             '</td></tr>')
-
-
-def _human_total(rows: list[dict]) -> dict | None:
-    """The rows' human time, added up, for the total's "you" cell."""
-    got = [r["human"] for r in rows if r.get("measured") and r.get("human")]
-    if not got:
-        return None
-    return {k: sum(h.get(k) or 0 for h in got) for k in got[0]}
 
 
 def components_html(comp: dict | None, fold: str = "", voices: dict | None = None) -> str:
@@ -1168,7 +1163,7 @@ def components_html(comp: dict | None, fold: str = "", voices: dict | None = Non
             why = html.escape(str(r.get("reason") or "not measured"))
             out.append(f'<tr class="costquiet" data-component="{html.escape(r["key"])}">'
                        f'<td>{label}<span class="costsub">unmeasured — {why}</span></td>'
-                       '<td>—</td><td>—</td><td>—</td></tr>')
+                       '<td>—</td><td>—</td></tr>')
             continue
         entries = r.get("entries") or []
         parts = len(entries) > 1
@@ -1204,9 +1199,15 @@ def components_html(comp: dict | None, fold: str = "", voices: dict | None = Non
             lines.append("estimated from session logs")
         sub = "".join(f'<span class="costsub">{l}</span>' for l in lines if l)
         models: dict = {}
+        model_usd: dict = {}
         for e in entries:
             for k, v in (e.get("models") or {}).items():
                 models[k] = models.get(k, 0) + v
+        for k in models:
+            # A model's price on the row only when every entry that used it priced it.
+            used = [e for e in entries if (e.get("models") or {}).get(k)]
+            if used and all(k in (e.get("modelUsd") or {}) for e in used):
+                model_usd[k] = sum(e["modelUsd"][k] for e in used)
         if ext:
             label = f'<span data-tip="{html.escape(ext, quote=True)}">{label}</span>'
         folds = r.get("key") == "guide" and fold
@@ -1222,14 +1223,13 @@ def components_html(comp: dict | None, fold: str = "", voices: dict | None = Non
         # Time before the cost: the money stays the last column, where the page's
         # "Prompt to get this" button sits in the header, beside `cost`.
         out.append(f'<tr data-component="{html.escape(r["key"])}"><td>{label}{sub}</td>'
-                   + _human_cell(r.get("human"))
                    + _time_cell(r.get("busySeconds"), r.get("modelSeconds"))
-                   + f'<td>{_cost_cell(_component_money(r, rate), r.get("tokens") or 0, models)}'
+                   + f'<td>{_cost_cell(_component_money(r, rate), r.get("tokens") or 0, models, model_usd)}'
                    '</td></tr>')
         if parts:
             out.append("".join(_entry_row(e) for e in entries))
         if folds:
-            out.append(f'<tr class="costfold" hidden><td colspan="4">{fold}</td></tr>')
+            out.append(f'<tr class="costfold" hidden><td colspan="3">{fold}</td></tr>')
     out.append(voices_row_html(voices))
     usd, aic = comp.get("usd") or 0.0, comp.get("aic") or 0.0
     total = usd + aic * rate + ((voices or {}).get("usd") or 0.0)
@@ -1245,7 +1245,6 @@ def components_html(comp: dict | None, fold: str = "", voices: dict | None = Non
     foot = (f'<tr class="costtotal"><td>Total'
             + (f'<span class="costsub">{html.escape(sub)}</span>' if sub else "")
             + '</td>'
-            + _human_cell(_human_total(rows))
             + _time_cell(comp.get("busySeconds"),
                          sum(r.get("modelSeconds") or 0 for r in rows if r.get("measured")))
             + f'<td>{_cost_cell(_cost_money(total), tokens)}</td></tr>')
@@ -1264,8 +1263,7 @@ def components_html(comp: dict | None, fold: str = "", voices: dict | None = Non
             + (f'<caption>{caption}</caption>' if caption else '') +
             # "step" (Victor, 7 Oct 2026): the rows are the steps the change went through.
             '<thead><tr><th scope="col">step</th>'
-            f'<th scope="col"><span data-tip="{html.escape(HUMAN_TIP, quote=True)}">you</span>'
-            f'</th><th scope="col"><span data-tip="{html.escape(BUSY_TIP, quote=True)}">agent</span>'
+            f'<th scope="col"><span data-tip-html="{html.escape(BUSY_TIP, quote=True)}">time</span>'
             '</th><th scope="col">cost</th></tr></thead>'
             f'<tbody>{"".join(out)}</tbody><tfoot>{foot}</tfoot></table>')
 

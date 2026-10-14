@@ -821,12 +821,12 @@ def test_the_four_rows_carry_a_time_column_and_a_dash_when_untimed():
             "busySeconds": None, "wallclock": {"seconds": 720, "modelSeconds": 240},
             "refreshSeconds": 240}
     out = cost.components_html(comp)
-    assert '<th scope="col"><span data-tip="Agent busy time' in out
+    assert '<th scope="col"><span data-tip-html="' in out and '">time</span>' in out
     cells = re.findall(r'<td>(?:<span class="costtime"[^>]*>)?([^<]*)(?:</span>)?</td>'
                        r'<td><span class="costmoney"', out)
     assert cells == ["2 h 05 min", "1 min", "—", "10 min", "—"], cells
-    assert 'data-tip="model 30 min · tools 1 h 35 min">2 h 05 min<' in out, \
-        "the split is the time's hover"
+    assert ("model thinking and writing 30 min</li><li>waiting for tools 1 h 35 min"
+            in html.unescape(out)), "the split is the time's hover"
     assert "costsplit" not in out, "not a line of its own under every time"
     assert "took 12 min" not in out, "the run's time is in the column, not twice"
     assert "plus 4 min of later refreshes, no model" in out
@@ -924,7 +924,8 @@ def test_several_sessions_are_a_breakdown_under_the_row_not_a_line_of_prices(tmp
     parts = re.findall(r'<tr class="costpart">(.*?)</tr>', out)
     assert len(parts) == 2
     assert '<code class="costsid">20f87074</code>' in parts[0]
-    assert 'data-tip="model 3 min · tools 11 min">14 min<' in parts[0] and "$2.16" in parts[0]
+    assert ("model thinking and writing 3 min</li><li>waiting for tools 11 min</li></ul>\">14 min<"
+            in html.unescape(parts[0])) and "$2.16" in parts[0]
     assert "requirements↔tests mapping<" in parts[1] and "rerun-model.py" not in parts[1]
     assert "16:26" not in out and "&rarr;" not in out, "no dates on a session's line"
     assert "costnum" not in out
@@ -1000,13 +1001,13 @@ def test_a_scripted_run_has_nobody_at_the_keyboard(tmp_path, monkeypatch):
     assert got["prompts"] == 0 and got["seconds"] == 0
 
 
-def test_the_you_column_says_none_for_a_scripted_run_and_the_parts_on_hover():
+def test_no_you_column_and_the_time_header_says_tools_are_in_it():
+    # Victor, 14 Oct 2026: "you" said `none` on every row the agent ran alone, and
+    # "agent" read as the model's thinking only.
     import importlib.util
     spec = importlib.util.spec_from_file_location("brh", HERE / "build-review-html.py")
     b = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(b)
-    assert ">none<" in b._human_cell({"prompts": 0, "seconds": 0})
-    cell = b._human_cell({"prompts": 2, "measured": 1, "speak": 60, "type": 45, "read": 90,
-                          "seconds": 195})
-    assert ">3 min<" in cell and "Wispr-measured, 1 of 2 prompts" in html.unescape(cell)
-    assert b._human_cell(None) == "<td>—</td>"
+    assert "tools" in b.BUSY_TIP and "<li>" in b.BUSY_TIP
+    cell = html.unescape(b._time_cell(600, 240))
+    assert "model thinking and writing 4 min" in cell and "waiting for tools 6 min" in cell

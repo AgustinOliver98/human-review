@@ -71,11 +71,9 @@ table.costtab .costexp:hover::after { text-decoration:underline; }
 table.costtab .costexp:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 table.costtab tr.costfold > td { padding:.2rem 0 .8rem 1.2rem; }
 table.costtab tr.costfold table.costtab { font-size:.9em; }
-/* The four components' two time columns, between the name and the cost — the human's
-   ("you") and the agent's — plain, their split on hover; the cost stays the last, bold
-   column. */
-table.costfour > tbody > tr > td:is(:nth-child(2), :nth-child(3)):not(:last-child) {
-             font-weight:400; }
+/* The four components' time column, between the name and the cost — plain, its split on
+   hover; the cost stays the last, bold column. */
+table.costfour > tbody > tr > td:nth-child(2):not(:last-child) { font-weight:400; }
 table.costfour th span[data-tip], table.costtab .costtime[data-tip] { cursor:help; }
 /* The session id: there to look the transcript up by, not to be read. */
 table.costtab code.costsid { font-size:.85em; opacity:.75; background:none; padding:0; }
@@ -95,9 +93,16 @@ table.costfour > tbody > tr > td { vertical-align:top; }
 /* As wide as its words and no wider (Victor, 8 Oct 2026: run to the title row's right end,
    the times and prices sat a screen away from the step they belong to and the eye had to
    travel to pair them). The name column sizes to its longest line; the numbers follow it. */
-table.costfour { width:auto; max-width:100%; margin-left:auto; margin-right:auto; }
+table.costfour { width:auto; max-width:100%; margin-left:0; margin-right:0; }
 table.costfour > thead > tr > th + th, table.costfour > tbody > tr > td + td,
-table.costfour > tfoot > tr > td + td { padding-left:1.6rem; }
+table.costfour > tfoot > tr > td + td { padding-left:1.1rem; }
+/* The title and the table in one box as wide as the table, centred: the title stands over
+   the table's left edge, the "Prompt to get this page" pill over its right (Victor,
+   14 Oct 2026). Narrower than the panel's reading width, so a long session line wraps
+   instead of pushing the prices a screen away (same day: "a bit more narrow"). */
+.costwrap { width:fit-content; max-width:min(100%, 42rem); margin:0 auto; }
+.costwrap > table.costfour { width:100%; }
+table.costtab .costnil[data-tip] { cursor:help; }
 /* What building human-review itself cost — the tool, not this change. A muted box under
    the table, never a row of it: its number must not be read as, or added to, the bill.
    Its three figures are tiles, big numbers over small labels, so they read at a glance. */

@@ -1850,11 +1850,17 @@ def models_of(turns) -> dict:
 
 def _price_turns(turns) -> dict:
     cost = tokens = 0.0
+    by_model: dict[str, float] = {}
     for _key, model, u, _side, _when in turns:
-        cost += price(family(model), u)
+        usd = price(family(model), u)
+        cost += usd
         tokens += turn_tokens(u)
+        by_model[label(model)] = by_model.get(label(model), 0.0) + usd
+    # `modelCost` beside `models`: the price's hover breaks the bill down model by model,
+    # and a token share is not a cost share — a Sonnet token is a fifth of an Opus one.
     return {"cost": cost, "tokens": round(tokens), "messages": len(turns),
-            "models": models_of(turns)}
+            "models": models_of(turns),
+            "modelCost": {k: round(v, 4) for k, v in by_model.items() if v}}
 
 
 def _window(path: Path, since, until, skip=()) -> dict:

@@ -597,6 +597,33 @@ def human_time(entries: list[dict]) -> dict | None:
     return total if any_ else None
 
 
+def model_costs(entries: list[dict]) -> None:
+    """Each entry's price, model by model (`modelUsd`), for the price's hover.
+
+    Re-read at every build like the busy time: `review-cost.json` recorded tokens per model
+    but one price for all of them. One model: the whole price is its. Several, in a Claude
+    conversation still on this disk: its window's turns, priced turn by turn. Otherwise
+    nothing — the hover then lists tokens alone rather than a guessed split."""
+    for e in entries or []:
+        models = [k for k, v in (e.get("models") or {}).items() if v]
+        if e.get("usd") is None or not models:
+            continue
+        if len(models) == 1:
+            e["modelUsd"] = {models[0]: e["usd"]}
+            continue
+        sid = str(e.get("session") or "")
+        if e.get("harness") != CLAUDE or not sid or sid.startswith("claude -p"):
+            continue
+        win = (e.get("window") or []) + [None, None]
+        lo, hi = parse(win[0]), parse(win[1])
+        path = rc().transcript(sid)
+        if path is None or not lo or not hi:
+            continue
+        got = rc()._window(path, lo, hi).get("modelCost") or {}
+        if got:
+            e["modelUsd"] = got
+
+
 #: What the harness types into a conversation on its own, never a person: a background
 #: task finishing, a skill's body loaded under its slash command, a hook's reminder.
 _HARNESS_PROMPTS = ("<task-notification>", "<system-reminder>", "<local-command-",
@@ -1921,6 +1948,8 @@ def components(root: Path, base: str, review: Path, phases: dict | None = None,
         # the field, and the store is what the window's turns are read from anyway.
         c["busySeconds"] = busy_seconds(c.get("entries"), root) if c.get("measured") else None
         c["human"] = human_time(c.get("entries")) if c.get("measured") else None
+        if c.get("measured"):
+            model_costs(c.get("entries"))
         if c.get("measured") and len(c.get("entries") or []) > 1:
             # Each session's own share, for its line under the row (the row's time is
             # their union, so these may add up to more than it).
