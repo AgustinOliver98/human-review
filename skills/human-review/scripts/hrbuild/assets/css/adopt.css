@@ -146,7 +146,3 @@ button.hrx-i[aria-pressed="true"]{background:var(--hrx-i-on);position:relative;z
 /* Moved into the explainer: the tab's own "how this was made" line. */
 .hrx-moved-away{display:none!important}
 
-/* A diagram card's (i) sits in its header, right after the source file name. */
-.diagram .head > button.hrx-i{align-self:center;margin-left:-.3rem}
-.diagram .head:has(> button.hrx-i){justify-content:flex-start}
-.diagram .head > .dgm-src:has(+ button.hrx-i){margin-left:auto}

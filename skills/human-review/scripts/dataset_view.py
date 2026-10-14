@@ -316,7 +316,7 @@ def fixtures_panel_html(fixtures: list | None, can_reset: bool, info: str = "") 
     head = ('<div class="dbfx-head adopthead"><span class="dbfx-title appenv-fixtures-to" '
             'data-tip="The datasets the demo DB can be reset to: the seed, or the seed plus '
             'a fixture">DB Fixture</span>'
-            + (f'<div class="adoptline adopt-in">{info}</div>' if info else "") + '</div>')
+            + (info or "") + '</div>')
     return ('<div class="dbfx">' + head
             + '<div class="appenv-fixtures" role="group" aria-label="DB fixtures">'
             + "".join(item(n, c) for n, c in items) + '</div></div>')

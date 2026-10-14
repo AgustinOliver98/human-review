@@ -492,7 +492,7 @@ def explain_key(piece: str, title: str = "") -> str | None:
 
 
 def explain_button(piece: str, title: str = "") -> str:
-    """The blue (i) right after the pill (a diagram card: after its source file name). `explain.js` opens its box on click."""
+    """The blue (i), always right after the pill it explains. `explain.js` opens its box on click."""
     key = explain_key(piece, title)
     if not key:
         return ""
@@ -529,7 +529,7 @@ def place_prompts(tid: str, body: str) -> str:
             if not span:
                 continue
             taken.append((hit.start(), span[1]))
-            name, title, hbtn, hat = piece, "", "", 0
+            name, title = piece, ""
             if piece is None:       # a diagram card: its piece is read off its head
                 # The whole head, balanced: since the action buttons moved into it
                 # (16fe638) it nests a `rerun-acts` div before the file name, and a
@@ -543,22 +543,17 @@ def place_prompts(tid: str, body: str) -> str:
                 b = re.search(r"<b>(.*?)</b>", inner, re.S)
                 title = html.unescape(re.sub(r"<[^>]+>", "", b.group(1))).strip() if b else ""
                 name = next((k for k, rx in DIAGRAM_KINDS if rx.search(text)), "diagram")
-                # The (i) of a diagram card sits in its header, right after the source
-                # file name (8 Oct 2026, Victor); the pill at the foot goes without it.
-                if h1:
-                    hbtn = explain_button(name, title)
-                    src = re.search(r'<(a|span) class="dgm-src"[^>]*>[^<]*</\1>', card[:h1[0]])
-                    hat = hit.start() + (src.end() if src else h1[0])
-                    if hbtn:
-                        edits.append((hat, hat, hbtn))
+                # The (i) rides the pill at the card's foot, like every other card's (Victor,
+                # 14 Oct 2026). From 8 Oct it sat in the header after the source file name,
+                # a card's height away from the button it explains.
             if how == "in":
                 cap = _last_caption(body, hit.start(), span[0])
                 if cap:             # the card ends on a caption line: the pill shares it
                     edits.append((cap, cap, '<div class="adoptfoot">'))
                     edits.append((span[0], span[0],
-                                  adopt_html(name, title, "title", explain=not hbtn) + "</div>"))
+                                  adopt_html(name, title, "title") + "</div>"))
                 else:
-                    edits.append((span[0], span[0], adopt_html(name, title, "in", explain=not hbtn)))
+                    edits.append((span[0], span[0], adopt_html(name, title, "in")))
             elif how == "title":
                 edits.append((hit.start(), hit.start(), '<div class="adopthead">'))
                 edits.append((span[1], span[1], adopt_html(

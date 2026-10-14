@@ -60,14 +60,15 @@ def _card(title, src, inner=""):
             f'<span>{src}</span></div><div class="svgbox"><svg></svg></div>{inner}</div>')
 
 
-def test_a_diagram_cards_i_sits_in_its_header_after_the_file_name_not_beside_the_pill():
+def test_a_diagram_cards_i_sits_beside_its_pill_not_in_its_header():
+    # Victor, 14 Oct 2026: the (i) goes next to the button it explains, on every card.
     card = ('<div class="diagram"><div class="head"><b>Domain Model</b>'
             '<a class="dgm-src" href="x">DomainModel.puml</a></div><div class="svgbox"></div></div>')
     out = place_prompts("data", card)
     head = out[out.index('<div class="head">'):out.index('<div class="svgbox">')]
-    assert head.count('class="hrx-i"') == 1 and head.index("</a>") < head.index('class="hrx-i"')
+    assert "hrx-i" not in head
     foot = out[out.index('<div class="adoptline'):]
-    assert "hrx-i" not in foot and "Prompt to get this" in foot
+    assert re.search(r'Prompt to get this</button><button type="button" class="hrx-i"', foot)
 
 
 def test_each_data_card_gets_its_own_button_inside_its_border_with_its_own_prompt():

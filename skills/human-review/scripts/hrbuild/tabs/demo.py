@@ -8,7 +8,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from ..shared.adopt import explain_button
+from ..shared.adopt import adopt_html
 from ..shared.commands import _app_anchor, fixtures_row_html, runtime_html
 from ..shared.fixtures import demo_fixtures
 from dataset_view import dataset_html, fixtures_panel_html
@@ -365,7 +365,10 @@ def video_html(s, out_dir: Path) -> str:
         # and fixture SQL (`dataset_view.py`), so they need no app running.
         data = dataset_html(root)
         if data or len(fixtures) > 1 or can_reset:
-            head += fixtures_panel_html(fixtures, can_reset, explain_button("behaviour.seed"))
+            head += fixtures_panel_html(fixtures, can_reset,
+                                        # the pill and its (i), as on every card: an (i)
+                                        # alone explained a button that was not there
+                                        adopt_html("behaviour.seed", how="in"))
             head += data
     # The film's title heads the transcript column, not a row of its own above the player:
     # a row across the page held two words and left the rest of it empty (Victor, 7 Oct
