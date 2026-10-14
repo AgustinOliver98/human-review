@@ -167,7 +167,7 @@ WHOLE_TAB = {"sequence": '<h2 class="tabtitle" id="sequences">Sequence diagrams<
              "complexity": '<h2 class="tabtitle cx-title"><a href="#">Cognitive</a> per</h2>',
              "logging": '<h2 class="tabtitle" id="logging-added">Uses of logging</h2>',
              # Victor, 7 Oct 2026: the cost tab got a title, and its pill left the table.
-             "cost": '<h2 class="tabtitle">Token costs</h2>',
+             "cost": '<h2 class="tabtitle">PR Cost</h2>',
              "owners": '<h2 class="tabtitle cow-title">Needs approval as per</h2>',
              "api": '<div class="apiverdict red"><span class="dot"></span>Breaking</div>',
              "dsaudit": '<h2 class="tabtitle">UX design system</h2>'}
