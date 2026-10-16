@@ -502,6 +502,13 @@ def test_the_pill_names_the_step_the_start_is_on_and_how_long_it_has_taken(page)
                                             "status": "Up 1s (health: starting)"},
                                            {"service": "db", "light": "up", "status": "Up"}]})
     assert text.startswith("Waiting for health 1/2\u2026")
+    text, _ = _phase(page, {"state": "running", "up": 1, "total": 3, "images": [],
+                            "containers": [{"service": "backend", "light": "starting",
+                                            "status": "Created"},
+                                           {"service": "db", "light": "up", "status": "Up"},
+                                           {"service": "web", "light": "starting",
+                                            "status": "Created"}]})
+    assert text.startswith("Waiting for health 1/3\u2026"), "never back to Starting"
     text, _ = _phase(page, {"state": "running", "up": 2, "total": 2, "images": [],
                             "containers": [{"service": "backend", "light": "up", "status": "Up"},
                                            {"service": "db", "light": "up", "status": "Up"}]})

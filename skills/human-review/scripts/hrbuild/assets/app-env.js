@@ -397,7 +397,7 @@
   // lines while it waits for Docker, then the images compose builds, then its containers.
   // Before any of that the host script is exporting the commit and checking Docker, which
   // compose output cannot tell apart, so it is called preparing and nothing finer.
-  function phaseOf(j) {
+  function phaseOf(j, healthSeen) {
     if (!j) return null;
     var rows = j.containers || [], imgs = j.images || [];
     if (rows.length) {
@@ -405,7 +405,9 @@
         why: 'Every container is up; the start script is about to print where the app is.'};
       // `health: starting` is a container running and waiting on its check; `Created` is
       // compose not having started it yet.
-      var waiting = rows.some(function (r) {
+      // Once a Start has said it waits for health it keeps saying so: containers compose has
+      // only just created would otherwise flip the word back to Starting, mid-climb.
+      var waiting = healthSeen || rows.some(function (r) {
         return r.light === 'starting' && /health/.test(r.status || '');
       });
       return {word: (waiting ? 'Waiting for health ' : 'Starting containers ')
@@ -430,7 +432,7 @@
 
   // What the pill says while a Start runs: the phase, how long the Start has been going,
   // and, on hover, why that step takes time and the last line the command printed.
-  var phase = null, lastLine = '', since = 0, clock = null;
+  var phase = null, lastLine = '', since = 0, clock = null, healthSeen = false;
   function elapsed() {
     var s = Math.max(0, Math.round((Date.now() - since) / 1000));
     return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
@@ -444,18 +446,21 @@
   }
   function heard(j) {
     if (!since || !j) return;
-    phase = phaseOf(j);
+    phase = phaseOf(j, healthSeen);
+    if (phase && /^Waiting for health/.test(phase.word)) healthSeen = true;
     tell();
   }
   function timing(started) {
     // The server's clock for a run this tab joined (a reload mid-Start), else the press.
     since = started ? started * 1000 : Date.now();
-    phase = null; lastLine = '';
+    phase = null; lastLine = ''; healthSeen = false;
     clearInterval(clock);
     clock = setInterval(tell, 1000);
     tell();
   }
-  function untimed() { since = 0; phase = null; lastLine = ''; clearInterval(clock); }
+  function untimed() {
+    since = 0; phase = null; lastLine = ''; healthSeen = false; clearInterval(clock);
+  }
 
   // While a command is in flight nothing else in the row may be pressed — a Stop sent
   // into the middle of a docker build is a half-torn-down instance nobody asked for —
