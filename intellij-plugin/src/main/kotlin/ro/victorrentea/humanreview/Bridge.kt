@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -47,8 +48,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 // longest-prefix routing works across windows, and the bridge then picks the project inside
 // the process by the same rule (Folders.kt).
 //
-// The same wire protocol as vscode-extension/bridge.js, route for route; the embedded browser
-// (`/open-url`) answers 501 until M3.
+// The same wire protocol as vscode-extension/bridge.js, route for route. `/open-url` shows the
+// page in the Human Review tool window (Page.kt) and answers 501 where this IDE has no JCEF, so
+// the caller falls back to the OS browser.
 
 @Service(Service.Level.APP)
 class HumanReviewBridge : Disposable {
@@ -166,9 +168,7 @@ class HumanReviewBridge : Disposable {
                 "POST" to "/open-file" -> openFile(ex)
                 "POST" to "/open-diff" -> openDiff(ex)
                 "POST" to "/review-open" -> reviewOpen(ex)
-                // M3: the review page beside the code, in an embedded browser.
-                "POST" to "/open-url" ->
-                    send(ex, 501, mapOf("ok" to false, "error" to "not yet in the IntelliJ plugin"))
+                "POST" to "/open-url" -> openUrl(ex)
                 else -> send(ex, 404, mapOf("ok" to false))
             }
         } catch (e: HttpError) {
@@ -196,6 +196,8 @@ class HumanReviewBridge : Disposable {
             "app" to "idea",
             "bridge" to "human-review",
             "ide" to ApplicationNamesInfo.getInstance().fullProductName,
+            // Which build of the plugin answers: a hot reload (deploy-local.sh) is proven by it.
+            "version" to PluginManagerCore.getPlugin(HumanReviewPlugin.ID)?.version,
             "focused" to focused,
             "folder" to folder,
             "folders" to folders,
@@ -210,7 +212,7 @@ class HumanReviewBridge : Disposable {
     // read-only. The file, the selection, and the range still highlighted with the rest muted
     // (RangeFocus.kt). `activeTab` is the selected tab's name, a text editor or not: a diff
     // (`/open-diff`) is a tab with no text editor of its own, named `Owner@cb0988f5.java ↔
-    // Owner.java`. `lastComment` is the PR comment-thread focus, which is M3.
+    // Owner.java`. `lastComment` is what the last PR-comment open did (Comment.kt).
     private fun editorState(): Map<String, Any?> = onEdt(ModalityState.any()) {
         val p = lastFocusedProject()
         val ed = p?.let { FileEditorManager.getInstance(it).selectedTextEditor }
@@ -229,7 +231,7 @@ class HumanReviewBridge : Disposable {
             "activeFile" to ed?.virtualFile?.path,
             "activeTab" to tab,
             "selection" to selection,
-            "lastComment" to null,
+            "lastComment" to CommentNotice.lastResult(),
             "rangeFocus" to RangeFocus.active(),
         )
     }
@@ -298,6 +300,44 @@ class HumanReviewBridge : Disposable {
 
     private fun recentTarget(): Project? = Ide.recentTarget()
 
+    private fun isTrue(body: JsonObject, k: String) =
+        body.get(k)?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } == true
+
+    /** `comment: true` with its line (`commentLine`, else the reference's own) and the comment's
+     *  GitHub URL (`commentUrl`), or null when the click is not about a PR comment. */
+    private fun commentAim(body: JsonObject, line: Int): CommentAim? {
+        if (!isTrue(body, "comment")) return null
+        val at = RangeSpan.num(body.raw("commentLine"))?.takeIf { it >= 1 && it % 1.0 == 0.0 }?.toInt() ?: line
+        return CommentAim(at, body.str("commentUrl")?.ifEmpty { null })
+    }
+
+    // Show a URL in the Human Review tool window, beside the code (Page.kt): the review page,
+    // when the run that built it is in this IDE's terminal. http(s) only, in bridge.js's words.
+    // `root` (optional, a path in the checkout) picks the project window, the way `/command`'s
+    // `uri` does; without it, the project just acted on, else the last-focused one.
+    // `preserveFocus` (default true, as in VS Code): the caller is a script in a terminal of
+    // this IDE, and stealing the caret would land the next thing typed in the browser. `beside`
+    // is accepted for the wire format's sake: a tool window is beside the code by construction.
+    // No JCEF here: 501, and the caller opens the OS browser instead.
+    private fun openUrl(ex: HttpExchange) {
+        val body = json(ex)
+        val target = body.str("url") ?: ""
+        if (!ReviewPage.isHttp(target)) return send(ex, 400, mapOf("ok" to false, "error" to ReviewPage.HTTP_ONLY))
+        val view = PageView.get()
+        if (!view.supported()) {
+            return send(ex, 501, mapOf("ok" to false, "error" to "no embedded browser in this IDE (JCEF is not available)"))
+        }
+        val root = body.str("root")?.takeIf { it.isNotEmpty() && Path.of(it).isAbsolute }
+        val project = root?.let { Folders.ownerProject(it) } ?: recentTarget() ?: onEdt(ModalityState.any()) { lastFocusedProject() }
+            ?: return send(ex, 409, mapOf("ok" to false, "error" to "no project is open"))
+        val focus = body.isFalse("preserveFocus")
+        onEdt {
+            view.show(project, target, focus)
+            if (focus) raise(project)
+        }
+        send(ex, 200, mapOf("ok" to true, "url" to target, "folder" to firstFolder(project), "view" to "tool-window"))
+    }
+
     // Open a file at a line (or a range, `endLine`) in the project that owns it, and raise that
     // project's window (Ide.open).
     private fun openFile(ex: HttpExchange) {
@@ -308,7 +348,7 @@ class HumanReviewBridge : Disposable {
         val endLine = body.raw("endLine")
         val warn = body.str("warn")?.takeIf { it.isNotEmpty() }
         val focus = !body.isFalse("focus")
-        // `comment: true` (focus the PR comment thread on the line) is M3: accepted, ignored.
+        val comment = commentAim(body, line)
 
         // The owner by longest prefix; a file no project owns still opens, in the window the
         // reader was last in — the same as VS Code opening any absolute path it is handed.
@@ -321,6 +361,7 @@ class HumanReviewBridge : Disposable {
             ?: return send(ex, 404, mapOf("ok" to false, "error" to "cannot open $file in an editor", "path" to file))
         val out = linkedMapOf<String, Any?>("ok" to true, "path" to opened.path, "line" to opened.line)
         if (opened.ranged) out["endLine"] = RangeSpan.num(endLine)?.toInt()
+        if (comment != null) out["comment"] = CommentNotice.offer(project, opened.path, comment.line, comment.url)
         send(ex, 200, out)
     }
 
@@ -350,8 +391,9 @@ class HumanReviewBridge : Disposable {
         val ref = ReviewRef(
             file = body.str("file") ?: "", line = body.raw("line"), endLine = body.raw("endLine"),
             sha = body.str("sha") ?: "", root = body.str("root") ?: "", branch = body.str("branch") ?: "",
-            comment = body.get("comment")?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } == true,
+            comment = isTrue(body, "comment"),
             commentLine = body.raw("commentLine"),
+            commentUrl = body.str("commentUrl"),
         )
         val (status, out) = onEdtBusy { ReviewOpen.open(ref) }
         send(ex, status, out)

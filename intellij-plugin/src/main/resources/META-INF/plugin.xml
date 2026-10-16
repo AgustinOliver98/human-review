@@ -22,5 +22,18 @@
 
         <!-- jetbrains://idea/human-review/{open,diff,review-open}?… — a page read off disk (Links.kt). -->
         <jbProtocolCommand implementation="ro.victorrentea.humanreview.HumanReviewProtocolCommand"/>
+
+        <!-- The review page beside the code, in JCEF (Page.kt): no stripe button until a page is shown. -->
+        <toolWindow id="Human Review" anchor="right" icon="AllIcons.General.Web"
+                    factoryClass="ro.victorrentea.humanreview.PageToolWindowFactory"/>
+        <applicationService serviceInterface="ro.victorrentea.humanreview.PageView"
+                            serviceImplementation="ro.victorrentea.humanreview.JcefPageView"/>
     </extensions>
+
+    <!-- Updated without a restart (Lifecycle.kt): state put into editors is taken out before the
+         unload, and a plugin loaded into a running IDE starts its bridge. -->
+    <applicationListeners>
+        <listener class="ro.victorrentea.humanreview.HumanReviewPluginListener"
+                  topic="com.intellij.ide.plugins.DynamicPluginListener"/>
+    </applicationListeners>
 </idea-plugin>

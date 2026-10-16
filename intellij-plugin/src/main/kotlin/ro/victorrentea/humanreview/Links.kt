@@ -37,7 +37,7 @@ import java.nio.file.Path
 
 /** What a link asks for, parsed and nothing else — the part a test can hold. */
 sealed interface LinkRequest {
-    data class Open(val file: String, val line: Int, val endLine: String?) : LinkRequest
+    data class Open(val file: String, val line: Int, val endLine: String?, val comment: CommentAim? = null) : LinkRequest
     data class Diff(val file: String, val base: String, val line: Int) : LinkRequest
     data class ReviewOpen(val ref: ReviewRef) : LinkRequest
     data class Unknown(val target: String) : LinkRequest
@@ -51,13 +51,21 @@ object Links {
     /** `target` is the path segment after the command (`open`, `diff`, `review-open`); the
      *  parameters arrive percent-decoded, a path with spaces in it included. */
     fun parse(target: String?, q: Map<String, String>): LinkRequest = when (target?.trim('/')) {
-        "open" -> LinkRequest.Open(q["file"] ?: "", line(q["line"]), q["endLine"]?.ifEmpty { null })
+        "open" -> line(q["line"]).let { at -> LinkRequest.Open(q["file"] ?: "", at, q["endLine"]?.ifEmpty { null }, commentAim(q, at)) }
         "diff" -> LinkRequest.Diff(q["file"] ?: "", q["base"] ?: "", line(q["line"]))
         "review-open" -> LinkRequest.ReviewOpen(ReviewRef(
             file = q["file"] ?: "", line = q["line"], endLine = q["endLine"]?.ifEmpty { null },
-            sha = q["sha"] ?: "", root = q["root"] ?: "", branch = q["branch"] ?: ""))
+            sha = q["sha"] ?: "", root = q["root"] ?: "", branch = q["branch"] ?: "",
+            comment = q["comment"] == "1" || q["comment"] == "true", commentLine = q["commentLine"],
+            commentUrl = q["commentUrl"]?.ifEmpty { null }))
         else -> LinkRequest.Unknown(target ?: "")
     }
+
+    /** A PR comment's card, as the served page sends it: `comment=1`, `commentLine`, `commentUrl`. */
+    private fun commentAim(q: Map<String, String>, line: Int): CommentAim? =
+        if (q["comment"] != "1" && q["comment"] != "true") null
+        else CommentAim(RangeSpan.num(q["commentLine"])?.takeIf { it >= 1 && it % 1.0 == 0.0 }?.toInt() ?: line,
+            q["commentUrl"]?.ifEmpty { null })
 
     /** Who owns `file`: a key from `here` (this IDE's projects) or `there` (other bridges),
      *  longest prefix over both spellings. Here first, so an equal claim stays in this IDE. */
@@ -72,7 +80,7 @@ object Links {
 
     fun handle(req: LinkRequest, registry: Path = Registry.DIR) {
         when (req) {
-            is LinkRequest.Open -> openPlainRouted(req.file, req.line, req.endLine, registry)
+            is LinkRequest.Open -> openPlainRouted(req.file, req.line, req.endLine, registry, req.comment)
             is LinkRequest.Diff -> diff(req, registry)
             is LinkRequest.ReviewOpen -> reviewOpen(req.ref, registry)
             is LinkRequest.Unknown -> warn("Human Review: nothing handles /${req.target}")
@@ -132,17 +140,23 @@ object Links {
      * window belonging to another checkout. So the owner is resolved first here too, and only a
      * path nobody owns is opened in the window the reader was last in.
      */
-    fun openPlainRouted(file: String, line: Int, endLine: String?, registry: Path = Registry.DIR) {
+    fun openPlainRouted(file: String, line: Int, endLine: String?, registry: Path = Registry.DIR, comment: CommentAim? = null) {
         if (file.isEmpty() || !File(file).isAbsolute) return
         val owner = ownerOf(file, registry)
         if (owner is Owner.There) {
-            val res = Peers.call(owner.peer.peer, "POST", "/open-file",
-                mapOf("path" to file, "line" to line, "endLine" to endLine, "focus" to true))
+            val body = linkedMapOf<String, Any?>("path" to file, "line" to line, "endLine" to endLine, "focus" to true)
+            if (comment != null) {
+                body["comment"] = true
+                body["commentLine"] = comment.line
+                comment.url?.let { body["commentUrl"] = it }
+            }
+            val res = Peers.call(owner.peer.peer, "POST", "/open-file", body)
             if (res?.second?.get("ok")?.let { it.isJsonPrimitive && it.asBoolean } == true) return
         }
         val project = (owner as? Owner.Here)?.project ?: Ide.onEdt(ModalityState.any()) { Ide.lastFocusedProject() } ?: return
         val vf = Ide.findFile(file) ?: return  // the file moved; a warning above already said something
-        runCatching { Ide.open(project, vf, line, endLine, null, true) }
+        val opened = runCatching { Ide.open(project, vf, line, endLine, null, true) }.getOrNull() ?: return
+        comment?.let { CommentNotice.offer(project, opened.path, it.line, it.url) }
     }
 
     /** A guide read off disk has nowhere to show "no window has this", so it is said here, in
@@ -151,7 +165,8 @@ object Links {
         val (status, done) = ReviewOpen.open(ref, registry)
         if (status == 200) return
         // A guide built before it carried its commit cannot be checked; it opens as it always did.
-        if (done["error"] == "bad-request") return openPlainRouted(ref.file, line(ref.line as String?), ref.endLine as String?, registry)
+        if (done["error"] == "bad-request") return line(ref.line as String?).let { at ->
+            openPlainRouted(ref.file, at, ref.endLine as String?, registry, ref.commentAim(at)) }
         val message = done["message"] as? String ?: "could not open ${File(ref.file).name}"
         val prompt = done["prompt"] as? String ?: return warn("Human Review: $message")
         notify(message, NotificationType.ERROR, prompt)

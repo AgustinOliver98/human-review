@@ -143,8 +143,13 @@ object ReviewLocate {
 /** The request `/review-open` and `jetbrains://…/review-open` both carry. */
 data class ReviewRef(
     val file: String, val line: Any?, val endLine: Any?, val sha: String, val root: String, val branch: String,
-    val comment: Boolean = false, val commentLine: Any? = null,
-)
+    val comment: Boolean = false, val commentLine: Any? = null, val commentUrl: String? = null,
+) {
+    /** The PR comment this click is about, or null: its line, else the reference's own. */
+    fun commentAim(line: Int): CommentAim? = if (!comment) null else CommentAim(
+        RangeSpan.num(commentLine)?.takeIf { it >= 1 && it % 1.0 == 0.0 }?.toInt() ?: line,
+        commentUrl?.ifEmpty { null })
+}
 
 /** The IDE half: which windows exist, and the open itself. */
 object ReviewOpen {
@@ -187,7 +192,9 @@ object ReviewOpen {
                 } catch (e: Exception) {
                     return 409 to mapOf("ok" to false, "error" to "open-failed", "message" to (e.message ?: "$e"))
                 }
-                if (opened == null) failed else 200 to ok
+                if (opened == null) return failed
+                ref.commentAim(line)?.let { ok["comment"] = CommentNotice.offer(w.project, opened.path, it.line, it.url) }
+                200 to ok
             }
             is Where.There -> {
                 val body = linkedMapOf<String, Any?>("path" to hit.target, "line" to line, "endLine" to endLine,
@@ -195,6 +202,7 @@ object ReviewOpen {
                 if (ref.comment) {
                     body["comment"] = true
                     RangeSpan.num(ref.commentLine)?.takeIf { it >= 1 && it % 1.0 == 0.0 }?.let { body["commentLine"] = it.toInt() }
+                    ref.commentUrl?.takeIf { it.isNotEmpty() }?.let { body["commentUrl"] = it }
                 }
                 val res = Peers.call(w.peer.peer, "POST", "/open-file", body, timeoutMs = 8000)
                 val said = res?.second

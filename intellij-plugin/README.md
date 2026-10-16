@@ -24,48 +24,91 @@ twin of [`vscode-extension/`](../vscode-extension), speaking the same wire proto
   served: green (served, on the reviewed commit), amber (served, checkout on another commit),
   grey (a review on disk, no server — click to start one and open the page). Hidden when the
   project has no `.human-review/review.html`.
-
-Not yet (M3): the page in an embedded browser (`/open-url` answers `501`) and PR comment threads
-(`comment: true` is accepted and ignored).
+- **The page beside the code**, in a *Human Review* tool window on the right — an embedded
+  Chromium (JCEF). `serve-review.py` started from IntelliJ's terminal shows a new review there
+  (`/open-url`), and a click on the status-bar item opens it there too. No stripe button until a
+  page has been shown. An IDE without JCEF uses the OS browser (`/open-url` answers `501`).
+- **PR comments**: a card the review posted to the pull request opens on its lines, then a
+  notification says *This card is a PR comment* with an **Open on GitHub** action for its thread —
+  opened only when you click it. (VS Code expands the thread in the editor; IntelliJ has no public
+  API for that.) The bridge answers `comment: "notified"`, or `"none"` when no GitHub URL came with
+  the click; `/editor-state` reports the last one as `lastComment`.
+- **Installs and updates without a restart** — a dynamic plugin (below).
 
 ## How it connects
 
 The IDE listens on one random loopback port **per process** (IntelliJ hosts every project
 window in one JVM, unlike VS Code's one extension host per window) and publishes
 `{"app":"idea", port, token, pid}` in a `0600` file `~/.human-review/ide/idea-<pid>.json`,
-deleted on exit. Only `127.0.0.1`, only callers sending the token in `x-relay-token`, and only
-a short allowlist: `/ping`, `/editor-state`, `/open-file`, `/open-diff`, `/review-open`, and
-`/command` with `workbench.action.focusWindow`, `humanReview.status` or `revealInExplorer`.
+deleted on exit and on unload. Only `127.0.0.1`, only callers sending the token in
+`x-relay-token`, and only a short allowlist: `/ping` (with the plugin's `version`),
+`/editor-state`, `/open-file`, `/open-diff`, `/review-open`, `/open-url` (`{url, root?,
+preserveFocus?}`; http(s) only), and `/command` with `workbench.action.focusWindow`,
+`humanReview.status` or `revealInExplorer`.
 
 ## Install
 
 Build, then **Settings → Plugins → ⚙ → Install Plugin from Disk…** →
-`intellij-plugin/build/distributions/human-review-0.2.0.zip`, and restart the IDE when asked.
+`intellij-plugin/build/distributions/human-review-0.3.0.zip`. No restart: the plugin loads into
+the running IDE.
 
 ```sh
 cd intellij-plugin
-./gradlew buildPlugin          # → build/distributions/human-review-0.2.0.zip
+./gradlew buildPlugin          # → build/distributions/human-review-0.3.0.zip
 ```
+
+**`jetbrains://` links need JetBrains Toolbox.** A page read off disk (no review server) reaches
+the plugin through `jetbrains://idea/human-review/…` links. macOS hands the `jetbrains://` scheme
+to Toolbox, which passes it to the IntelliJ it manages; an IntelliJ installed without Toolbox
+registers only `idea://`, and those clicks go nowhere. Served pages do not need it.
+
+## Updates without a restart
+
+The plugin is dynamic — every extension point it uses can be loaded and unloaded live, it has
+no components, and `verifyPlugin` fails the build on anything that is not (`NOT_DYNAMIC`). On
+unload it closes its port, deletes `idea-<pid>.json`, and takes its highlights, the edited mark
+and its notification back out of the editors (`Lifecycle.kt`); a plugin loaded into a running IDE
+starts its bridge for the projects already open.
+
+- **Colleagues** get new versions from the Marketplace like any plugin: *Settings → Plugins →
+  Updates → Update*, applied live without a restart prompt; or tick *Update plugins
+  automatically* (Settings → Appearance & Behavior → System Settings → Updates) and they arrive
+  by themselves.
+- **Developing it**: `./deploy-local.sh` rebuilds and swaps the jar into the running IntelliJ,
+  which reloads it in a second or two. It needs `-Didea.auto.reload.plugins=true` in
+  *Help → Edit Custom VM Options…* (the IDE then reloads a plugin whose jar *content* changes),
+  and the plugin installed from disk once. It keeps the installed jar's file name (a new name is
+  ignored), stages the copy outside `lib/` and renames it into place (never an overwrite: the
+  loaded classloader still reads the old file), then watches `idea.log`: ✅ on
+  `- load plugin 'Human Review'`, exit 3 on `failed to unload` (restart needed — something of the
+  old version is still referenced). `IDE_CONFIG=…` picks the IDE when several have it installed.
 
 ## Settings
 
-**Settings → Tools → Human Review → serve-review.py**: absolute path to the script the status
-item starts a server with. Empty: the copy installed with the `human-review` Claude Code plugin,
-else `~/workspace/human-review`.
+**Settings → Tools → Human Review**
+
+- **serve-review.py**: absolute path to the script the status item starts a server with. Empty:
+  the copy installed with the `human-review` Claude Code plugin, else `~/workspace/human-review`.
+- **Open the review page in the Human Review tool window** (default on): where a click on the
+  status-bar item opens the page. Off, or an IDE without JCEF: the OS browser.
 
 ## Develop
 
 ```sh
 ./gradlew test                 # the pure parts, plus a headless IDE (HeadlessIdeTest): the bridge's
-                               # routes against a project with a git repo, the diff viewer replaced
-                               # by a recorder, jetbrains:// links through the platform's own entry
-./gradlew verifyPlugin         # against the same IC 2025.1 the build uses
+                               # routes against a project with a git repo, the diff viewer and the
+                               # page view replaced by recorders, jetbrains:// links through the
+                               # platform's own entry, the unload taking everything back out
+./gradlew verifyPlugin         # against IC 2024.3 (sinceBuild) and the 2025.1 the build uses
+./deploy-local.sh              # into the running IntelliJ, no restart (above)
 ./gradlew runIde --args=/path/to/a/checkout
 ```
 
 Tests never touch `~/.human-review/ide/`: `-Dhuman-review.registry.dir` points the registry at
 `build/test-registry`, a test bridge is started only by the test that wants one, and no window
-is raised in a test run.
+is raised in a test run. JCEF is not started in a test either: a headless JVM has none, so the
+`501` path is the real one, and the tool window is a recorder (`PageView`) — the browser itself is
+the one part only a real IDE shows.
 
 `runIde` passes `-Didea.trust.all.projects=true`: the "Trust this project?" modal would
 otherwise hold the EDT, and every bridge route that needs it would answer 503.

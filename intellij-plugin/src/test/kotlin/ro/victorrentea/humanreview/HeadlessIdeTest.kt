@@ -18,6 +18,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.JBProtocolCommand
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -239,5 +240,185 @@ class HeadlessIdeTest : HeavyPlatformTestCase() {
         link("idea/human-review/review-open?file=${q(path("src/Owner.java"))}&line=4&endLine=6&sha=$base" +
             "&root=${q(repo.dir.toString())}&branch=feature")
         assertEquals(mapOf("path" to path("src/Owner.java"), "line" to 4, "endLine" to 6), RangeFocus.active())
+    }
+
+    // ------------------------------------------------------------------ /open-url
+
+    /** What `PageView.show` was asked, instead of a Chromium in a tool window. */
+    private class PageRecorder(val jcef: Boolean) : PageView {
+        val shown = CopyOnWriteArrayList<Triple<Project, String, Boolean>>()
+        override fun supported() = jcef
+        override fun show(project: Project, url: String, focus: Boolean) { shown += Triple(project, url, focus) }
+    }
+
+    private fun pages(jcef: Boolean = true) = PageRecorder(jcef).also {
+        ApplicationManager.getApplication().replaceService(PageView::class.java, it, testRootDisposable)
+    }
+
+    fun `test open-url refuses anything but http in bridge-js words`() {
+        val rec = pages()
+        for (url in listOf("file:///tmp/review.html", "javascript:alert(1)", "", "ftp://x")) {
+            val (code, body) = post("/open-url", mapOf("url" to url))
+            assertEquals(url, 400, code)
+            assertEquals(ReviewPage.HTTP_ONLY, body["error"].asString)
+        }
+        assertTrue(rec.shown.isEmpty())
+    }
+
+    fun `test open-url without JCEF is a 501, so the caller opens the OS browser`() {
+        // The real view: a headless test JVM has no Chromium, which is exactly an IDE without JCEF.
+        assertFalse("headless: no JCEF", PageView.get().supported())
+        val (code, body) = post("/open-url", mapOf("url" to "http://127.0.0.1:8765/review.html"))
+        assertEquals(body.toString(), 501, code)
+        assertFalse(body["ok"].asBoolean)
+    }
+
+    fun `test open-url shows the page in the owning project, keeping the caret unless asked`() {
+        val rec = pages()
+        val (code, body) = post("/open-url", mapOf("url" to "http://127.0.0.1:8765/review.html",
+            "root" to repo.dir.resolve(".human-review").toString(), "beside" to true))
+        assertEquals(body.toString(), 200, code)
+        assertEquals("tool-window", body["view"].asString)
+        assertEquals(Triple(project, "http://127.0.0.1:8765/review.html", false), rec.shown.single())
+        post("/open-url", mapOf("url" to "https://example.org/r", "preserveFocus" to false))
+        assertEquals(Triple(project, "https://example.org/r", true), rec.shown.last())
+    }
+
+    // ------------------------------------------------------------------ PR comments
+
+    private val prComment = "https://github.com/victorrentea/petclinic/pull/53#discussion_r1234"
+
+    private fun lastComment(): JsonObject? = offEdt {
+        val (port, token) = bridge()
+        val c = URI("http://127.0.0.1:$port/editor-state").toURL().openConnection() as HttpURLConnection
+        c.setRequestProperty("x-relay-token", token)
+        JsonParser.parseString(c.inputStream.use { String(it.readAllBytes()) }).asJsonObject
+    }["lastComment"]?.takeIf { it.isJsonObject }?.asJsonObject
+
+    fun `test open-file on a PR comment lands on the lines and offers the thread on GitHub`() {
+        val (code, body) = post("/open-file", mapOf("path" to path("src/Owner.java"), "line" to 10, "endLine" to 12,
+            "comment" to true, "commentLine" to 12, "commentUrl" to prComment))
+        assertEquals(body.toString(), 200, code)
+        assertEquals("notified", body["comment"].asString)
+        assertEquals(mapOf("path" to path("src/Owner.java"), "line" to 10, "endLine" to 12), RangeFocus.active())
+        val last = lastComment()!!
+        assertEquals("notified", last["comment"].asString)
+        assertEquals(12, last["line"].asInt)
+        assertEquals(prComment, last["url"].asString)
+    }
+
+    fun `test a comment with no GitHub URL, or another URL, shows nothing`() {
+        for (url in listOf(null, "javascript:alert(1)", "https://evil.example/pull/1", "file:///etc/passwd")) {
+            val (code, body) = post("/open-file", mapOf("path" to path("src/Owner.java"), "line" to 4,
+                "comment" to true, "commentUrl" to url))
+            assertEquals(200, code)
+            assertEquals("$url", "none", body["comment"].asString)
+            assertTrue(lastComment()!!["url"].isJsonNull)
+        }
+        val (_, plain) = post("/open-file", mapOf("path" to path("src/Owner.java"), "line" to 4))
+        assertNull("no comment asked, none answered", plain["comment"])
+    }
+
+    fun `test review-open on a PR comment offers the thread too`() {
+        val (code, body) = post("/review-open", mapOf("file" to path("src/Owner.java"), "line" to 3, "sha" to base,
+            "root" to repo.dir.toString(), "comment" to true, "commentUrl" to prComment))
+        assertEquals(body.toString(), 200, code)
+        assertEquals("notified", body["comment"].asString)
+        assertEquals(3, lastComment()!!["line"].asInt)
+    }
+
+    fun `test a jetbrains open link carries the comment`() {
+        link("idea/human-review/open?file=${q(path("src/Owner.java"))}&line=7&comment=1&commentLine=8&commentUrl=${q(prComment)}")
+        assertEquals(8, lastComment()!!["line"].asInt)
+        assertEquals(prComment, lastComment()!!["url"].asString)
+    }
+
+    // ------------------------------------------------------------------ the range flake
+
+    private fun pump(ms: Long) {
+        val end = System.currentTimeMillis() + ms
+        while (System.currentTimeMillis() < end) {
+            PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+            Thread.sleep(10)
+        }
+    }
+
+    private fun editorOn(rel: String): Pair<com.intellij.openapi.editor.Editor, com.intellij.openapi.vfs.VirtualFile> {
+        val vf = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(Path.of(path(rel)))!!
+        return FileEditorManager.getInstance(project).openTextEditor(OpenFileDescriptor(project, vf), true)!! to vf
+    }
+
+    // In the IDE a cold file's editor loads in the background, and the open's navigation is
+    // deferred until it has (AsyncEditorLoader). In a test run the loader is synchronous, so the
+    // late navigation is played here by hand: `navigateIn` is exactly what it runs, and it moves
+    // the caret and removes the selection.
+    fun `test a navigation landing past the guard drops a focus put on an editor already loaded`() {
+        val (editor, vf) = editorOn("src/Owner.java")
+        assertTrue(RangeFocus.focus(project, editor, 10, 12) { it.run() })
+        pump(RangeSpan.GUARD_MS + 150)
+        OpenFileDescriptor(project, vf, 9, 0).navigateIn(editor)
+        assertNull("this is the M2 flake: the open's own late move read as the reader's", RangeFocus.active())
+    }
+
+    /** The loader's queue of delayed actions, for an editor that is "still loading". */
+    private class Loader {
+        val queued = mutableListOf<Runnable>()
+        fun load() { queued.toList().forEach { it.run() }; queued.clear() }
+    }
+
+    fun `test a focus on an editor still loading waits for it, and survives the deferred navigation`() {
+        val (editor, vf) = editorOn("src/Owner.java")
+        val loader = Loader()
+        // The open queued its navigation first; the focus queues behind it.
+        loader.queued += Runnable { OpenFileDescriptor(project, vf, 9, 0).navigateIn(editor) }
+        assertTrue("a range is promised at once", RangeFocus.focus(project, editor, 10, 12) { loader.queued += it })
+        assertNull("nothing painted on an editor still loading", RangeFocus.active())
+        pump(RangeSpan.GUARD_MS + 150)
+        loader.load()
+        pump(50)
+        assertEquals(mapOf("path" to path("src/Owner.java"), "line" to 10, "endLine" to 12), RangeFocus.active())
+        pump(RangeSpan.GUARD_MS + 150)
+        assertNotNull("still there once the guard is long past", RangeFocus.active())
+        val sel = editor.selectionModel
+        assertEquals(9, editor.document.getLineNumber(sel.selectionStart))
+        assertEquals(11, editor.document.getLineNumber(sel.selectionEnd))
+    }
+
+    fun `test the next open cancels a focus still waiting for its editor`() {
+        val (editor, _) = editorOn("src/Owner.java")
+        val loader = Loader()
+        RangeFocus.focus(project, editor, 10, 12) { loader.queued += it }
+        RangeFocus.clear()
+        loader.load()
+        assertNull(RangeFocus.active())
+    }
+
+    fun `test the real loader runs the focus on a loaded editor at once`() {
+        val (editor, _) = editorOn("src/Owner.java")
+        assertTrue(RangeFocus.focus(project, editor, 10, 12))
+        assertEquals(mapOf("path" to path("src/Owner.java"), "line" to 10, "endLine" to 12), RangeFocus.active())
+    }
+
+    // ------------------------------------------------------------------ dynamic unload
+
+    fun `test unloading the plugin closes the port, unpublishes, and takes the highlight off`() {
+        val (port, _) = bridge()
+        val entry = registry.resolve(Registry.fileName(ProcessHandle.current().pid()))
+        assertTrue(Files.exists(entry))
+        val (editor, _) = editorOn("src/Owner.java")
+        val before = editor.markupModel.allHighlighters.size
+        RangeFocus.focus(project, editor, 10, 12)
+        EditedMark.mark(editor, 9, "edited")
+        assertTrue(editor.markupModel.allHighlighters.size > before)
+
+        val me = com.intellij.ide.plugins.PluginManagerCore.getPlugin(HumanReviewPlugin.ID)
+        assertNotNull("the plugin under test is loaded from plugin.xml", me)
+        HumanReviewPluginListener().beforePluginUnload(me!!, true)
+
+        assertFalse("idea-<pid>.json is gone", Files.exists(entry))
+        assertTrue("the port is closed", runCatching { java.net.Socket("127.0.0.1", port).close() }.isFailure)
+        assertNull(RangeFocus.active())
+        assertEquals("every highlighter of ours is off the editor", before, editor.markupModel.allHighlighters.size)
+        assertNull(CommentNotice.lastResult())
     }
 }

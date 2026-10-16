@@ -1,6 +1,5 @@
 package ro.victorrentea.humanreview
 
-import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -45,7 +44,8 @@ import javax.swing.SwingConstants
 // does without — a checkout or a commit shows on the next tick, or when the IDE is re-focused.)
 //
 // A click on grey starts the server (`serve-review.py … --no-open`, which reuses a live one on
-// the same folder), then opens the page exactly like a click on green.
+// the same folder), then opens the page exactly like a click on green — in the Human Review
+// tool window, or the OS browser when the setting says so or the IDE has no JCEF (Page.kt).
 
 @Service(Service.Level.PROJECT)
 class ReviewStatus(private val project: Project) : Disposable {
@@ -121,7 +121,7 @@ class ReviewStatus(private val project: Project) : Disposable {
     fun click() {
         val s = current
         if (s.state == ReviewState.ON || s.state == ReviewState.NEAR) {
-            BrowserUtil.browse(s.url!!)
+            ReviewPage.open(project, s.url!!)
             return
         }
         if (s.state != ReviewState.OFF || starting) return
@@ -136,7 +136,7 @@ class ReviewStatus(private val project: Project) : Disposable {
                 starting = false
                 idle = 0
                 tick()  // marker verified now → green/amber without waiting for the timer
-                BrowserUtil.browse(url)
+                ReviewPage.open(project, url)
             } catch (e: Exception) {
                 starting = false
                 repaint()
@@ -188,6 +188,10 @@ class ReviewStatusWidget(private val project: Project) : CustomStatusBarWidget {
     }
 
     init {
+        // A plugin loaded into a running IDE (installed, or updated without a restart) gets a
+        // widget per open frame but no project-opened startup activity: the bridge starts here
+        // too. Idempotent — one listener per process however many widgets ask.
+        if (!ApplicationManager.getApplication().isUnitTestMode) service<HumanReviewBridge>().start()
         val status = ReviewStatus.of(project)
         status.onChange(this, ::paint)
         status.start()
@@ -234,7 +238,8 @@ class ReviewStatusWidget(private val project: Project) : CustomStatusBarWidget {
                 "Human Review — served on :${s.port}, other commit<br><br>$title" +
                     "Reviewing $reviewed, but this checkout is on $co: " +
                     "links in the page open only files unchanged since.<br><br>"
-            } + "Click: open ${esc(s.url ?: "")} in the browser."
+            } + "Click: open ${esc(s.url ?: "")} " +
+                (if (ReviewPage.target() == PageTarget.TOOL_WINDOW) "in the Human Review tool window." else "in the browser.")
         }
         label.toolTipText = "<html>$tip</html>"
         label.isVisible = true

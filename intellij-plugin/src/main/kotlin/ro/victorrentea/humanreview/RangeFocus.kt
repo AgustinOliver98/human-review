@@ -48,6 +48,16 @@ import com.intellij.ui.ColorUtil
 // review page keeps it: the reader is reading the page against the code, which is exactly
 // when the highlight is wanted.
 //
+// **Not before the editor has loaded.** A file opened cold is a TextEditor whose contents load
+// in the background; the open's own navigation (`OpenFileDescriptor` to the first line) is then
+// *delayed* until loading ends, and when it runs it moves the caret and removes the selection
+// (`OpenFileDescriptor.navigateIn` → `removeSelection()`). Landing past the 400 ms guard, that
+// read as the reader's own move and dropped the focus a moment after it appeared — about one
+// ranged open in six in M2, the cold ones. So the focus is queued with
+// `FileEditorManager.runWhenLoaded`: at once on a loaded editor, else among the loader's delayed
+// actions — *after* the navigation queued by the open — so it selects, highlights and mutes over
+// a caret nobody is going to move again.
+//
 // The pure part (which lines to mute, whether a selection event is the reader's) lives in
 // `RangeSpan`, so plain JUnit can test it without an IDE.
 
@@ -124,8 +134,14 @@ object RangeFocus {
     @Volatile
     private var current: Current? = null
 
-    /** Drop the current focus, if any: its highlighters off its editor, its listeners gone. */
+    /** Bumped by every focus and every clear: a focus queued on an editor still loading lands
+     *  only if nothing replaced or cleared it meanwhile. */
+    private var generation = 0L
+
+    /** Drop the current focus, if any: its highlighters off its editor, its listeners gone —
+     *  and a focus still waiting for its editor, which then never lands. */
     fun clear() {
+        generation++
         val c = current ?: return
         current = null
         Disposer.dispose(c.listeners)
@@ -136,10 +152,19 @@ object RangeFocus {
     /** Select, reveal, highlight and mute `line..endLine` (1-based) in `editor`. With no range
      *  (only a line, or a span `span()` rejects) it only clears an earlier focus, so a
      *  single-line open behaves exactly as before. Returns whether a range was focused. */
-    fun focus(project: Project, editor: Editor, line: Any?, endLine: Any?): Boolean {
+    fun focus(project: Project, editor: Editor, line: Any?, endLine: Any?,
+              whenLoaded: (Runnable) -> Unit = { FileEditorManager.getInstance(project).runWhenLoaded(editor, it) }): Boolean {
         clear()
+        val (start, end) = RangeSpan.span(line, endLine, editor.document.lineCount) ?: return false
+        val mine = generation
+        whenLoaded(Runnable {
+            if (generation == mine && !editor.isDisposed && !project.isDisposed) apply(project, editor, start, end)
+        })
+        return true
+    }
+
+    private fun apply(project: Project, editor: Editor, start: Int, end: Int) {
         val doc = editor.document
-        val (start, end) = RangeSpan.span(line, endLine, doc.lineCount) ?: return false
 
         val selStart = doc.getLineStartOffset(start)
         val selEnd = doc.getLineEndOffset(end)
@@ -219,7 +244,6 @@ object RangeFocus {
         }, listeners)
 
         current = c
-        return true
     }
 
     /** Which range is focused right now (1-based, inclusive), or null — for the bridge's
@@ -230,8 +254,9 @@ object RangeFocus {
     }
 
     /** For the next `ms`, a selection change that is not a click or a key is the bridge's own,
-     *  not the reader's. Extends, never shortens; a no-op when nothing is focused. Unused until
-     *  the PR comment-thread focus lands (M2), kept so it ports as one piece. */
+     *  not the reader's. Extends, never shortens; a no-op when nothing is focused. Unused here:
+     *  IntelliJ has no comment thread to move the caret onto (Comment.kt) — kept so range-focus.js
+     *  ports as one piece. */
     fun hold(ms: Long) {
         val c = current ?: return
         c.heldUntil = maxOf(c.heldUntil, System.currentTimeMillis() + ms)

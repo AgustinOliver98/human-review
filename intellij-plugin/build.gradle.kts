@@ -44,14 +44,38 @@ intellijPlatform {
         }
         description = """
             The IntelliJ end of a <a href="https://github.com/victorrentea/human-review">/human-review</a>
-            page: every <code>File.java:49-51</code> reference in the review opens in the project
-            window that has the reviewed checkout, as a highlighted range with the rest of the file
-            muted — or, for a fix, as a before/after diff. A reference opens only where the file is
-            the version that was reviewed, and says so plainly when no window has it. A
-            <b>human-review</b> status-bar item says whether this checkout's review is being
-            served, and serves it on a click.
+            page — a code review written for a human to read, full of <code>File.java:49-51</code>
+            references.
+            <ul>
+              <li><b>References open in the right window</b>: the project window that has the
+                  reviewed checkout, as a highlighted range with the rest of the file muted.</li>
+              <li><b>The reviewed version, or a plain no</b>: a reference opens only where the file
+                  is exactly as it was reviewed, and says so when no window has it.</li>
+              <li><b>Fixes as diffs</b>: the file at the review's base on the left, your working
+                  tree on the right.</li>
+              <li><b>The page beside the code</b>, in a Human Review tool window (JCEF).</li>
+              <li><b>PR comments</b>: a card posted to the pull request lands on its lines and
+                  offers the thread on GitHub.</li>
+              <li>A <b>human-review</b> status-bar item: is this checkout's review served? Click
+                  to serve it and open the page.</li>
+            </ul>
+            Installs and updates without restarting the IDE.
         """.trimIndent()
         changeNotes = """
+            <h3>0.3.0</h3>
+            <ul>
+              <li><b>The review page inside IntelliJ</b>: a <i>Human Review</i> tool window with an
+                  embedded browser (JCEF). <code>serve-review.py</code> started from IntelliJ's
+                  terminal shows the page there, and the status-bar item opens it there too
+                  (Settings → Tools → Human Review to use the OS browser instead).</li>
+              <li><b>PR comments</b>: a card posted to the pull request lands on its lines and
+                  offers <i>Open on GitHub</i> for its thread — IntelliJ has no API to expand a
+                  review thread in the editor.</li>
+              <li><b>Fixed</b>: a highlighted range sometimes vanished a second after a file opened
+                  cold — the open's own delayed caret move was taken for the reader's.</li>
+              <li><b>Updates without a restart</b>: the plugin unloads cleanly (its listener port,
+                  registry entry, highlights and notifications go with it).</li>
+            </ul>
             <h3>0.2.0</h3>
             <ul>
               <li><b>Before/after diffs</b>: a fix on the review page opens as a diff — the file at
@@ -83,9 +107,13 @@ intellijPlatform {
             FailureLevel.COMPATIBILITY_PROBLEMS,
             FailureLevel.INVALID_PLUGIN,
             FailureLevel.MISSING_DEPENDENCIES,
+            // Installed and updated without a restart (Lifecycle.kt): a non-dynamic extension
+            // point or a component would quietly make every update a restart again.
+            FailureLevel.NOT_DYNAMIC,
         )
         ides {
-            // The IDE runIde/buildPlugin already use: nothing else to download.
+            // The oldest IDE it claims (sinceBuild 243) and the one it is built against.
+            create(properties("platformType").get(), "2024.3")
             create(properties("platformType").get(), properties("platformVersion").get())
         }
     }
