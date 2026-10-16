@@ -346,6 +346,9 @@ class _Ide(http.server.BaseHTTPRequestHandler):
         self.asked.append((self.path.split("?")[0], json.loads(raw) if raw else None))
         if self.path.split("?")[0] in self.not_yet:
             self._reply({"ok": False, "error": "not in this version"}, 501)
+        elif self.path.split("?")[0] in self.answers:
+            payload, status = self.answers[self.path.split("?")[0]]
+            self._reply(payload, status)
         else:
             self._reply({"ok": True})
 
@@ -353,8 +356,9 @@ class _Ide(http.server.BaseHTTPRequestHandler):
         pass
 
 
-def _ide(tmp_path, monkeypatch, app, folder: Path, focused=False, not_yet=()):
+def _ide(tmp_path, monkeypatch, app, folder: Path, focused=False, not_yet=(), answers=None):
     H = type("H", (_Ide,), {"app": app, "focused": focused, "not_yet": not_yet, "asked": [],
+                            "answers": answers or {},
                             "folders": [{"name": folder.name, "path": str(folder),
                                          "realPath": str(folder.resolve())}]})
     httpd = http.server.HTTPServer(("127.0.0.1", 0), H)
@@ -474,6 +478,37 @@ def test_a_diff_in_intellij_without_diffs_opens_the_file_there_never_code_diff(
                             f"{srv.OPEN_DIFF}?path=a.txt&base={first}&line=1&ide=idea")
     assert status == 200 and json.loads(payload) == {"ide": "idea", "fallback": False}
     assert [p for p, _ in I.asked] == ["/open-diff", "/open-file"]
+
+
+def test_intellij_with_diffs_takes_the_diff_and_nothing_else(
+        server, repo, tmp_path, monkeypatch, stop):
+    """Plugin 0.2.0 answers /open-diff itself: no fallback to the plain file."""
+    r, first, _ = repo
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r)
+    stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    monkeypatch.setattr(srv, "code_cli", lambda: pytest.fail("VS Code's CLI was asked"))
+    status, payload = _call(server, "GET",
+                            f"{srv.OPEN_DIFF}?path=a.txt&base={first}&line=1&ide=idea")
+    assert status == 200 and json.loads(payload) == {"ide": "idea", "fallback": False}
+    assert I.asked == [("/open-diff", {"file": str(r / "a.txt"), "base": first, "line": 1,
+                                       "focus": True})]
+
+
+def test_intellijs_no_window_refusal_reaches_the_page_with_its_prompt(
+        server, repo, tmp_path, monkeypatch, stop):
+    """Plugin 0.2.0 answers /review-open: its 409 is relayed as it is, never an open-file."""
+    r, _, head = repo
+    f = _src(r)
+    said = {"ok": False, "error": "no-window", "message": "No open IntelliJ window is on this commit",
+            "prompt": "Find a local checkout"}
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r, answers={"/review-open": (said, 409)})
+    stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3&sha={head}&root={r}"
+                                           "&branch=feature&ide=idea")
+    assert status == 409 and json.loads(payload) == {**said, "ide": "idea", "fallback": False}
+    assert [p for p, _ in I.asked] == ["/review-open"]
 
 
 def test_the_badge_poll_lists_the_ides_on_this_checkout_only(repo, tmp_path, monkeypatch, stop):
@@ -613,3 +648,105 @@ def test_one_ide_connected_is_a_plain_badge_naming_it(browser):
     page.wait_for_timeout(200)
     assert any(u.startswith("/__open__?") and "&ide=idea" in u for u in sent), sent
     page.close()
+
+
+def test_a_folder_box_names_the_picked_ide_to_a_screen_reader_too(browser):
+    """The Structure tab's package boxes said "Reveal … in VS Code" in their aria-label whatever
+    the pick; the label now follows it, including a pick made after the page painted."""
+    from test_action_server import build
+    body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
+            + '<style>' + build.CSS + '</style>' + build.SERVER_JS
+            + '</head><body><div class="titlerow"><span class="titleside">'
+            '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
+            '</span></div><svg><g id="box" data-folder="src/owner" data-folder-name="owner">'
+            '<rect width="9" height="9"/></g></svg>'
+            + build.TIP_JS + build.EDITOR_JS + build.FOLDERS_JS + '</body></html>')
+
+    def serve(route):
+        url = route.request.url
+        if url.endswith("/review.html"):
+            return route.fulfill(body=body, content_type="text/html")
+        if "/__human_review__" in url:
+            return route.fulfill(body='{"humanReview": 1, "token": "t", "revealFolder": true}',
+                                 content_type="application/json")
+        if "/__editor__" in url:
+            return route.fulfill(body=json.dumps({"state": "on", "tip": "x", "ides": IDES2}),
+                                 content_type="application/json")
+        return route.fulfill(status=404, body="")
+    page = browser.new_page()
+    page.route("http://127.0.0.1:9/**", serve)
+    page.goto("http://127.0.0.1:9/review.html")
+    page.wait_for_selector("#hr-ide:not([hidden])")
+    assert page.get_attribute("#box", "aria-label") == "Reveal owner in VS Code"
+    page.select_option("#hr-ide", "idea")
+    assert page.get_attribute("#box", "aria-label") == "Reveal owner in IntelliJ"
+    page.close()
+
+
+def test_off_disk_the_remembered_intellij_pick_words_the_links(browser):
+    """No server: nothing to pick from, but a reader who picked IntelliJ before still reads
+    "in IntelliJ" — the clicks go to its plugin (`ideaLink`)."""
+    from test_action_server import build
+    body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
+            + '<style>' + build.CSS + '</style>' + build.SERVER_JS + '</head><body>'
+            + build.gh_comment_link({"_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
+                                     "_ghFile": "vscode://file//r/src/A.java:12:1",
+                                     "_ghWhere": "src/A.java:12"})
+            + build.TIP_JS + build.EDITOR_JS + '</body></html>')
+
+    def serve(route):
+        if route.request.url.endswith("/review.html"):
+            return route.fulfill(body=body, content_type="text/html")
+        return route.fulfill(status=404, body="")      # no review server answers the probe
+    for pick, word in (("idea", "IntelliJ"), (None, "VS Code")):
+        page = browser.new_page()
+        if pick:
+            page.add_init_script(f"localStorage.setItem('hr-ide', '{pick}')")
+        page.route("http://127.0.0.1:9/**", serve)
+        page.goto("http://127.0.0.1:9/review.html")
+        page.wait_for_timeout(300)
+        assert page.locator("a.f-vsc .ide-word").inner_text() == word
+        assert page.evaluate("document.documentElement.classList.contains('ide-idea')") == bool(pick)
+        page.close()
+
+
+def _idea_link(href, face="", tip="", attrs=None, stamp=None):
+    """Run the page's own `ideaLink` in node against a stand-in for the clicked anchor."""
+    import shutil
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    from test_action_server import build
+    js = build.EDITOR_JS
+    parts = [js[js.index(f"  function {name}("):js.index("\n  }\n", js.index(f"  function {name}(")) + 4]
+             for name in ("parse", "endOf", "ideaLink")]
+    got = dict(attrs or {}, href=href, **{"data-tip": tip})
+    script = (f"var STAMP = {json.dumps(stamp or {})};\n" + "".join(parts)
+              + f"var A = {json.dumps(got)};\n"
+              + f"var link = {{textContent: {json.dumps(face)}, getAttribute: function (k) "
+                "{ return k in A ? A[k] : null; }};\n"
+              + "process.stdout.write(JSON.stringify(ideaLink(link)));")
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(out.stdout)
+
+
+def test_off_disk_intellij_links_carry_what_the_uri_handler_reads():
+    assert _idea_link("vscode://file//r/src/A.java:49:1", face="A.java:49-51") == (
+        "jetbrains://idea/human-review/open?file=%2Fr%2Fsrc%2FA.java&line=49&endLine=51")
+    assert _idea_link("vscode://file//r/My%20Dir/A.java:3:1", face="A.java:3") == (
+        "jetbrains://idea/human-review/open?file=%2Fr%2FMy%20Dir%2FA.java&line=3")
+    stamp = {"hrHead": "abc1234", "hrRoot": "/r", "hrBranch": "test-pr"}
+    assert _idea_link("vscode://file//r/src/A.java:7:1", face="A.java:7", stamp=stamp) == (
+        "jetbrains://idea/human-review/review-open?file=%2Fr%2Fsrc%2FA.java&line=7"
+        "&sha=abc1234&root=%2Fr&branch=test-pr")
+    # A diff handle asks for the diff, stamped page or not.
+    assert _idea_link("vscode://file//r/src/A.java:12:1", stamp=stamp,
+                      attrs={"data-diff-base": "origin/main", "data-diff-path": "src/A.java"}) == (
+        "jetbrains://idea/human-review/diff?file=%2Fr%2Fsrc%2FA.java&base=origin%2Fmain&line=12")
+    assert _idea_link("https://github.com/o/r") is None
+
+
+def test_off_disk_intellij_is_asked_before_the_vs_code_handlers():
+    from test_action_server import build
+    js = build.EDITOR_JS
+    jb = js.index("var jb = offDiskIdea() && ideaLink(link);")
+    assert js.index("if (SERVED && base && dpath)") < jb < js.index("var duri = link.getAttribute('data-diff-uri');")

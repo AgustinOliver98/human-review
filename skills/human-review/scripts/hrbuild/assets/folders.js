@@ -25,8 +25,15 @@
       if (link) link.removeAttribute('data-tip');
       box.setAttribute('role', 'button');
       box.setAttribute('tabindex', '0');
-      box.setAttribute('aria-label', 'Reveal ' + name + ' in VS Code');
-      box.setAttribute('data-tip', 'Reveal ' + name + ' in VS Code');
+      // Worded for the IDE picked in the masthead, and again whenever the pick changes
+      // (`hr-ide`, editor.js): a screen reader hears the editor the click will reach.
+      function label() {
+        var said = 'Reveal ' + name + ' in ' + (window.HR.ideName ? window.HR.ideName() : 'VS Code');
+        box.setAttribute('aria-label', said);
+        box.setAttribute('data-tip', said);
+      }
+      label();
+      document.addEventListener('hr-ide', label);
       function reveal(ev) {
         ev.preventDefault();
         ev.stopPropagation();

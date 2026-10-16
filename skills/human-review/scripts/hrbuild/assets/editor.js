@@ -106,7 +106,9 @@
   // one has no window on the file (the answer says so, and so does the toast). Picked in the
   // masthead among the IDEs that have a window on this checkout (the badge poll's `ides`),
   // remembered per browser, defaulting to the only one connected, else VS Code. Off disk
-  // there is no server to route and nothing to pick: the links stay `vscode://`.
+  // there is no server to route and nothing to pick, but the pick is still remembered: a
+  // reader who chose IntelliJ gets `jetbrains://idea/human-review/…` links (`ideaLink`), which
+  // the IntelliJ plugin routes itself; everyone else keeps `vscode://`.
   var IDE_KEY = 'hr-ide', IDE_NAME = {vscode: 'VS Code', idea: 'IntelliJ'};
   var connected = [];
   function ide() {
@@ -117,20 +119,27 @@
     return IDE_NAME[mine] && (!apps.length || apps.indexOf(mine) >= 0) ? mine : 'vscode';
   }
   function ideQuery() { return SERVED ? '&ide=' + ide() : ''; }
+  // Off disk, at top level, with IntelliJ the remembered pick: clicks go to IntelliJ's plugin.
+  // Embedded, nothing can leave the page; the links are copied instead, whatever the pick.
+  function offDiskIdea() { return !SERVED && !EMBEDDED && ide() === 'idea'; }
+  // The IDE the page's words are about: the pick served, the pick off disk when it is honoured.
+  function shownIde() { return SERVED ? ide() : offDiskIdea() ? 'idea' : 'vscode'; }
   // The faces follow the pick: `.ide-word` in every "in VS Code" link, and the two marks
   // beside it, one of which `html.ide-idea` hides (review.css). Tooltips are reworded as
   // tip.js shows them (`ideWords`), so a tip another script sets late follows too.
+  // `hr-ide` on the document after each paint, for what words itself elsewhere (folders.js).
   function paintIde() {
-    var name = IDE_NAME[ide()];
-    document.documentElement.classList.toggle('ide-idea', SERVED && ide() === 'idea');
+    var shown = shownIde(), name = IDE_NAME[shown];
+    document.documentElement.classList.toggle('ide-idea', shown === 'idea');
     [].forEach.call(document.querySelectorAll('.ide-word'),
-                    function (w) { if (SERVED) w.textContent = name; });
+                    function (w) { if (SERVED || shown === 'idea') w.textContent = name; });
+    document.dispatchEvent(new CustomEvent('hr-ide'));
   }
   window.HR.ide = function () { return SERVED ? ide() : null; };
-  window.HR.ideName = function (app) { return IDE_NAME[app || (SERVED ? ide() : 'vscode')]; };
+  window.HR.ideName = function (app) { return IDE_NAME[app || shownIde()]; };
   // Not the badge's own tips: the server words those for the IDE they are about.
   window.HR.ideWords = function (text, el) {
-    if (!text || !SERVED || ide() !== 'idea' || (el && el.closest && el.closest('#hr-vsc, #hr-ide'))) {
+    if (!text || shownIde() !== 'idea' || (el && el.closest && el.closest('#hr-vsc, #hr-ide'))) {
       return text;
     }
     return String(text).replace(/VS Code/g, 'IntelliJ');
@@ -165,6 +174,36 @@
   function endQuery(link, line) {
     var end = endOf(link, line);
     return end ? '&endLine=' + end : '';
+  }
+
+  // The IntelliJ plugin's twin of the VS Code extension's URI handler, for a page with no
+  // server: `jetbrains://idea/human-review/<diff|review-open|open>?…`, the same queries
+  // uri-handler.js reads. The plugin finds the project window that owns the file itself, so
+  // the link names a path, never a window. A diff handle asks for the diff (the plugin says so
+  // and opens the file when there is none); a page that knows its commit asks for the reviewed
+  // version; anything else opens the file, as a range when the face names one. `jetbrains://`
+  // belongs to JetBrains Toolbox, which hands it to its IntelliJ — the reason this is only
+  // ever sent to a reader who picked IntelliJ.
+  function ideaLink(link) {
+    var aim = parse(link.getAttribute('href') || '');
+    if (!aim) return null;
+    function url(kind, q) {
+      var out = [];
+      for (var k in q) {
+        if (q[k] !== null && q[k] !== undefined && q[k] !== '') out.push(k + '=' + encodeURIComponent(q[k]));
+      }
+      return 'jetbrains://idea/human-review/' + kind + '?' + out.join('&');
+    }
+    var base = link.getAttribute('data-diff-base');
+    if (base && link.getAttribute('data-diff-path')) {
+      return url('diff', {file: aim.path, base: base, line: aim.line});
+    }
+    var end = endOf(link, aim.line);
+    if (STAMP.hrHead) {
+      return url('review-open', {file: aim.path, line: aim.line, endLine: end, sha: STAMP.hrHead,
+                                 root: STAMP.hrRoot, branch: STAMP.hrBranch});
+    }
+    return url('open', {file: aim.path, line: aim.line, endLine: end});
   }
 
   // A card posted to the PR names its thread on its "on GitHub \u2197" link (`data-pr-*`).
@@ -446,6 +485,10 @@
         .catch(function () { flash('The review server is no longer running'); });
       return;
     }
+    // Off disk, IntelliJ picked: every reference goes to its plugin (`ideaLink`), a diff
+    // handle as a diff, a stamped page through the reviewed-version check.
+    var jb = offDiskIdea() && ideaLink(link);
+    if (jb) { window.location.href = jb; return; }
     // Not served, and at top level: the extension's URI handler is the only channel left
     // that can materialise a before-image out of git. It is emitted only where the build
     // found that extension installed, so a portable guide never carries a URL that would
