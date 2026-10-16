@@ -195,3 +195,6 @@
 .dsv-grid td.dsv-fkv { cursor:help; }
 .dsv-grid td.dsv-null { color:var(--muted); font-style:italic; }
 .dsv-more { margin:.2rem .45rem; color:var(--muted); font-size:.85em; }
+/* What the film cost to make, at the end of its heading row; the hover splits it. */
+.vidhead > .filmcost { font-size:.85rem; color:var(--muted); white-space:nowrap; cursor:help;
+                       border-bottom:1px dotted currentColor; }

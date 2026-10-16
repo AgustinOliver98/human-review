@@ -2132,8 +2132,15 @@ def phase_costs(session: str | None, t0, t1, t2, t3, t4, reviewer_files=(),
         # other tabs are not dropped either — their work is page building, and that is the
         # row it lands in.
         steps, _found = load_steps(Path(steps_path))
-        wanted = sorted({t for s in steps for t in s["tabs"] if t != GUIDE_TAB}
-                        | {"video", "dsaudit"})
+        named = {t for s in steps for t in s["tabs"] if t != GUIDE_TAB}
+        # The Demo tab has gone by three ids (`behaviour`, `demo`, `video`), and the step
+        # that films it is tagged with whichever the page has: asking for a literal "video"
+        # on a page whose step says `behaviour` read the film as "no step named it" while
+        # the step ledger held its window all along (PR #49, 16 Oct 2026).
+        own = {key: next((t for t in ids if t in named), ids[0])
+               for key, ids in (("video", ("behaviour", "demo", "video")),
+                                ("images", ("dsaudit",)))}
+        wanted = sorted(named | set(own.values()))
         run_path = transcript(run_session)
         # Scanned once and handed to everything below: the tab report, the build-window
         # split and the row that names the rest all price the SAME turns, and a second scan
@@ -2148,7 +2155,7 @@ def phase_costs(session: str | None, t0, t1, t2, t3, t4, reviewer_files=(),
         # is not skipped there either.
         if run_path is not None:
             steps = attribute_steps(run_path, steps)
-        for key, tab in (("video", "video"), ("images", "dsaudit")):
+        for key, tab in own.items():
             row = report["tabs"].get(tab) or {}
             if row.get("measured"):
                 detail = (f"the '{tab}' step of the page-building run — only the turns of "

@@ -383,7 +383,7 @@ def test_the_film_title_heads_the_transcript_column_not_a_row_above_the_player(t
     s = _video_dir(tmp_path, filmed=True)
     out = build.video_html(s, tmp_path)
     side = out[out.index('<div class="vidside">'):]
-    assert side.index('<h2 class="tabtitle">Intro video</h2>') < side.index('<ol class="transcript"')
+    assert side.index('<h2 class="tabtitle">&#127916; Intro video</h2>') < side.index('<ol class="transcript"')
     assert out.index("<video") < out.index('<div class="vidside">'), "the player first, then the column"
     assert ".vidwrap > .vidside { display:flex;" in build.CSS and "contain:size" in build.CSS
     placed = build.place_tab_reruns("behaviour", "Demo", out, '<span class="tabre"></span>')
