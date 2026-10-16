@@ -50,13 +50,17 @@
                         font:600 .7rem/1.6 inherit; padding:0 .55rem; white-space:nowrap; }
 #genseq-panel .genseq-toggle:hover { color:var(--fg); border-color:var(--link); }
 #genseq-panel .genseq-toggle[hidden] { display:none; }
-/* pre-wrap, not pre: a real controller's SELECT is far wider than the panel, and
-    `white-space:pre` cut it mid-statement behind an overlay scrollbar nobody sees on a
-    Mac. The payloads here are read, not copied into a terminal, so wrapping wins. */
+/* pre, not pre-wrap: a wrapped JSON string came back at the left margin, under the keys,
+   and broke the indentation that is the whole shape of a payload (Victor, 16 Oct 2026).
+   A long line scrolls sideways instead — Shift+wheel works (hscroll.js) — and the
+   scrollbar is drawn, because the Mac's overlay one stayed hidden and a cut-off SELECT
+   looked like the whole statement. */
 #genseq-panel pre { margin:0; max-height:24rem; overflow:auto; background:var(--code-bg);
-                    border-radius:6px; padding:.5rem .6rem; white-space:pre-wrap;
-                    overflow-wrap:anywhere;
+                    border-radius:6px; padding:.5rem .6rem; white-space:pre;
                     font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+#genseq-panel pre::-webkit-scrollbar { width:8px; height:8px; }
+#genseq-panel pre::-webkit-scrollbar-thumb { background:var(--muted); border-radius:4px; }
+#genseq-panel pre::-webkit-scrollbar-corner { background:transparent; }
 /* A `?` as sent, or the bound value put back in its place. Solid, in the panel's own blue
    with the card colour for the text, so it reads in both themes: a 24% tint vanished
    against the dark code background. Not a yellow marker or the accent: red on this page
