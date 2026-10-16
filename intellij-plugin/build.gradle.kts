@@ -4,7 +4,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // Trimmed from ~/workspace/live-coding: same Gradle, Kotlin and IntelliJ Platform Gradle
 // Plugin versions (they are known to build together on this machine), without the changelog,
-// signing, Marketplace publishing and bundled-plugin dependencies this plugin does not need.
+// signing and bundled-plugin dependencies this plugin does not need. Marketplace publishing is
+// at the bottom (`publishing`), driven by publish.sh.
 
 fun properties(key: String) = providers.gradleProperty(key)
 
@@ -129,6 +130,12 @@ intellijPlatform {
             create("IU", "2026.2.3")
             create("IU", "263.7031.23")
         }
+    }
+
+    // `./publish.sh`: every change to the plugin goes out as a new Marketplace version. The
+    // token is Victor's, read from the environment and never from a file in the repository.
+    publishing {
+        token = providers.environmentVariable("JETBRAINS_PUBLISH_TOKEN")
     }
 }
 

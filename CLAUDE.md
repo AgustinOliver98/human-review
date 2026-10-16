@@ -38,6 +38,18 @@ git push origin HEAD:test-pr         # NEVER a bare `git push`: test-pr may trac
 `~/workspace/petclinic` is a third checkout on whatever branch it happens to be on — ask
 before touching it, and never assume it is `main`.
 
+## Every change to `intellij-plugin/` ships, in the same turn
+
+Victor, 16 Oct 2026: "you do that every time from now on". After any change under
+`intellij-plugin/` is committed and pushed: bump the patch `pluginVersion` in
+`gradle.properties` (the Marketplace refuses a version it has seen), then run
+`intellij-plugin/publish.sh`. It hot-reloads the build into his running IntelliJ
+(`deploy-local.sh`, no restart) and uploads that version to the JetBrains Marketplace
+(`publishPlugin`, token from `~/.claude/jetbrains-marketplace.env`). The reload only
+lands once IntelliJ rescans its files, which happens when its window gets focus. So
+when it waits, ask him to click into IntelliJ, and never bring the window forward
+yourself. Verify everything else headless: no `runIde`, no sandbox IDE windows.
+
 ## Every visible change is explained in its card's ⓘ panel
 
 Anything a reviewer can newly see on a card — a colour, a bar, a column, a control, what a
