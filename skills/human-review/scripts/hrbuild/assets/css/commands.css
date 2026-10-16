@@ -390,6 +390,14 @@ span.tabre > button.chip-rerun span.rr-mark { font-size:9px; line-height:1; colo
   .chip-vsc.vsc-on { color:#6bd48a; border-color:#3f7f52; }
   .chip-vsc.vsc-near { color:#e0a44a; border-color:#8a6420; }
   .chip-vsc.vsc-off { color:#f0757f; border-color:#8f3a40; } }
+/* The IDE picker in front of the badge (editor.js), only while two IDEs have a window on
+   this checkout: the badge after it is then the press alone, a ↗ in the picked IDE's
+   colour. */
+.titlerow select.chip-ide { display:inline-block; font:inherit; font-size:.8rem; font-weight:600;
+            color:var(--fg); background:var(--card); border:1px solid var(--line); border-radius:999px;
+            padding:0 .4rem; cursor:pointer; }
+.titlerow select.chip-ide[hidden] { display:none; }
+.titlerow .titleside .chip-vsc.split { padding-left:.4rem; padding-right:.4rem; }
 /* The prompt a press on an amber badge leaves under it: the sentence, the prompt itself,
    and a 📋 that copies it (editor.js, `offerCheckout`). Placed by script under the badge. */
 #hr-vsc-pop { position:fixed; z-index:61; max-width:min(34rem, calc(100vw - 16px));

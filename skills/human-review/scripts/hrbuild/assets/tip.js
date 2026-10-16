@@ -102,6 +102,12 @@
     // reaches here. Plain `data-tip` stays the default and stays escaped.
     var html = el.getAttribute('data-tip-html'), text = el.getAttribute('data-tip');
     if (!html && !text) return;              // data-tip="" shows nothing, by design
+    // "Open in VS Code" says IntelliJ when that is the IDE the reader picked (editor.js):
+    // reworded here, as it is shown, so a tip any script sets at any time follows the pick.
+    if (window.HR && window.HR.ideWords) {
+      html = window.HR.ideWords(html, el);
+      text = window.HR.ideWords(text, el);
+    }
     current = el;
     if (html) bubble.innerHTML = html; else bubble.textContent = text;
     bubble.classList.remove('visible');

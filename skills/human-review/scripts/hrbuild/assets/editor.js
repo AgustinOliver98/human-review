@@ -24,7 +24,7 @@
   // the same thing it does on a machine with no server at all, and therefore already
   // tested.
   var SERVED = false;
-  window.HR.onready(function (caps) { SERVED = !!caps; });
+  window.HR.onready(function (caps) { SERVED = !!caps; paintIde(); });
 
   // One implementation, on HR, because a `file://` page needs the `execCommand` fallback
   // and two copies of that had already drifted apart once.
@@ -98,6 +98,47 @@
   function commitQuery() {
     return 'sha=' + encodeURIComponent(STAMP.hrHead) + '&root=' + encodeURIComponent(STAMP.hrRoot || '')
       + '&branch=' + encodeURIComponent(STAMP.hrBranch || '');
+  }
+
+  // Which IDE a click on code opens in: VS Code or IntelliJ (16 Oct 2026, Victor). Both run
+  // the same bridge — VS Code's extension, IntelliJ's plugin — and the server routes every
+  // editor request to the one picked here (`ide=`), and to the other only when the picked
+  // one has no window on the file (the answer says so, and so does the toast). Picked in the
+  // masthead among the IDEs that have a window on this checkout (the badge poll's `ides`),
+  // remembered per browser, defaulting to the only one connected, else VS Code. Off disk
+  // there is no server to route and nothing to pick: the links stay `vscode://`.
+  var IDE_KEY = 'hr-ide', IDE_NAME = {vscode: 'VS Code', idea: 'IntelliJ'};
+  var connected = [];
+  function ide() {
+    var mine = null;
+    try { mine = localStorage.getItem(IDE_KEY); } catch (e) {}
+    var apps = connected.map(function (i) { return i.app; });
+    if (apps.length === 1) return apps[0];
+    return IDE_NAME[mine] && (!apps.length || apps.indexOf(mine) >= 0) ? mine : 'vscode';
+  }
+  function ideQuery() { return SERVED ? '&ide=' + ide() : ''; }
+  // The faces follow the pick: `.ide-word` in every "in VS Code" link, and the two marks
+  // beside it, one of which `html.ide-idea` hides (review.css). Tooltips are reworded as
+  // tip.js shows them (`ideWords`), so a tip another script sets late follows too.
+  function paintIde() {
+    var name = IDE_NAME[ide()];
+    document.documentElement.classList.toggle('ide-idea', SERVED && ide() === 'idea');
+    [].forEach.call(document.querySelectorAll('.ide-word'),
+                    function (w) { if (SERVED) w.textContent = name; });
+  }
+  window.HR.ide = function () { return SERVED ? ide() : null; };
+  window.HR.ideName = function (app) { return IDE_NAME[app || (SERVED ? ide() : 'vscode')]; };
+  // Not the badge's own tips: the server words those for the IDE they are about.
+  window.HR.ideWords = function (text, el) {
+    if (!text || !SERVED || ide() !== 'idea' || (el && el.closest && el.closest('#hr-vsc, #hr-ide'))) {
+      return text;
+    }
+    return String(text).replace(/VS Code/g, 'IntelliJ');
+  };
+  // Said when the server sent a click to the other IDE: the picked one has no window on it.
+  function fellBack(said) {
+    return said && said.fallback ? 'Opened in ' + IDE_NAME[said.ide] + ' \u2014 no '
+      + IDE_NAME[ide()] + ' window has this file' : '';
   }
 
   // `vscode://file//abs/path.java:487:1` → the two halves the server wants.
@@ -397,9 +438,10 @@
       // about, which is the hunt this button exists to end.
       var aim = parse(link.getAttribute('href'));
       fetch('/__open_diff__?path=' + encodeURIComponent(dpath) + '&base=' + encodeURIComponent(base)
-            + (aim ? '&line=' + encodeURIComponent(aim.line) : ''))
+            + (aim ? '&line=' + encodeURIComponent(aim.line) : '') + ideQuery())
         .then(function (r) {
           if (!r.ok) return r.text().then(function (t) { flash(t || 'Could not open the diff'); });
+          if (r.status === 200) return r.json().then(function (j) { if (fellBack(j)) flash(fellBack(j)); });
         })
         .catch(function () { flash('The review server is no longer running'); });
       return;
@@ -424,14 +466,15 @@
     if (ref2) {
       fetch('/__open__?path=' + encodeURIComponent(ref2.path) + '&line=' + ref2.line
             + endQuery(link, ref2.line) + commentQuery(link, ref2.path, ref2.line)
-            + (STAMP.hrHead ? '&' + commitQuery() : ''))
+            + (STAMP.hrHead ? '&' + commitQuery() : '') + ideQuery())
         .then(function (r) {
           if (r.status === 204) return;
           return r.text().then(function (t) {
             var said = null;
             try { said = JSON.parse(t); } catch (e) { /* a bare 404 has no body */ }
             if (r.ok) {
-              if (said && said.edited) flash('Opened \u2014 edited since the reviewed commit');
+              if (fellBack(said)) flash(fellBack(said));
+              else if (said && said.edited) flash('Opened \u2014 edited since the reviewed commit');
               return;
             }
             if (said && said.prompt) { offerPrompt(said.message, said.prompt); return; }
@@ -471,11 +514,18 @@
     var last = null;
     function ask() {
       if (document.hidden) return Promise.resolve(last);
-      return fetch('/__editor__?' + commitQuery(), {cache: 'no-store'})
+      var asked = ide();
+      return fetch('/__editor__?' + commitQuery() + ideQuery(), {cache: 'no-store'})
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           if (!j) return last;
           last = j;
+          connected = j.ides || [];
+          paintPicker();
+          paintIde();
+          // An IDE came or went and the pick moved with it: this answer is about the other
+          // one, so ask again rather than colour the badge for an editor no longer picked.
+          if (ide() !== asked) { setTimeout(ask, 0); return j; }
           chip.classList.remove('vsc-on', 'vsc-near', 'vsc-off');
           chip.classList.add('vsc-' + j.state);
           chip.setAttribute('data-tip', j.tip);
@@ -487,7 +537,50 @@
           chip.hidden = false;
           return j;
         })
-        .catch(function () { chip.hidden = true; return null; });
+        .catch(function () { chip.hidden = true; if (pick) pick.hidden = true; return null; });
+    }
+    // The picker: a combo of the IDEs with a window on this checkout, in front of the badge,
+    // only while there are two to choose between — then the badge after it is the press
+    // alone (↗), still coloured by the picked IDE's state. One IDE, or none: no combo, and
+    // the badge names the IDE it is about.
+    var pick = null;
+    function paintPicker() {
+      var two = connected.length > 1;
+      if (two && !pick) {
+        pick = document.createElement('select');
+        pick.id = 'hr-ide';
+        pick.className = 'chip chip-ide';
+        pick.setAttribute('aria-label', 'The IDE clicks on code open in');
+        pick.setAttribute('data-tip', 'Pick the IDE clicks on code open in');
+        pick.setAttribute('data-tip-html', 'Pick the IDE clicks on code open in'
+          + '<p class="tipfoot">Only IDEs with a window on this checkout are offered. If the '
+          + 'picked one has no window on a file, it opens in the other. Remembered in this '
+          + 'browser.</p>');
+        pick.addEventListener('change', function () {
+          try { localStorage.setItem(IDE_KEY, pick.value); } catch (e) {}
+          paintIde();
+          flash('Code now opens in ' + IDE_NAME[pick.value]);
+          ask();
+        });
+        chip.parentNode.insertBefore(pick, chip);
+      }
+      if (pick) {
+        pick.hidden = !two;
+        var want = connected.map(function (i) { return i.app; }).join(',');
+        if (pick.getAttribute('data-apps') !== want) {
+          pick.setAttribute('data-apps', want);
+          pick.innerHTML = '';
+          connected.forEach(function (i) {
+            var o = document.createElement('option');
+            o.value = i.app;
+            o.textContent = IDE_NAME[i.app] || i.label;
+            pick.appendChild(o);
+          });
+        }
+        if (two) pick.value = ide();
+      }
+      chip.classList.toggle('split', two);
+      chip.textContent = two ? '\u2197' : ide() === 'idea' ? 'IntelliJ' : 'VSC';
     }
     // The checkout is not on the reviewed commit: say so beside the badge, with the prompt
     // that would fix it and one 📋 that copies it. Words only — neither the server nor the
@@ -544,15 +637,16 @@
     // — the server's own folder, not one this page names. Nothing is checked out; when the
     // checkout is on another branch or commit, the press ends in the prompt above instead.
     chip.addEventListener('click', function () {
+      var name = IDE_NAME[ide()];
       var opened = fetch('/__editor_open__', {
         method: 'POST', cache: 'no-store',
         headers: {'Content-Type': 'application/json',
                   'X-Human-Review-Token': caps.token || ''},
-        body: '{}'
+        body: JSON.stringify({ide: ide()})
       }).then(function (r) {
         return r.ok ? r.json().then(function (j) {
-          flash(j.how === 'focused' ? 'Bringing VS Code window ' + (j.window || '') + ' to the front'
-                                    : 'Opening VS Code on ' + j.opened);
+          flash(j.how === 'focused' ? 'Bringing ' + name + ' window ' + (j.window || '') + ' to the front'
+                                    : 'Opening ' + name + ' on ' + j.opened);
           return true;
         }) : r.text().then(function (t) { flash(t || 'the review server refused'); return false; });
       }).catch(function () { flash('the review server is no longer running'); return false; });

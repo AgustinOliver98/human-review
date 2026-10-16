@@ -3658,6 +3658,20 @@ _PR_URL = re.compile(r"^(https://github\.com/[^/#?]+/[^/#?]+/pull/\d+)")
 VSC_ICON = ('<svg class="vsc-ico" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="#007ACC" d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>')
 
 
+#: The IntelliJ mark, beside the VS Code one in every *in VS Code* that opens a file: the
+#: page shows one of the two, the IDE picked in the masthead (editor.js, `html.ide-idea`).
+IJ_ICON = ('<svg class="ij-ico" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">'
+           '<rect width="24" height="24" rx="3" fill="#FE315D"/>'
+           '<rect x="2.5" y="2.5" width="19" height="19" rx="1" fill="#000"/>'
+           '<path fill="#fff" d="M5.5 5.5h4.6V7H8.7v5.6h1.4v1.5H5.5v-1.5h1.4V7H5.5zM13.6 5.5h1.8'
+           'v6.4c0 1.8-1 2.6-2.5 2.6-.7 0-1.2-.2-1.7-.5l.5-1.4c.3.2.6.3 1 .3.6 0 .9-.3.9-1.1z"/>'
+           '<rect x="5.5" y="17" width="8" height="1.6" fill="#fff"/></svg>')
+
+#: The face of a link that opens a file in the reader's IDE: both marks and the IDE's name,
+#: which editor.js rewrites (`.ide-word`) to the one picked.
+IDE_FACE = f'{VSC_ICON}{IJ_ICON} in <span class="ide-word">VS Code</span>'
+
+
 def vscode_pr_uri(url: str | None) -> str | None:
     """The PR an `html_url` belongs to, as the extension's open-in-VS-Code URI."""
     m = _PR_URL.match(url or "")
@@ -3686,7 +3700,7 @@ def vscode_file_link(href: str | None, where: str) -> str:
         return ""
     return (f' <a class="f-vsc" href="{html.escape(href, quote=True)}" '
             f'data-tip="{html.escape(f"Open {where} in VS Code, with the PR comment", quote=True)}">'
-            f'{VSC_ICON} in VS Code</a>')
+            f'{IDE_FACE}</a>')
 
 
 def gh_comment_link(f) -> str:
@@ -3752,6 +3766,7 @@ PR_PUSH_JS = """<script>(function () {
 })();
 var HR_VSC_PR = '""" + VSCODE_PR_URI + """';
 var HR_VSC_ICON = '""" + VSC_ICON + """';
+var HR_IDE_FACE = '""" + IDE_FACE.replace("'", "\\'") + """';
 function hrVscPr(url) {
   var m = /^(https:\\/\\/github\\.com\\/[^\\/#?]+\\/[^\\/#?]+\\/pull\\/\\d+)/.exec(url || '');
   return m ? HR_VSC_PR + encodeURIComponent(m[1]) : null;
@@ -3832,12 +3847,16 @@ document.addEventListener('DOMContentLoaded', function(){
       var v = a.nextElementSibling;
       if (!(v && v.classList.contains('f-vsc'))) {
         v = vscLink('f-vsc', '', ''); a.after(document.createTextNode(' '), v); }
+      // Named for the IDE picked in the masthead, like the ones the build put there.
+      var w = v.querySelector('.ide-word');
+      if (w && window.HR && HR.ide && HR.ide()) w.textContent = HR.ideName();
       v.href = 'vscode://file/' + root + '/' + where + ':1';
       v.dataset.tip = 'Open ' + where + ' in VS Code, with the PR comment';
     });
   }
   function vscLink(cls, uri, tip) {
-    var v = el('a', cls); v.innerHTML = HR_VSC_ICON + ' in VS Code';
+    // A file opens in either IDE; the PR overview only in VS Code's GitHub extension.
+    var v = el('a', cls); v.innerHTML = cls === 'f-vsc' ? HR_IDE_FACE : HR_VSC_ICON + ' in VS Code';
     if (uri) v.href = uri;
     v.dataset.tip = tip != null ? tip : 'Open PR #' + decodeURIComponent(uri).split('/').pop()
       + ' in VS Code (GitHub Pull Requests)';

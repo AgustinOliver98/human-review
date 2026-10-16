@@ -312,3 +312,304 @@ def test_pressing_red_opens_vs_code_on_the_checkout(repo, tmp_path, monkeypatch)
     monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path / "nobody"))
     assert srv.open_editor(r) == {"how": "opened", "window": None}
     assert launched == [r]
+
+
+# ---- two IDEs: VS Code and IntelliJ on one bridge protocol -------------------------------
+# IntelliJ's plugin registers `idea-<pid>.json` and answers the same routes, bar the ones its
+# first milestone answers 501. The page sends the reader's pick as `ide`; without one, the
+# server routes exactly as it did when VS Code was the only editor it knew.
+
+class _Ide(http.server.BaseHTTPRequestHandler):
+    """One editor's bridge: /ping with its folders, and every POST recorded. A route in
+    `not_yet` answers 501, the way IntelliJ's M1 answers /open-diff, /review-open, /open-url."""
+    app = "vscode"
+    folders: list = []
+    focused = False
+    not_yet: tuple = ()
+    asked: list = []
+
+    def _reply(self, payload, status=200):
+        body = json.dumps(payload).encode()
+        self.send_response(status)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        assert self.path == "/ping" and self.headers["x-relay-token"] == "t"
+        self._reply({"ok": True, "app": self.app, "focused": self.focused,
+                     **({"ide": "IntelliJ IDEA"} if self.app == "idea" else {}),
+                     "folders": self.folders})
+
+    def do_POST(self):
+        raw = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        self.asked.append((self.path.split("?")[0], json.loads(raw) if raw else None))
+        if self.path.split("?")[0] in self.not_yet:
+            self._reply({"ok": False, "error": "not in this version"}, 501)
+        else:
+            self._reply({"ok": True})
+
+    def log_message(self, *a):
+        pass
+
+
+def _ide(tmp_path, monkeypatch, app, folder: Path, focused=False, not_yet=()):
+    H = type("H", (_Ide,), {"app": app, "focused": focused, "not_yet": not_yet, "asked": [],
+                            "folders": [{"name": folder.name, "path": str(folder),
+                                         "realPath": str(folder.resolve())}]})
+    httpd = http.server.HTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    registry = tmp_path / "home" / ".human-review" / "ide"
+    registry.mkdir(parents=True, exist_ok=True)
+    (registry / f"{app}-{httpd.server_address[1]}.json").write_text(
+        json.dumps({"app": app, "port": httpd.server_address[1], "token": "t", "pid": 1}))
+    monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path / "home"))
+    return httpd, H
+
+
+def _src(repo: Path) -> Path:
+    f = repo / "src" / "Visit.java"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("class Visit {}\n" * 5)
+    return f
+
+
+@pytest.fixture
+def stop():
+    servers = []
+    yield servers.append
+    [s.shutdown() for s in servers]
+
+
+def test_an_intellij_registry_entry_is_found_after_vs_codes(tmp_path, monkeypatch):
+    registry = tmp_path / ".human-review" / "ide"
+    registry.mkdir(parents=True)
+    for name in ("idea-3.json", "vscode-9.json", "notes.json"):
+        (registry / name).write_text("{}")
+    monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path))
+    assert [f.name for f in srv.bridge_files()] == ["vscode-9.json", "idea-3.json"]
+
+
+def test_the_picked_ide_takes_the_click_and_the_answer_says_so(
+        server, repo, tmp_path, monkeypatch, stop):
+    r, _, _ = repo
+    f = _src(r)
+    vsc, V = _ide(tmp_path, monkeypatch, "vscode", r)
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r)
+    stop(vsc), stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3&ide=idea")
+    assert status == 200 and json.loads(payload) == {"ide": "idea", "fallback": False}
+    assert [p for p, _ in I.asked] == ["/open-file"] and V.asked == []
+    assert I.asked[0][1] == {"path": str(f), "line": 3, "focus": True}
+
+
+def test_no_window_of_the_picked_ide_on_the_file_falls_back_to_the_other(
+        server, repo, tmp_path, monkeypatch, stop):
+    r, _, _ = repo
+    f = _src(r)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    vsc, V = _ide(tmp_path, monkeypatch, "vscode", r)
+    ij, I = _ide(tmp_path, monkeypatch, "idea", elsewhere)
+    stop(vsc), stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3&ide=idea")
+    assert status == 200 and json.loads(payload) == {"ide": "vscode", "fallback": True}
+    assert [p for p, _ in V.asked] == ["/open-file"] and I.asked == []
+
+
+def test_without_ide_only_vs_code_is_asked_as_before(server, repo, tmp_path, monkeypatch, stop):
+    r, _, _ = repo
+    f = _src(r)
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r)
+    stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    opened = []
+    monkeypatch.setattr(srv.subprocess, "run", lambda cmd, **kw: opened.append(cmd))
+    status, _ = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3")
+    # IntelliJ owns the file, but a page that sent no pick gets today's route: no VS Code
+    # window, so the OS's vscode:// — and a 204 with no body, as before.
+    assert status == 204 and I.asked == []
+    assert opened == [["open", f"vscode://file/{f}:3:1"]]
+
+
+def test_nobody_owns_the_file_so_the_os_gets_the_picked_ides_url(
+        server, repo, tmp_path, monkeypatch):
+    r, _, _ = repo
+    f = _src(r)
+    monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path / "nobody"))
+    monkeypatch.setattr(srv, "ROOT", r)
+    opened = []
+    monkeypatch.setattr(srv.subprocess, "run", lambda cmd, **kw: opened.append(cmd))
+    status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=7&ide=idea")
+    assert status == 200 and json.loads(payload) == {"ide": "idea", "fallback": False}
+    assert opened == [["open", "idea://open?" + srv.urllib.parse.urlencode(
+        {"file": str(f), "line": 7})]]
+
+
+def test_intellij_without_review_open_opens_the_file_in_intellij_not_vs_code(
+        server, repo, tmp_path, monkeypatch, stop):
+    """501 is "not yet", not "no": the click stays in the IDE the reader picked."""
+    r, _, head = repo
+    f = _src(r)
+    vsc, V = _ide(tmp_path, monkeypatch, "vscode", r)
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r, not_yet=("/review-open",))
+    stop(vsc), stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3&sha={head}&root={r}"
+                                           "&branch=feature&ide=idea")
+    assert status == 200 and json.loads(payload)["ide"] == "idea"
+    assert [p for p, _ in I.asked] == ["/review-open", "/open-file"] and V.asked == []
+
+
+def test_a_diff_in_intellij_without_diffs_opens_the_file_there_never_code_diff(
+        server, repo, tmp_path, monkeypatch, stop):
+    r, first, _ = repo
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r, not_yet=("/open-diff",))
+    stop(ij)
+    monkeypatch.setattr(srv, "ROOT", r)
+    monkeypatch.setattr(srv, "code_cli", lambda: pytest.fail("VS Code's CLI was asked"))
+    status, payload = _call(server, "GET",
+                            f"{srv.OPEN_DIFF}?path=a.txt&base={first}&line=1&ide=idea")
+    assert status == 200 and json.loads(payload) == {"ide": "idea", "fallback": False}
+    assert [p for p, _ in I.asked] == ["/open-diff", "/open-file"]
+
+
+def test_the_badge_poll_lists_the_ides_on_this_checkout_only(repo, tmp_path, monkeypatch, stop):
+    r, _, head = repo
+    other = tmp_path / "other"
+    other.mkdir()
+    for app, folder, focused in (("vscode", r, False), ("idea", r, True),
+                                 ("vscode", other, True)):
+        stop(_ide(tmp_path, monkeypatch, app, folder, focused=focused)[0])
+    got = srv.editor_state(head, str(r), "feature")
+    assert got["ides"] == [{"app": "vscode", "label": "VS Code", "focused": False},
+                           {"app": "idea", "label": "IntelliJ IDEA", "focused": True}]
+    assert got["state"] == "on" and "VS Code" in got["tip"]
+    picked = srv.editor_state(head, str(r), "feature", ide="idea")
+    assert picked["state"] == "on" and picked["tip"].startswith("Click to bring IntelliJ window")
+    assert picked["ides"] == got["ides"]
+
+
+def test_the_poll_endpoint_passes_the_pick_on_only_when_sent(server, monkeypatch):
+    asked = []
+    monkeypatch.setattr(srv, "ROOT", None)
+    monkeypatch.setattr(srv, "editor_state",
+                        lambda *a, **k: asked.append((a, k)) or {"state": "on", "tip": "x"})
+    _call(server, "GET", f"{srv.EDITOR}?sha=abc&root=/r&branch=b&ide=idea")
+    _call(server, "GET", f"{srv.EDITOR}?sha=abc&root=/r&branch=b&ide=emacs")
+    assert asked == [(("abc", "/r", "b"), {"ide": "idea"}), (("abc", "/r", "b"), {})]
+
+
+def test_pressing_the_badge_for_intellij_raises_or_opens_intellij(repo, tmp_path, monkeypatch, stop):
+    r, _, _ = repo
+    launched = []
+    monkeypatch.setattr(srv, "_launch", lambda *a: launched.append(a))
+    ij, I = _ide(tmp_path, monkeypatch, "idea", r)
+    stop(ij)
+    assert srv.open_editor(r, "idea") == {"how": "focused", "window": r.name}
+    assert I.asked == [("/command", None)] and launched == []
+    monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path / "nobody"))
+    assert srv.open_editor(r, "idea") == {"how": "opened", "window": None}
+    assert launched == [(r, "idea")]
+
+
+def test_the_badge_press_endpoint_takes_the_pick_from_its_body(server, tmp_path, monkeypatch):
+    opened = []
+    monkeypatch.setattr(srv, "open_editor", lambda *a: opened.append(a) or {"how": "opened"})
+    monkeypatch.setattr(srv, "ROOT", tmp_path)
+    status, payload = _call(server, "POST", srv.EDITOR_OPEN, {"ide": "idea"})
+    assert status == 200 and json.loads(payload)["ide"] == "idea"
+    _call(server, "POST", srv.EDITOR_OPEN, {})
+    assert opened == [(tmp_path, "idea"), (tmp_path,)]
+
+
+# ---- the page: the picker, and what a click sends ------------------------------------------
+
+@pytest.fixture(scope="module")
+def browser():
+    pw = pytest.importorskip("playwright.sync_api")
+    with pw.sync_playwright() as p:
+        try:
+            b = p.chromium.launch()
+        except Exception as e:                       # no chromium installed on this box
+            pytest.skip(f"chromium unavailable: {e}")
+        yield b
+        b.close()
+
+
+def _picker_page(browser, ides):
+    """A served page with the masthead badge, one source link and one *in VS Code* link,
+    against a fake server whose badge poll answers `ides`. Returns the page and the
+    requests it sent."""
+    from test_action_server import build
+    sent = []
+    link = build.gh_comment_link({"_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
+                                  "_ghFile": "vscode://file//r/src/A.java:12:1",
+                                  "_ghWhere": "src/A.java:12"})
+    body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
+            + '<style>' + build.CSS + '</style>' + build.SERVER_JS
+            + '</head><body><div class="titlerow"><span class="titleside">'
+            '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
+            '</span></div><a class="srcref" id="ref" href="vscode://file//r/src/A.java:3:1">'
+            f'A.java:3</a><p id="gh">{link}</p>' + build.TIP_JS + build.EDITOR_JS
+            + '</body></html>')
+
+    def serve(route):
+        url = route.request.url
+        sent.append(url.split("127.0.0.1:9", 1)[1])
+        if url.endswith("/review.html"):
+            return route.fulfill(body=body, content_type="text/html")
+        if "/__human_review__" in url:
+            return route.fulfill(body='{"humanReview": 1, "token": "t"}',
+                                 content_type="application/json")
+        if "/__editor__" in url:
+            return route.fulfill(body=json.dumps({"state": "on", "tip": "Click\nstate",
+                                                  "ides": ides}),
+                                 content_type="application/json")
+        if "/__open__" in url:
+            return route.fulfill(body='{"ide": "idea", "fallback": false}',
+                                 content_type="application/json")
+        return route.fulfill(status=404, body="")
+    page = browser.new_page()
+    page.route("http://127.0.0.1:9/**", serve)
+    page.goto("http://127.0.0.1:9/review.html")
+    return page, sent
+
+
+IDES2 = [{"app": "vscode", "label": "VS Code", "focused": False},
+         {"app": "idea", "label": "IntelliJ IDEA", "focused": True}]
+
+
+def test_two_ides_on_the_checkout_make_the_badge_a_picker_and_clicks_follow_it(browser):
+    page, sent = _picker_page(browser, IDES2)
+    page.wait_for_selector("#hr-ide:not([hidden])")
+    assert page.eval_on_selector_all("#hr-ide option", "os => os.map(o => o.textContent)") == [
+        "VS Code", "IntelliJ"]
+    assert page.locator("#hr-ide").input_value() == "vscode", "nothing picked yet: VS Code"
+    assert page.locator("#hr-vsc").inner_text() == "↗"
+    page.select_option("#hr-ide", "idea")
+    assert page.evaluate("document.documentElement.classList.contains('ide-idea')")
+    assert page.locator("a.f-vsc .ide-word").inner_text() == "IntelliJ"
+    assert page.locator("a.f-vsc svg.ij-ico").is_visible()
+    assert not page.locator("a.f-vsc svg.vsc-ico").is_visible()
+    page.click("#ref")
+    page.wait_for_timeout(200)
+    assert any(u.startswith("/__open__?") and "&ide=idea" in u for u in sent), sent
+    assert any(u.startswith("/__editor__?") and "&ide=idea" in u for u in sent), sent
+    # The pick is the reader's, kept across a reload.
+    page.reload()
+    page.wait_for_selector("#hr-ide:not([hidden])")
+    assert page.locator("#hr-ide").input_value() == "idea"
+    page.close()
+
+
+def test_one_ide_connected_is_a_plain_badge_naming_it(browser):
+    page, sent = _picker_page(browser, IDES2[1:])
+    page.wait_for_function("document.getElementById('hr-vsc').textContent === 'IntelliJ'")
+    assert page.locator("#hr-ide").count() == 0
+    page.click("#ref")
+    page.wait_for_timeout(200)
+    assert any(u.startswith("/__open__?") and "&ide=idea" in u for u in sent), sent
+    page.close()
