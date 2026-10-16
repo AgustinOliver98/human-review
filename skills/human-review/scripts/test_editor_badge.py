@@ -718,7 +718,7 @@ def _idea_link(href, face="", tip="", attrs=None, stamp=None):
     from test_action_server import build
     js = build.EDITOR_JS
     parts = [js[js.index(f"  function {name}("):js.index("\n  }\n", js.index(f"  function {name}(")) + 4]
-             for name in ("parse", "endOf", "ideaLink")]
+             for name in ("parse", "endOf", "commentAim", "ideaLink")]
     got = dict(attrs or {}, href=href, **{"data-tip": tip})
     script = (f"var STAMP = {json.dumps(stamp or {})};\n" + "".join(parts)
               + f"var A = {json.dumps(got)};\n"

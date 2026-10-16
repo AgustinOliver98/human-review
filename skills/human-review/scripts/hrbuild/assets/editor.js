@@ -199,11 +199,14 @@
       return url('diff', {file: aim.path, base: base, line: aim.line});
     }
     var end = endOf(link, aim.line);
+    // A PR comment's card, as the served page sends it (`commentQuery`).
+    var c = commentAim(link, aim.path, aim.line);
+    var said = c ? {comment: 1, commentLine: c.at !== c.line ? c.at : '', commentUrl: c.url} : {};
     if (STAMP.hrHead) {
-      return url('review-open', {file: aim.path, line: aim.line, endLine: end, sha: STAMP.hrHead,
-                                 root: STAMP.hrRoot, branch: STAMP.hrBranch});
+      return url('review-open', Object.assign({file: aim.path, line: aim.line, endLine: end, sha: STAMP.hrHead,
+                                 root: STAMP.hrRoot, branch: STAMP.hrBranch}, said));
     }
-    return url('open', {file: aim.path, line: aim.line, endLine: end});
+    return url('open', Object.assign({file: aim.path, line: aim.line, endLine: end}, said));
   }
 
   // A card posted to the PR names its thread on its "on GitHub \u2197" link (`data-pr-*`).
@@ -212,7 +215,11 @@
   // for Reply or Resolve \u2014 with `comment=1`, plus `commentLine` when GitHub anchored it
   // on another line than the reference starts on (a thread sits on its range's last line).
   // Any other link sends nothing, and opens exactly as it did.
-  function commentQuery(link, path, line) {
+  //
+  // The comment's own GitHub URL rides along as `commentUrl` (the ↗'s href): IntelliJ cannot
+  // expand a PR thread in the file, so its plugin lands on the lines and offers "Open on
+  // GitHub" instead — and needs to know where that is.
+  function commentAim(link, path, line) {
     for (var li = link.closest && link.closest('li'); li;
          li = li.parentElement && li.parentElement.closest('li')) {
       var gh = null;
@@ -221,14 +228,21 @@
       }
       if (!gh) continue;
       var rel = gh.getAttribute('data-pr-path');
-      if (path !== rel && path.slice(-(rel.length + 1)) !== '/' + rel) return '';
+      if (path !== rel && path.slice(-(rel.length + 1)) !== '/' + rel) return null;
       var at = Number(gh.getAttribute('data-pr-line'));
       var from = Number(gh.getAttribute('data-pr-start')) || at;
       var a = Number(line), b = Number(endOf(link, line) || line);
-      if (!at || b < from || a > at) return '';
-      return '&comment=1' + (at !== a ? '&commentLine=' + at : '');
+      if (!at || b < from || a > at) return null;
+      return {at: at, line: a, url: gh.getAttribute('href') || ''};
     }
-    return '';
+    return null;
+  }
+
+  function commentQuery(link, path, line) {
+    var c = commentAim(link, path, line);
+    if (!c) return '';
+    return '&comment=1' + (c.at !== c.line ? '&commentLine=' + c.at : '')
+      + (c.url ? '&commentUrl=' + encodeURIComponent(c.url) : '');
   }
 
   // The one button on the page that copies something that is not a source reference:

@@ -18,7 +18,7 @@ def _calls(monkeypatch, tmp_path, env):
     opener.write_text("")
     monkeypatch.setattr(sr, "VSC_OPENER", opener)
     monkeypatch.setattr(sr.Path, "home", classmethod(lambda cls: tmp_path))
-    for k in ("TERM_PROGRAM", "VSCODE_IPC_HOOK_CLI"):
+    for k in ("TERM_PROGRAM", "VSCODE_IPC_HOOK_CLI", "TERMINAL_EMULATOR"):
         monkeypatch.delenv(k, raising=False)
     for k, v in env.items():
         monkeypatch.setenv(k, v)
@@ -41,29 +41,34 @@ def test_anywhere_else_the_default_browser(monkeypatch, tmp_path):
         ("browser", "http://127.0.0.1:7654/review.html")]
 
 
-def _bridge(tmp_path, registry: str, name: str, folder: Path):
-    """One fake VS Code window owning `folder`, registered under `~/<registry>/<name>`.
-    Returns the server and the URLs it was asked to show."""
+def _bridge(tmp_path, registry: str, name: str, folder: Path, app="vscode", status=200,
+            bodies=None):
+    """One fake editor window owning `folder`, registered under `~/<registry>/<name>`.
+    Returns the server and the URLs it was asked to show (`bodies`, when given, collects the
+    whole requests). `status` is what it answers `/open-url` with."""
     import http.server, threading
     shown = []
 
     class H(http.server.BaseHTTPRequestHandler):
-        def _send(self, body):
+        def _send(self, body, code=200):
             data = json.dumps(body).encode()
-            self.send_response(200)
+            self.send_response(code)
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
 
         def do_GET(self):
             assert self.path == "/ping" and self.headers["x-relay-token"] == "t"
-            self._send({"ok": True, "app": "vscode", "folders": [
+            self._send({"ok": True, "app": app, "folders": [
                 {"name": folder.name, "path": str(folder), "realPath": str(folder.resolve())}]})
 
         def do_POST(self):
             assert self.path == "/open-url" and self.headers["x-relay-token"] == "t"
-            shown.append(json.loads(self.rfile.read(int(self.headers["Content-Length"])))["url"])
-            self._send({"ok": True})
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            shown.append(body["url"])
+            if bodies is not None:
+                bodies.append(body)
+            self._send({"ok": status == 200}, status)
 
         def log_message(self, *a):
             pass
@@ -195,3 +200,48 @@ def test_stop_with_no_server_for_this_report_kills_nothing(monkeypatch, tmp_path
     seen = _world(monkeypatch, tmp_path, {17654: _theirs(7)}, argv=["--stop"])
     assert sr.main() == 0
     assert seen["killed"] == []
+
+
+def test_inside_intellij_the_tool_window_shows_the_page_of_this_checkout(monkeypatch, tmp_path):
+    """IntelliJ's terminal says so in TERMINAL_EMULATOR; its one bridge for every project
+    window is told the checkout, so the page lands in the window that has it."""
+    checkout = tmp_path / "shop"
+    checkout.mkdir()
+    bodies = []
+    httpd, shown = _bridge(tmp_path, ".human-review", "idea-1.json", checkout, app="idea", bodies=bodies)
+    monkeypatch.setattr(sr.Path, "home", classmethod(lambda cls: tmp_path))
+    for k in ("TERM_PROGRAM", "VSCODE_IPC_HOOK_CLI"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("TERMINAL_EMULATOR", "JetBrains-JediTerm")
+    import webbrowser
+    monkeypatch.setattr(webbrowser, "open", lambda url: shown.append(("browser", url)))
+    try:
+        sr.open_page("http://127.0.0.1:7654/review.html", checkout / ".human-review")
+    finally:
+        httpd.shutdown()
+    assert shown == ["http://127.0.0.1:7654/review.html"]
+    assert bodies == [{"url": "http://127.0.0.1:7654/review.html", "root": str(checkout / ".human-review")}]
+
+
+def test_an_intellij_without_jcef_answers_501_and_the_browser_opens(monkeypatch, tmp_path):
+    checkout = tmp_path / "shop"
+    checkout.mkdir()
+    httpd, shown = _bridge(tmp_path, ".human-review", "idea-1.json", checkout, app="idea", status=501)
+    monkeypatch.setattr(sr.Path, "home", classmethod(lambda cls: tmp_path))
+    for k in ("TERM_PROGRAM", "VSCODE_IPC_HOOK_CLI"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("TERMINAL_EMULATOR", "JetBrains-JediTerm")
+    import webbrowser
+    monkeypatch.setattr(webbrowser, "open", lambda url: shown.append(("browser", url)))
+    try:
+        sr.open_page("http://127.0.0.1:7654/review.html", checkout)
+    finally:
+        httpd.shutdown()
+    assert shown == ["http://127.0.0.1:7654/review.html", ("browser", "http://127.0.0.1:7654/review.html")]
+
+
+def test_which_terminal_the_server_was_started_from():
+    assert sr.terminal_ide({"TERM_PROGRAM": "vscode"}) == "vscode"
+    assert sr.terminal_ide({"VSCODE_IPC_HOOK_CLI": "/x"}) == "vscode"
+    assert sr.terminal_ide({"TERMINAL_EMULATOR": "JetBrains-JediTerm"}) == "idea"
+    assert sr.terminal_ide({"TERM_PROGRAM": "Apple_Terminal"}) is None

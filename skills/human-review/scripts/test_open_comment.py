@@ -61,6 +61,30 @@ def test_a_bad_comment_line_is_dropped_and_the_comment_kept(at):
     assert srv.comment_aim({"comment": ["1"], "commentLine": [at]}, 4) == {"comment": True}
 
 
+GH = "https://github.com/victorrentea/petclinic/pull/53#discussion_r1234"
+
+
+def test_the_comments_github_url_travels_to_the_editor(server, tmp_path, monkeypatch):
+    """IntelliJ cannot expand the thread in the file; it offers the comment on GitHub, and
+    needs its URL for that."""
+    f = _file(tmp_path)
+    opened, _ = _record(monkeypatch)
+    from urllib.parse import quote
+    _call(server, "GET", f"{srv.OPEN}?path={f}&line=4&comment=1&commentUrl={quote(GH, safe='')}")
+    assert opened == [((f, 4), {"comment": True, "comment_url": GH})]
+
+
+@pytest.mark.parametrize("url", ["javascript:alert(1)", "https://evil.example/o/r/pull/1",
+                                 "http://github.com/o/r/pull/1", "https://github.com/o/r/issues/1",
+                                 "https://github.com.evil/o/r/pull/1", "file:///etc/passwd"])
+def test_a_comment_url_that_is_not_a_github_pull_request_is_dropped(url):
+    assert srv.comment_aim({"comment": ["1"], "commentUrl": [url]}, 4) == {"comment": True}
+
+
+def test_no_comment_no_url():
+    assert srv.comment_aim({"commentUrl": [GH]}, 4) == {}
+
+
 # ── what goes to the bridge ───────────────────────────────────────────────────────────────
 
 def test_open_file_carries_the_comment_only_when_asked(tmp_path, monkeypatch):
@@ -73,12 +97,14 @@ def test_open_file_carries_the_comment_only_when_asked(tmp_path, monkeypatch):
         srv.open_in_editor(f, 45, end_line=48, comment=True, comment_line=48)
         srv.open_in_editor(f, 4, comment=True)
         srv.open_in_editor(f, 4)
+        srv.open_in_editor(f, 4, comment=True, comment_url=GH)
 
         assert [b for _, b in got] == [
             {"path": str(f), "line": 45, "focus": True, "endLine": 48,
              "comment": True, "commentLine": 48},
             {"path": str(f), "line": 4, "focus": True, "comment": True},
-            {"path": str(f), "line": 4, "focus": True}]
+            {"path": str(f), "line": 4, "focus": True},
+            {"path": str(f), "line": 4, "focus": True, "comment": True, "commentUrl": GH}]
     finally:
         httpd.shutdown()
 
@@ -92,9 +118,13 @@ def test_review_open_carries_the_comment(tmp_path, monkeypatch):
         monkeypatch.setattr(srv.Path, "home", classmethod(lambda cls: tmp_path))
 
         srv.review_open(Path("/r/V4.sql"), 4, SHA, "/r", "test-pr", comment=True)
+        srv.review_open(Path("/r/V4.sql"), 4, SHA, "/r", "test-pr", comment=True, comment_url=GH)
 
         assert got == [("/review-open", {"file": "/r/V4.sql", "line": 4, "sha": SHA,
-                                         "root": "/r", "branch": "test-pr", "comment": True})]
+                                         "root": "/r", "branch": "test-pr", "comment": True}),
+                       ("/review-open", {"file": "/r/V4.sql", "line": 4, "sha": SHA,
+                                         "root": "/r", "branch": "test-pr", "comment": True,
+                                         "commentUrl": GH})]
     finally:
         httpd.shutdown()
 
@@ -163,5 +193,40 @@ def test_a_card_without_a_posted_thread_asks_for_nothing():
     assert _comment_query(V4, "4", "V4__visit_vet.sql:4", None) == ""
 
 
+def test_the_card_names_its_comment_on_github():
+    gh = {"path": "VisitTest.java", "line": "448", "start": "445", "href": GH}
+    assert _comment_query("/w/p/VisitTest.java", "445", "VisitTest.java:445-448", gh) \
+        == "&comment=1&commentLine=448&commentUrl=" + __import__("urllib.parse").parse.quote(GH, safe="~()*!.'")
+
+
 def test_the_served_open_sends_it():
     assert "+ commentQuery(link, ref2.path, ref2.line)" in build.EDITOR_JS
+
+
+def test_an_intellij_link_off_disk_carries_the_comment_too():
+    """Off disk with IntelliJ picked, the card's reference becomes a jetbrains:// link — with
+    the same comment fields the served page sends, so the plugin can offer the thread."""
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    js = build.EDITOR_JS
+    body = js[js.index("  function endOf(link, line) {"):js.index("  // The one button on the page that copies something")]
+    gh = {"path": "VisitTest.java", "line": "448", "start": "445", "href": GH}
+    script = f"""
+var STAMP = {{}};
+function parse() {{ return {{path: '/w/p/VisitTest.java', line: 445}}; }}
+{body}
+var attrs = {json.dumps(gh)};
+var gh = {{ matches: function () {{ return true; }},
+           getAttribute: function (k) {{ return attrs[k.replace('data-pr-', '')] || null; }} }};
+var li = {{ children: [gh], parentElement: null }};
+var link = {{ textContent: 'VisitTest.java:445-448', getAttribute: function () {{ return ''; }},
+             closest: function () {{ return li; }} }};
+process.stdout.write(ideaLink(link));
+"""
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
+    from urllib.parse import parse_qs, urlsplit
+    u = urlsplit(out)
+    assert out.startswith("jetbrains://idea/human-review/open?")
+    assert {k: v[0] for k, v in parse_qs(u.query).items()} == {
+        "file": "/w/p/VisitTest.java", "line": "445", "endLine": "448",
+        "comment": "1", "commentLine": "448", "commentUrl": GH}

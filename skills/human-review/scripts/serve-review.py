@@ -453,28 +453,39 @@ def line_span(q: dict) -> tuple[int, int | None]:
     return line, end
 
 
+#: A comment, a review or the PR itself on GitHub — the only URL a click may hand an editor
+#: to open in a browser. Anchored at both ends: anything else that arrives is dropped.
+_GH_COMMENT_URL = re.compile(r"^https://github\.com/[^/\s?#]+/[^/\s?#]+/pull/\d+([/?#]\S*)?$")
+
+
 def comment_aim(q: dict, line: int) -> dict:
     """The PR comment thread a click asks the editor to bring up, as `open_in_editor` /
     `review_open` keyword arguments: `{"comment": True}`, plus `comment_line` when GitHub
-    anchored the thread on another line than the reference starts on. Empty for anything
-    but an explicit `comment=1`/`true`, and a malformed `commentLine` is dropped, not
-    guessed — the bridge then looks on the reference's own first line."""
+    anchored the thread on another line than the reference starts on, and `comment_url`,
+    the comment on GitHub — what IntelliJ offers to open, since it cannot expand the thread
+    in the file. Empty for anything but an explicit `comment=1`/`true`; a malformed
+    `commentLine` is dropped, not guessed — the bridge then looks on the reference's own
+    first line — and so is a `commentUrl` that is not a GitHub pull request's."""
     if (q.get("comment") or [""])[0] not in ("1", "true"):
         return {}
     raw = (q.get("commentLine") or [""])[0]
     at = int(raw) if raw.isdigit() and int(raw) > 0 else None
-    return {"comment": True, **({"comment_line": at} if at and at != line else {})}
+    url = (q.get("commentUrl") or [""])[0]
+    return {"comment": True, **({"comment_line": at} if at and at != line else {}),
+            **({"comment_url": url} if _GH_COMMENT_URL.match(url) else {})}
 
 
-def _comment_fields(comment, comment_line):
+def _comment_fields(comment, comment_line, comment_url=None):
     """What the bridge is sent for a comment: nothing unless asked, so a bridge too old to
     know it gets the request it always did."""
     if not comment:
         return {}
-    return {"comment": True, **({"commentLine": comment_line} if comment_line else {})}
+    return {"comment": True, **({"commentLine": comment_line} if comment_line else {}),
+            **({"commentUrl": comment_url} if comment_url else {})}
 
 
-def open_in_editor(path, line, end_line=None, comment=False, comment_line=None, app="vscode"):
+def open_in_editor(path, line, end_line=None, comment=False, comment_line=None, app="vscode",
+                   comment_url=None):
     """Land the reader in the class. Through the VS Code window that has this file's
     folder open where the bridge is installed, and through the OS otherwise. `app` "idea"
     is the same through IntelliJ's (`pick_ide` chose it): one route, two editors.
@@ -485,7 +496,8 @@ def open_in_editor(path, line, end_line=None, comment=False, comment_line=None, 
 
     `comment` asks the bridge to bring up the PR comment thread on the reference too —
     expanded and focused, on `comment_line` when GitHub anchored it on another line than
-    `line` — so the reader can reply or resolve it right there.
+    `line` — so the reader can reply or resolve it right there. `comment_url`, the comment on
+    GitHub, is what IntelliJ offers to open instead: it has no API to expand the thread.
 
     The page cannot do this itself: its references are `vscode://file/...` links, and the
     embedded browser's iframe is sandboxed under a `frame-src *` CSP, so a webview cannot
@@ -508,7 +520,7 @@ def open_in_editor(path, line, end_line=None, comment=False, comment_line=None, 
                     # accident. The bridge raises the window natively.
                     data=json.dumps({"path": str(path), "line": line, "focus": True,
                                      **({"endLine": end_line} if end_line else {}),
-                                     **_comment_fields(comment, comment_line)}).encode(),
+                                     **_comment_fields(comment, comment_line, comment_url)}).encode(),
                     headers={"x-relay-token": entry["token"], "Content-Type": "application/json"})
                 # A comment adds the bridge's wait for the PR extension's threads (≤ ~2 s).
                 urllib.request.urlopen(req, timeout=8 if comment else 5).read()
@@ -528,7 +540,7 @@ def open_in_editor(path, line, end_line=None, comment=False, comment_line=None, 
 
 
 def review_open(path, line, sha, root, branch, end_line=None, comment=False, comment_line=None,
-                app="vscode"):
+                app="vscode", comment_url=None):
     """Ask the editor bridge to open `path` in a window holding the *reviewed* version of it.
 
     Any window will do as the one asked: the extension compares the file at each window's
@@ -543,7 +555,7 @@ def review_open(path, line, sha, root, branch, end_line=None, comment=False, com
     payload = json.dumps({"file": str(path), "line": line, "sha": sha, "root": root,
                           "branch": branch,
                           **({"endLine": end_line} if end_line else {}),
-                          **_comment_fields(comment, comment_line)}).encode()
+                          **_comment_fields(comment, comment_line, comment_url)}).encode()
     for f in bridge_files():
         if not f.name.startswith(f"{app}-"):
             continue
@@ -2658,18 +2670,21 @@ VSC_OPENER = Path(os.environ.get("HUMAN_REVIEW_VSC_OPENER",
                                  "~/workspace/victor-vsc/open-in-browser.py")).expanduser()
 
 
-def open_in_vscode(url: str, root) -> bool:
-    """Show `url` in the embedded browser of the VS Code window that has `root` open — beside
-    the code, not on another desktop — through that window's bridge (`/open-url`). `root` is
-    any path inside the checkout (the served `.human-review` will do): windows are ranked by
-    the folder that contains it. False when no window owning it takes it."""
+def open_in_ide(url: str, root, app: str = "vscode") -> bool:
+    """Show `url` inside the editor window that has `root` open — beside the code, not on
+    another desktop — through that window's bridge (`/open-url`): VS Code's Simple Browser,
+    or IntelliJ's Human Review tool window. `root` is any path inside the checkout (the
+    served `.human-review` will do): windows are ranked by the folder that contains it, and
+    IntelliJ — one bridge for every project window — is told it too, to pick the project.
+    False when no window owning it takes it; an IntelliJ without an embedded browser answers
+    501, which is a no like any other, and the caller opens the OS browser."""
     if not root:
         return False
-    for entry, _info in windows_of("vscode", Path(root)):
+    for entry, _info in windows_of(app, Path(root)):
         try:
             req = urllib.request.Request(
                 f"http://127.0.0.1:{entry['port']}/open-url", method="POST",
-                data=json.dumps({"url": url}).encode(),
+                data=json.dumps({"url": url, **({"root": str(root)} if app == "idea" else {})}).encode(),
                 headers={"x-relay-token": entry["token"], "Content-Type": "application/json"})
             if json.loads(urllib.request.urlopen(req, timeout=5).read() or b"{}").get("ok"):
                 return True
@@ -2678,18 +2693,36 @@ def open_in_vscode(url: str, root) -> bool:
     return False
 
 
+def open_in_vscode(url: str, root) -> bool:
+    """`open_in_ide` in VS Code — the name the rest of the skill has always called."""
+    return open_in_ide(url, root, "vscode")
+
+
+def terminal_ide(env=None) -> str | None:
+    """The editor whose integrated terminal this server was started from, if any: VS Code
+    says so in `TERM_PROGRAM`/`VSCODE_IPC_HOOK_CLI`, IntelliJ in `TERMINAL_EMULATOR`
+    (`JetBrains-JediTerm`, set by its terminal plugin's LocalOptionsConfigurer)."""
+    env = os.environ if env is None else env
+    if env.get("TERM_PROGRAM") == "vscode" or "VSCODE_IPC_HOOK_CLI" in env:
+        return "vscode"
+    if env.get("TERMINAL_EMULATOR") == "JetBrains-JediTerm":
+        return "idea"
+    return None
+
+
 def open_page(url: str, root=None) -> None:
     """Show the page the first time it is served, and only then.
 
     Only on a *new* server: a rebuild reaches a tab that is already open by itself (the
     page reloads when the build stops writing), so opening again on every refresh would
     pile up one tab per iteration. Inside VS Code the page goes into the window's own
-    browser, beside the code; anywhere else, into the default browser. It is an http URL
-    either way — never `open review.html`, which hands a file to whatever owns `.html`."""
-    in_vscode = os.environ.get("TERM_PROGRAM") == "vscode" or "VSCODE_IPC_HOOK_CLI" in os.environ
-    if in_vscode and open_in_vscode(url, root):
+    browser, beside the code; inside IntelliJ, into its Human Review tool window; anywhere
+    else — or an IntelliJ with no embedded browser — into the default browser. It is an http
+    URL either way — never `open review.html`, which hands a file to whatever owns `.html`."""
+    ide = terminal_ide()
+    if ide and open_in_ide(url, root, ide):
         return
-    if in_vscode and VSC_OPENER.is_file():
+    if ide == "vscode" and VSC_OPENER.is_file():
         r = subprocess.run([sys.executable, str(VSC_OPENER), url], capture_output=True)
         if r.returncode == 0:
             return
