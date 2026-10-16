@@ -213,11 +213,16 @@
   // where no launcher answers: a refused connection is how "not installed" is spelt.
   // Asked on the click and never on load, so a reader of the zip on another machine does
   // not get a red "connection refused" line in the console for merely opening the page.
+  // The command goes on the clipboard first, on every press and before the launcher is
+  // asked: a launcher that hangs or fails leaves the reader holding the line already, not
+  // waiting 30 s to be handed it (16 Oct 2026, Victor). Copied here, inside the click,
+  // because the clipboard is only writable while the gesture is still live.
   var LAUNCHER = 'http://127.0.0.1:7653';
   function serveHere(cmd) {
     if (cmd.classList.contains('starting')) return;
     cmd.classList.add('starting');
-    flash('Starting the review server…', true);
+    copy(cmd.getAttribute('data-copy') || '');
+    flash('Starting the review server… (command copied, in case it does not)', true);
     fetch(LAUNCHER + '/serve', {
       method: 'POST', cache: 'no-store',
       headers: {'Content-Type': 'application/json'},
@@ -234,9 +239,9 @@
       });
     }).catch(function (e) {
       cmd.classList.remove('starting');
-      // The launcher answered and the server did not start: say why, and still hand over
-      // the line, which prints the same error in a terminal where it can be read whole.
-      copyCommand(cmd, true, false, e.said
+      // The launcher answered and the server did not start: say why. The line is already
+      // on the clipboard, and in a terminal it prints the same error where it reads whole.
+      flash(e.said
         ? 'Could not start it (' + e.message + ') — the command is copied, run it in a terminal'
         : 'Copied — run it in a terminal. To make this button start it itself, run '
           + 'scripts/install-serve-launcher.sh once');
@@ -261,8 +266,8 @@
     }
     chip.classList.add('launches');
     chip.setAttribute('data-tip', 'Start the review server and reload this tab from it, so '
-      + 'buttons run their action instead of copying a command. Without the launcher '
-      + '(scripts/install-serve-launcher.sh), copies the terminal command instead.');
+      + 'buttons run their action instead of copying a command. Also copies the terminal '
+      + 'command, to run yourself if the launcher (scripts/install-serve-launcher.sh) fails.');
   })();
 
   // Where a running command says what it is doing: a line under the control that started
