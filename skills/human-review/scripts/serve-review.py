@@ -1363,11 +1363,42 @@ class Run:
 COMPOSE_IMAGE_LINE = re.compile(r"^\s*Image\s+(\S+)\s+(Building|Built)\b")
 COMPOSE_CONTAINER_LINE = re.compile(r"^\s*Container\s+([A-Za-z0-9][A-Za-z0-9_.-]*)\s+[A-Z][a-z]+\b")
 
+# A Start pressed with Docker Desktop closed died in a second on the host script's
+# `docker info` check, and the reader had to go and open Docker by hand (16 Oct 2026).
+# Run from the page, the server opens it instead — in the background, without taking
+# focus — and waits for its engine, saying so in two lines the page turns into a phase.
+# Only on macOS, only when docker exists and does not answer, and only for the Start:
+# the copied command is untouched, and a terminal is where its own error belongs.
+DEMO_START_ACTION = "demo-env"
+DOCKER_STARTING = "[serve-review] Docker Desktop is not running — starting it"
+DOCKER_UP = "[serve-review] Docker is up"
+DOCKER_PREFLIGHT = (
+    'if [ "$(uname)" = Darwin ] && command -v docker >/dev/null 2>&1 '
+    '&& ! docker info >/dev/null 2>&1 && open -ga Docker 2>/dev/null; then\n'
+    f'  echo "{DOCKER_STARTING}"\n'
+    '  i=0\n'
+    '  until docker info >/dev/null 2>&1; do\n'
+    '    i=$((i+1))\n'
+    '    if [ "$i" -ge 180 ]; then\n'
+    '      echo "[serve-review] Docker Desktop did not come up within 3 minutes"; exit 1\n'
+    '    fi\n'
+    '    sleep 1\n'
+    '  done\n'
+    f'  echo "{DOCKER_UP}"\n'
+    'fi\n')
+
 
 def compose_scrape(facts: dict, line: str) -> None:
     """Fold one output line into what a run knows about the stack it is bringing up:
     `images` (name -> Building|Built, in the order they appeared) and `container`, the
-    first container compose named — the handle the project is read off, by label."""
+    first container compose named — the handle the project is read off, by label — and
+    `docker`, `starting` while the Start waits for Docker Desktop and `up` once it answers."""
+    if line == DOCKER_STARTING:
+        facts["docker"] = "starting"
+        return
+    if line == DOCKER_UP:
+        facts["docker"] = "up"
+        return
     m = COMPOSE_IMAGE_LINE.match(line)
     if m:
         facts.setdefault("images", {})[m.group(1)] = m.group(2)
@@ -1503,9 +1534,11 @@ def compose_status(run, docker=None, log_line=None) -> dict:
     with run._lock:
         facts = {"images": dict(run.compose.get("images") or {}),
                  "container": run.compose.get("container"),
-                 "project": run.compose.get("project")}
+                 "project": run.compose.get("project"),
+                 "docker": run.compose.get("docker") or ""}
         running = run.state == "running"
     out = {"run": run.id, "state": run.state, "project": facts["project"] or "",
+           "docker": facts["docker"],
            "images": [{"image": k, "state": v} for k, v in facts["images"].items()],
            "containers": [], "up": 0, "total": 0}
     project = facts["project"]
@@ -1573,6 +1606,8 @@ def start_run(action_id, params, served_root):
     argv, problem = resolve_command(entry, params)
     if problem:
         return None, problem, 400
+    if action_id == DEMO_START_ACTION:
+        argv = argv[:2] + [DOCKER_PREFLIGHT + argv[2]]
     cwd = entry.get("cwd") or (ROOT if ROOT else Path(served_root))
     if not Path(cwd).is_dir():
         return None, f"{cwd} is not a directory on this machine", 500

@@ -42,9 +42,10 @@
   //
   // A factory over the row and nothing else, so the same lines can be lifted into a page
   // built before this existed (a `live-patch-docker-status` script) without dragging the
-  // rest of the row's state machine with them.
+  // rest of the row's state machine with them. `told`, when given, hears every answer the
+  // poll gets, so the row can word the phase it says the run is in.
   // >>> appenv-pods
-  function appenvPods(bar) {
+  function appenvPods(bar, told) {
     var box = bar.querySelector('.appenv-pods');
     if (!box) {
       box = document.createElement('span');
@@ -87,6 +88,7 @@
     }
 
     function draw(j) {
+      if (told) told(j);
       var rows = (j && j.containers) || [], imgs = (j && j.images) || [];
       var parts = [];
       if (rows.length) {
@@ -155,7 +157,7 @@
 
   var bar = document.querySelector('.appenv');
   if (!bar) return;
-  var pods = appenvPods(bar);
+  var pods = appenvPods(bar, heard);
   var state = bar.querySelector('.appenv-state');
   var addr = bar.querySelector('.appenv-url');
   // The wrapper per verb, not the button: each wrapper holds the clipboard/play pair that
@@ -389,6 +391,72 @@
   // handled by the one clipboard-and-toast handler in EDITOR_JS — a second implementation
   // for one button is how two of them end up behaving differently.
 
+  // Which step a Start is on, in words, with its clock (16 Oct 2026: a bare "Starting…" sat
+  // through Docker Desktop booting and a first build, and from the stage it looked stuck).
+  // Read off the same `/__compose__` answer the chips are drawn from: the server's own
+  // lines while it waits for Docker, then the images compose builds, then its containers.
+  // Before any of that the host script is exporting the commit and checking Docker, which
+  // compose output cannot tell apart, so it is called preparing and nothing finer.
+  function phaseOf(j) {
+    if (!j) return null;
+    var rows = j.containers || [], imgs = j.images || [];
+    if (rows.length) {
+      if (j.up >= j.total) return {word: 'Waiting for the address',
+        why: 'Every container is up; the start script is about to print where the app is.'};
+      // `health: starting` is a container running and waiting on its check; `Created` is
+      // compose not having started it yet.
+      var waiting = rows.some(function (r) {
+        return r.light === 'starting' && /health/.test(r.status || '');
+      });
+      return {word: (waiting ? 'Waiting for health ' : 'Starting containers ')
+                    + j.up + '/' + j.total,
+        why: j.up + ' of ' + j.total + ' containers are up. Each one waits for its '
+             + 'healthcheck; the backend is usually last.'};
+    }
+    if (imgs.length) {
+      var done = imgs.filter(function (i) { return i.state === 'Built'; }).length;
+      if (done < imgs.length) return {word: 'Building images ' + done + '/' + imgs.length,
+        why: done + ' of ' + imgs.length + ' images built. The first Start of a commit '
+             + 'builds them, which takes minutes; later Starts reuse them.'};
+      return {word: 'Creating containers',
+        why: 'All ' + imgs.length + ' images are built; compose is creating the containers.'};
+    }
+    if (j.docker === 'starting') return {word: 'Starting Docker Desktop',
+      why: 'Docker Desktop was not running, so Start opened it. Its engine needs '
+           + 'about half a minute to boot.'};
+    return {word: 'Preparing',
+      why: 'The start script is exporting this commit and checking Docker.'};
+  }
+
+  // What the pill says while a Start runs: the phase, how long the Start has been going,
+  // and, on hover, why that step takes time and the last line the command printed.
+  var phase = null, lastLine = '', since = 0, clock = null;
+  function elapsed() {
+    var s = Math.max(0, Math.round((Date.now() - since) / 1000));
+    return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
+  }
+  function tell() {
+    if (!since) return;
+    say('unknown', (phase ? phase.word : 'Starting') + '\u2026 ' + elapsed());
+    var tip = [phase && phase.why, lastLine && 'Last output: ' + lastLine]
+      .filter(Boolean).join(' ');
+    if (tip) state.dataset.tip = tip;
+  }
+  function heard(j) {
+    if (!since || !j) return;
+    phase = phaseOf(j);
+    tell();
+  }
+  function timing(started) {
+    // The server's clock for a run this tab joined (a reload mid-Start), else the press.
+    since = started ? started * 1000 : Date.now();
+    phase = null; lastLine = '';
+    clearInterval(clock);
+    clock = setInterval(tell, 1000);
+    tell();
+  }
+  function untimed() { since = 0; phase = null; lastLine = ''; clearInterval(clock); }
+
   // While a command is in flight nothing else in the row may be pressed — a Stop sent
   // into the middle of a docker build is a half-torn-down instance nobody asked for —
   // and the pill carries the last line the command printed, which is where a reader who
@@ -401,18 +469,22 @@
     // of things going away, which the address disappearing already says.
     var watched = id === 'demo-env';
     pods.clear();
+    var timed = false;
     return window.HR.run(id, {}, function (snap) {
       var line = window.HR.tail(snap);
-      if (line) state.dataset.tip = line;
+      if (watched && !timed) { timed = true; timing(snap.started); }
+      if (watched) { lastLine = line || lastLine; tell(); }
+      else if (line) state.dataset.tip = line;
       if (watched) pods.watch(snap.run);
     }).then(function (done) {
       busy = false;
+      if (watched) untimed();
       state.removeAttribute('data-tip');
       if (watched) pods.finish(done.state === 'done');
       then(done);
     }).catch(function (e) {
       busy = false;
-      if (watched) pods.finish(false);
+      if (watched) { untimed(); pods.finish(false); }
       say('down', face + ' failed');
       state.dataset.tip = e.message || 'the review server is no longer running';
       setLive(false, state.dataset.tip);

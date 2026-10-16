@@ -266,6 +266,73 @@ def test_a_cross_site_poll_is_refused(server):
 
 
 # --------------------------------------------------------------------------- #
+# Docker Desktop closed: the Start opens it and says so
+# --------------------------------------------------------------------------- #
+
+def test_the_servers_docker_lines_are_a_phase_and_not_an_image():
+    facts = {}
+    srv.compose_scrape(facts, srv.DOCKER_STARTING)
+    assert facts == {"docker": "starting"}
+    srv.compose_scrape(facts, srv.DOCKER_UP)
+    assert facts == {"docker": "up"}
+    assert srv.compose_status(_Run(facts), docker=_docker())["docker"] == "up"
+
+
+def _fakes(tmp_path, refusals):
+    """A `docker` that refuses `info` for its first `refusals` calls, and an `open` that
+    logs what it was asked to open — the two things the preflight touches on the host."""
+    bin_ = tmp_path / "bin"
+    bin_.mkdir()
+    (bin_ / "docker").write_text(
+        "#!/bin/sh\nn=$(cat \"$0.n\" 2>/dev/null || echo 0); echo $((n+1)) > \"$0.n\"\n"
+        f"[ \"$n\" -ge {refusals} ]\n")
+    (bin_ / "open").write_text("#!/bin/sh\necho \"$@\" >> \"$0.log\"\n")
+    for f in ("docker", "open"):
+        (bin_ / f).chmod(0o755)
+    return bin_
+
+
+@pytest.mark.skipif(__import__("platform").system() != "Darwin", reason="macOS only")
+@pytest.mark.parametrize("refusals, opened", [(0, False), (2, True)])
+def test_the_start_opens_docker_desktop_only_when_it_is_closed(tmp_path, refusals, opened):
+    import os
+    import subprocess
+    bin_ = _fakes(tmp_path, refusals)
+    out = subprocess.run(["/bin/sh", "-c", srv.DOCKER_PREFLIGHT + "echo the-command"],
+                         capture_output=True, text=True, timeout=30,
+                         env={**os.environ, "PATH": f"{bin_}:/usr/bin:/bin"}).stdout
+    lines = out.splitlines()
+    if opened:
+        assert lines == [srv.DOCKER_STARTING, srv.DOCKER_UP, "the-command"]
+        assert (bin_ / "open.log").read_text().split() == ["-ga", "Docker"], \
+            "in the background, without taking focus from the page"
+    else:
+        assert lines == ["the-command"], "a running Docker costs one `docker info`"
+        assert not (bin_ / "open.log").exists()
+
+
+def test_only_the_start_gets_the_preflight(tmp_path):
+    (tmp_path / srv.ACTIONS_FILE).write_text(json.dumps({"version": 1, "actions": {
+        "demo-env": {"command": "true", "params": {}},
+        "demo-env-stop": {"command": "true", "params": {}}}}), encoding="utf-8")
+    seen = {}
+
+    class Spy:
+        def __init__(self, action_id, entry, argv, cwd, on_done=None):
+            seen[action_id] = argv
+            self.id, self.action, self.state = action_id, action_id, "done"
+
+    real, srv.Run = srv.Run, Spy
+    try:
+        for verb in ("demo-env", "demo-env-stop"):
+            assert srv.start_run(verb, {}, tmp_path)[1] is None
+    finally:
+        srv.Run = real
+    assert seen["demo-env"][-1] == srv.DOCKER_PREFLIGHT + "true"
+    assert seen["demo-env-stop"][-1] == "true"
+
+
+# --------------------------------------------------------------------------- #
 # the chips, in a browser
 # --------------------------------------------------------------------------- #
 
@@ -388,7 +455,8 @@ def test_a_page_reloaded_mid_start_picks_the_run_up_by_itself(page):
                                           {"service": "web", "light": "starting",
                                            "status": "Created"}]})
     assert seen["count"] == "1/2 up"
-    assert page.evaluate("document.querySelector('.appenv-state').textContent") == "Starting\u2026"
+    assert page.evaluate("document.querySelector('.appenv-state').textContent") \
+        .startswith("Starting containers 1/2\u2026 0:0")
     page.evaluate("window.FINISH({state: 'done', result: {base: 'http://localhost:5'}})")
     page.wait_for_timeout(100)
     assert page.evaluate(READ) is None
@@ -400,3 +468,48 @@ def test_with_no_start_in_flight_the_page_does_not_press_it(page):
                      + STUB + build.runtime_html(RUNTIME) + build.APP_ENV_JS)
     page.wait_for_timeout(300)
     assert "demo-env" not in page.evaluate("window.RAN")
+
+
+STATE = "document.querySelector('.appenv-state')"
+
+
+def _phase(page, doc):
+    _compose(page, doc)
+    return page.evaluate(f"[{STATE}.textContent, {STATE}.dataset.tip]")
+
+
+def test_the_pill_names_the_step_the_start_is_on_and_how_long_it_has_taken(page):
+    """16 Oct 2026: "Starting…" stood through Docker Desktop booting and a first build,
+    and read as stuck. Each step now has its word, a clock, and on hover why it takes time
+    and the last line the command printed."""
+    _start(page)
+    text, tip = _phase(page, {"state": "running", "docker": "starting",
+                              "images": [], "containers": []})
+    assert text.startswith("Starting Docker Desktop\u2026 0:0")
+    assert "was not running" in tip and tip.endswith("Last output: building")
+    text, _ = _phase(page, {"state": "running", "docker": "up", "images": [],
+                            "containers": []})
+    assert text.startswith("Preparing\u2026")
+    text, tip = _phase(page, {"state": "running", "containers": [], "images": [
+        {"image": "petclinic-env-backend:abc", "state": "Built"},
+        {"image": "petclinic-env-frontend:abc", "state": "Building"}]})
+    assert text.startswith("Building images 1/2\u2026") and "1 of 2 images built" in tip
+    text, _ = _phase(page, {"state": "running", "containers": [], "images": [
+        {"image": "petclinic-env-backend:abc", "state": "Built"}]})
+    assert text.startswith("Creating containers\u2026")
+    text, _ = _phase(page, {"state": "running", "up": 1, "total": 2, "images": [],
+                            "containers": [{"service": "backend", "light": "starting",
+                                            "status": "Up 1s (health: starting)"},
+                                           {"service": "db", "light": "up", "status": "Up"}]})
+    assert text.startswith("Waiting for health 1/2\u2026")
+    text, _ = _phase(page, {"state": "running", "up": 2, "total": 2, "images": [],
+                            "containers": [{"service": "backend", "light": "up", "status": "Up"},
+                                           {"service": "db", "light": "up", "status": "Up"}]})
+    assert text.startswith("Waiting for the address\u2026")
+    was = page.evaluate(f"{STATE}.textContent")
+    page.wait_for_function(f"{STATE}.textContent !== {json.dumps(was)}", timeout=3000)
+    assert page.evaluate(f"{STATE}.textContent").startswith("Waiting for the address"), \
+        "the clock ticks between polls, the step stays"
+    page.evaluate("window.FINISH({state: 'failed', exit: 1, output: 'boom'})")
+    page.wait_for_timeout(1300)
+    assert page.evaluate(f"{STATE}.textContent") == "start failed", "the clock stops with the run"
