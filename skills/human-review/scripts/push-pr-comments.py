@@ -101,6 +101,22 @@ def review_marker(round_id: str | None) -> str:
     return f"<!-- hr:review:{round_id[:ROUND_LEN]} -->" if round_id else REVIEW_MARKER
 PILES = {"fixed": "F", "ignored": "I", "assumption": "A"}
 PILE_OF_KEY = {"autofixes": "fixed", "findings": "ignored", "assumptions": "assumption"}
+#: What every comment on the PR opens with, so its reader knows before the first word who is
+#: speaking: the coding agent unsure of its own reading (an assumption), or a reviewer agent
+#: against the coding agent — the finding still open, or already fixed.
+PREFIX = {"assumption": "🤖💭🤷‍♂️", "ignored": "🤖⚔️🤖❌", "fixed": "🤖⚔️🤖✅"}
+PILE_OF_LETTER = {letter: pile for pile, letter in PILES.items()}
+#: The single emoji the bodies used to open with, before PREFIX — replaced, not stacked.
+OLD_LEAD = re.compile(r"^(?:🛠|🔴|💭)\s*")
+
+
+def prefixed(body: str, pile: str) -> str:
+    """`body` opening with its pile's PREFIX. Applied at push time to every comment, the
+    agent-written payload's as much as `comment_body`'s, so no wording path can skip it."""
+    lead = PREFIX.get(pile)
+    if not lead or body.startswith(lead):
+        return body
+    return f"{lead} {OLD_LEAD.sub('', body)}"
 SLUG_MAX = 48
 BODY_MAX = 700          # a PR comment is a pointer to the page, not a copy of it
 BATCH = 15              # line comments per *create a review* call — 41 in one timed out
@@ -312,7 +328,7 @@ def resolve(c: dict, diff: Diff, at: str | None = None, repo: str | None = None)
     """Where comment `c` goes on the PR as it is at `diff.head`. `at` is the commit its
     `line` was written against — the comment's own `at`, else the payload's `commit_id`."""
     cid = c.get("hr_id") or hr_id(c["pile"], c["title"])
-    body = c["body"].rstrip()
+    body = prefixed(c["body"].rstrip(), c.get("pile") or PILE_OF_LETTER.get(cid[:1], ""))
     if not MARKER.search(body):
         body = f"{body}\n\n{marker(cid)}"
     path = c["path"]
@@ -918,18 +934,18 @@ def comment_body(pile: str, item: dict, fixed_sha: str | None, page: str | None)
     title = item["title"]
     by = item.get("source")
     if pile == "fixed":
-        head = f"🛠 **Auto-fixed**{f' in {fixed_sha}' if fixed_sha else ''} — {title}"
+        head = f"**Auto-fixed**{f' in {fixed_sha}' if fixed_sha else ''} — {title}"
         parts = [head, _short(item.get("body", ""), BODY_MAX)]
     elif pile == "ignored":
         sev = item.get("severity", "info")
-        head = f"🔴 **Open issue** · {sev} · declined by the author — {title}"
+        head = f"**Open issue** · {sev} · declined by the author — {title}"
         parts = [head]
         if item.get("why"):
             parts.append(f"**Why declined:** {_short(item['why'], 300)}")
         parts.append(_short(item.get("body", ""), BODY_MAX - 300))
     else:
         conf = item.get("confidence")
-        head = f"💭 **Assumption**{f' · confidence {conf:.2f}' if conf is not None else ''} — {title}"
+        head = f"**Assumption**{f' · confidence {conf:.2f}' if conf is not None else ''} — {title}"
         parts = [head]
         if item.get("alternative"):
             parts.append(f"**Not taken:** {_short(item['alternative'], 300)}")

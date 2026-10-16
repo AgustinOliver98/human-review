@@ -35,7 +35,7 @@ record is `review-points.md`). Write it **after** commit #2, so `commit_id` is t
       "line": 50,
       "side": "RIGHT",
       "anchor": "@PreAuthorize(\"hasAnyRole(@roles.OWNER_ADMIN, @roles.VET_ADMIN)\")",
-      "body": "🛠 **Auto-fixed** in db6b67ec — `GET /api/vets` was VET_ADMIN-only, so the owner-admin booking form got an empty vet picker. Only `listVets()` widens; writes stay VET_ADMIN.\n\n<sub>raised by /code-review high</sub>"
+      "body": "**Auto-fixed** in db6b67ec — `GET /api/vets` was VET_ADMIN-only, so the owner-admin booking form got an empty vet picker. Only `listVets()` widens; writes stay VET_ADMIN.\n\n<sub>raised by /code-review high</sub>"
     },
     {
       "pile": "assumption",
@@ -45,14 +45,14 @@ record is `review-points.md`). Write it **after** commit #2, so `commit_id` is t
       "line": 5,
       "side": "RIGHT",
       "anchor": "ALTER TABLE visits ADD COLUMN vet_id INT REFERENCES vets (id) ON DELETE SET NULL;",
-      "body": "💭 **Assumption** · confidence 0.55 — a deleted vet leaves their visits unattended rather than blocking the delete.\n\n**Not taken:** RESTRICT, which makes `DELETE /api/vets/{id}` fail on real data."
+      "body": "**Assumption** · confidence 0.55 — a deleted vet leaves their visits unattended rather than blocking the delete.\n\n**Not taken:** RESTRICT, which makes `DELETE /api/vets/{id}` fail on real data."
     },
     {
       "pile": "ignored",
       "title": "The user manual still describes the visit screens without a vet",
       "path": "user-manual/manual.md",
       "subject_type": "file",
-      "body": "🔴 **Open issue** · low · declined — the manual is regenerated from the running UI; a hand edit would disagree with its own screenshots."
+      "body": "**Open issue** · low · declined — the manual is regenerated from the running UI; a hand edit would disagree with its own screenshots."
     }
   ]
 }
@@ -94,11 +94,13 @@ Everything outside `comments[]` except `version` is GitHub's own field. Inside a
 
    | pile | opens with |
    | --- | --- |
-   | `fixed` | `🛠 **Auto-fixed** in <short sha>` — the commit that holds the fix |
-   | `ignored` | `🔴 **Open issue** · <severity> · declined` — then *why* it was declined |
-   | `assumption` | `💭 **Assumption** · confidence <0.00>` — then the reading **not** taken |
+   | `fixed` | `**Auto-fixed** in <short sha>` — the commit that holds the fix |
+   | `ignored` | `**Open issue** · <severity> · declined` — then *why* it was declined |
+   | `assumption` | `**Assumption** · confidence <0.00>` — then the reading **not** taken |
 
-   Do not paste the `review-points.md` body. Do not write the marker; the script adds it.
+   Do not paste the `review-points.md` body. Do not write the marker or the emoji prefix;
+   the script adds both — `🤖💭🤷‍♂️` on an assumption, `🤖⚔️🤖❌` on an open issue,
+   `🤖⚔️🤖✅` on an auto-fix — so the PR's reader knows who is speaking before the first word.
 6. **`body`** (the review's own) is one line: what was run and the three counts.
 7. **`event` is always `COMMENT`.** This records a review; it never approves or blocks.
 

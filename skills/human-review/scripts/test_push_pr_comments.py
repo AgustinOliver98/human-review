@@ -290,10 +290,10 @@ def test_from_review_points_then_check_against_a_real_diff(tmp_path, capsys):
     payload = json.loads((root / ppc.DEFAULT_FILE).read_text())
     by = {x["hr_id"]: x for x in payload["comments"]}
     assert by["F:return-the-vet"]["anchor"] == "Vet vet() { return vet; }"
-    assert by["F:return-the-vet"]["body"].startswith("🛠 **Auto-fixed** in ")
+    assert by["F:return-the-vet"]["body"].startswith("**Auto-fixed** in ")
     assert by["A:none-means-none"]["start_line"] == 2
     assert "confidence 0.50" in by["A:none-means-none"]["body"]
-    assert "🔴 **Open issue** · low" in by["I:rename-the-class"]["body"]
+    assert "**Open issue** · low" in by["I:rename-the-class"]["body"]
     capsys.readouterr()
 
     assert ppc.main(["--root", str(root), "--check", "--base", "main"]) == 0
@@ -494,7 +494,7 @@ def test_a_payload_older_than_the_record_is_stale_and_rebuilt_at_the_records_com
     assert fresh["commit_id"] == rec
     by = {x["hr_id"]: x for x in fresh["comments"]}
     assert by["F:return-the-vet"]["anchor"] == "Vet vet() { return vet; }"
-    assert by["F:return-the-vet"]["body"].startswith(f"🛠 **Auto-fixed** in {rec[:8]}")
+    assert by["F:return-the-vet"]["body"].startswith(f"**Auto-fixed** in {rec[:8]}")
 
 
 def test_a_round_without_its_own_summary_gathers_its_comments_into_one_review(tmp_path):
@@ -633,3 +633,30 @@ def test_settle_waits_until_the_count_stops_moving():
     waits = []
     assert ppc.settle(gh, REPO, PR, call, sleep=waits.append) == 3
     assert len(waits) == 5        # 1, 2, 3, then 3 twice more: unmoved for two polls
+
+
+@pytest.mark.parametrize("pile, cid, body, lead", [
+    ("assumption", "A:x", "**Assumption** — none means none", "🤖💭🤷‍♂️ **Assumption**"),
+    ("ignored", "I:x", "🔴 **Open issue** — keep the vet", "🤖⚔️🤖❌ **Open issue**"),
+    ("fixed", "F:x", "🛠 **Auto-fixed** — return the vet", "🤖⚔️🤖✅ **Auto-fixed**"),
+    ("", "I:x", "an agent-written body with no pile", "🤖⚔️🤖❌ an agent-written"),
+])
+def test_every_pushed_comment_opens_with_its_piles_prefix(pile, cid, body, lead):
+    """Whoever wrote the body, the PR's reader sees who is speaking first: the old single
+    emoji is replaced, an unlabelled payload item takes its pile from its id, and a body
+    already prefixed is left as it is."""
+    c = {"hr_id": cid, "pile": pile, "title": "x", "path": "elsewhere.txt", "body": body}
+    out = ppc.prefixed(c["body"], c["pile"] or ppc.PILE_OF_LETTER[cid[:1]])
+    assert out.startswith(lead)
+    assert ppc.prefixed(out, pile or ppc.PILE_OF_LETTER[cid[:1]]) == out
+
+
+def test_resolve_puts_the_prefix_on_what_is_sent():
+    """The prefix is applied where every comment passes on its way to GitHub — on the line
+    and in the summary alike — not only in the bodies `--from-review-points` writes."""
+    on_line = ppc.resolve(c(), diff())
+    assert on_line.comment["body"].startswith("🤖⚔️🤖❌ **Open issue** — keep the vet")
+    folded = ppc.resolve(c(pile="assumption", path="nowhere.txt", body="**Assumption** — x"),
+                         diff())
+    assert folded.mode == "body"
+    assert folded.comment["body"].startswith("🤖💭🤷‍♂️ **Assumption** — x")

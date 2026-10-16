@@ -124,7 +124,7 @@ a line of `git diff @@MERGE_BASE@@ HEAD`. Two things differ from that document, 
 the commits do not exist yet while you write:
 
 - set `"commit_id": "REVIEW-COMMIT"` — the script fills in the review commit's sha;
-- a fixed item of this pass opens `🛠 **Auto-fixed** in FIX-<n>` — the script replaces the
+- a fixed item of this pass opens `**Auto-fixed** in FIX-<n>` — the script replaces the
   group id with its commit's short sha.
 
 Check it:
