@@ -18,7 +18,12 @@ import java.security.SecureRandom
 // listener in: both plugins can run in the same IDE, and one pid means one file name — sharing a
 // directory, each would overwrite the other's token.
 object Registry {
-    val DIR: Path = Path.of(System.getProperty("user.home"), ".human-review", "ide")
+    /** `-Dhuman-review.registry.dir=…` moves it: the tests publish and look up bridges in a
+     *  temporary directory, so nothing they start is ever routed to, and nothing they hand over
+     *  can reach an editor someone is working in. */
+    val DIR: Path
+        get() = System.getProperty("human-review.registry.dir")?.takeIf { it.isNotBlank() }?.let { Path.of(it) }
+            ?: Path.of(System.getProperty("user.home"), ".human-review", "ide")
 
     fun fileName(pid: Long) = "idea-$pid.json"
 

@@ -19,5 +19,8 @@
                                  instance="ro.victorrentea.humanreview.HumanReviewConfigurable"/>
 
         <notificationGroup id="Human Review" displayType="BALLOON"/>
+
+        <!-- jetbrains://idea/human-review/{open,diff,review-open}?… — a page read off disk (Links.kt). -->
+        <jbProtocolCommand implementation="ro.victorrentea.humanreview.HumanReviewProtocolCommand"/>
     </extensions>
 </idea-plugin>

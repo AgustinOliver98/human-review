@@ -255,17 +255,25 @@ object Git {
     private val BINARIES = listOf("git", "/usr/bin/git")
 
     /** stdout, trimmed, or null when git failed in that directory. */
-    fun run(cwd: String, vararg args: String): String? {
+    fun run(cwd: String, vararg args: String): String? = bytes(cwd, *args)?.toString(Charsets.UTF_8)?.trim()
+
+    /**
+     * stdout as it came, byte for byte, or null when git failed — for `git show <ref>:<path>`,
+     * whose answer is compared with the file on disk and must not lose a trailing newline or
+     * a byte that is not UTF-8. stderr goes nowhere: a pipe nobody reads fills up, and one
+     * closed early kills git with SIGPIPE on its first warning.
+     */
+    fun bytes(cwd: String, vararg args: String): ByteArray? {
         for (bin in BINARIES) {
             val proc = try {
-                ProcessBuilder(listOf(bin) + args).directory(File(cwd)).redirectErrorStream(false).start()
+                ProcessBuilder(listOf(bin) + args).directory(File(cwd))
+                    .redirectError(ProcessBuilder.Redirect.DISCARD).start()
             } catch (_: java.io.IOException) {
-                continue  // not on this PATH: the next binary
+                continue  // not on this PATH (or no such directory): the next binary
             }
-            proc.errorStream.close()
-            val out = proc.inputStream.bufferedReader().readText()
+            val out = proc.inputStream.use { it.readAllBytes() }
             if (!proc.waitFor(10, TimeUnit.SECONDS)) { proc.destroy(); return null }
-            return if (proc.exitValue() == 0) out.trim() else null
+            return if (proc.exitValue() == 0) out else null
         }
         return null
     }

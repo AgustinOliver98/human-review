@@ -143,6 +143,13 @@ object RangeFocus {
 
         val selStart = doc.getLineStartOffset(start)
         val selEnd = doc.getLineEndOffset(end)
+        // A range inside a collapsed region (the imports, a folded method) would have the caret
+        // pushed out to the fold's start a moment later — which reads as the reader's own move
+        // and drops the focus. The reader asked for those lines: they are unfolded.
+        val folds = editor.foldingModel
+        folds.allFoldRegions.filter { !it.isExpanded && it.startOffset < selEnd && it.endOffset > selStart }
+            .takeIf { it.isNotEmpty() }
+            ?.let { regions -> folds.runBatchFoldingOperation { regions.forEach { it.isExpanded = true } } }
         editor.caretModel.removeSecondaryCarets()
         editor.caretModel.moveToOffset(selStart)
         editor.selectionModel.setSelection(selStart, selEnd)

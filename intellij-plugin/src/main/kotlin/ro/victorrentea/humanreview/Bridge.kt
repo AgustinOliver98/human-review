@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.intellij.ide.impl.ProjectUtil
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -14,27 +13,22 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.fileEditor.impl.EditorTabPresentationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import java.awt.KeyboardFocusManager
-import java.lang.ref.WeakReference
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 // The loopback listener a Human Review page reaches IntelliJ through.
@@ -53,8 +47,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 // longest-prefix routing works across windows, and the bridge then picks the project inside
 // the process by the same rule (Folders.kt).
 //
-// The same wire protocol as vscode-extension/bridge.js, route for route; the routes that need
-// the reviewed-version check, the diff view and the embedded browser answer 501 until M2/M3.
+// The same wire protocol as vscode-extension/bridge.js, route for route; the embedded browser
+// (`/open-url`) answers 501 until M3.
 
 @Service(Service.Level.APP)
 class HumanReviewBridge : Disposable {
@@ -67,12 +61,10 @@ class HumanReviewBridge : Disposable {
     @Volatile private var token: String? = null
     private var shutdownHook: Thread? = null
 
-    /** The project the last `/open-file` or `revealInExplorer` acted on, for a bare
-     *  `focusWindow` right after it: serve-review.py reveals, then raises "the window" with no
-     *  uri — and in a process hosting several projects, the window is the one just acted on. */
-    @Volatile private var lastTarget: Pair<WeakReference<Project>, Long>? = null
+    /** The port and token, once listening — for a test that calls its routes. */
+    fun address(): Pair<Int, String>? = server?.let { s -> token?.let { s.address.port to it } }
 
-    fun start() {
+    fun start(registry: Path = Registry.DIR) {
         // One listener per IDE process, however many projects are open.
         if (!started.compareAndSet(false, true)) return
         try {
@@ -86,7 +78,7 @@ class HumanReviewBridge : Disposable {
             http.start()
             server = http
             val pid = ProcessHandle.current().pid()
-            registryFile = Registry.publish(Registry.DIR, http.address.port, secret, pid)
+            registryFile = Registry.publish(registry, http.address.port, secret, pid)
             // `dispose()` runs on a normal exit; a `kill <pid>` skips services but still runs
             // JVM shutdown hooks, and a stale entry with a dead port is one more thing every
             // caller has to time out on.
@@ -96,6 +88,12 @@ class HumanReviewBridge : Disposable {
         } catch (e: Exception) {
             log.warn("human-review: listener failed", e)
         }
+    }
+
+    /** Stop listening and unpublish, so a later `start()` listens afresh — for tests. */
+    fun stop() {
+        dispose()
+        started.set(false)
     }
 
     override fun dispose() {
@@ -134,27 +132,11 @@ class HumanReviewBridge : Disposable {
             URLDecoder.decode(k, Charsets.UTF_8) to URLDecoder.decode(v, Charsets.UTF_8)
         }
 
-    /**
-     * Run on the EDT and wait for the answer. **Everything that reads or moves an editor or a
-     * window goes through here**: the listener has threads of its own, and the platform answers
-     * those questions only on the Event Dispatch Thread. `any` modality for read-only answers
-     * (a Settings dialog open must not make `/ping` hang); the default for anything that opens
-     * or moves, which then waits for the dialog — bounded, so the caller gets a 503 instead of
-     * a socket held forever.
-     */
-    private fun <T> onEdt(modality: ModalityState = ModalityState.defaultModalityState(), block: () -> T): T {
-        val f = CompletableFuture<T>()
-        ApplicationManager.getApplication().invokeLater({
-            try { f.complete(block()) } catch (e: Throwable) { f.completeExceptionally(e) }
-        }, modality)
-        return try {
-            f.get(10, TimeUnit.SECONDS)
-        } catch (_: TimeoutException) {
+    /** `Ide.onEdt`, a busy EDT answered as a 503. */
+    private fun <T> onEdt(modality: ModalityState = ModalityState.defaultModalityState(), block: () -> T): T =
+        try { Ide.onEdt(modality, block) } catch (_: IdeBusy) {
             throw HttpError(503, mapOf("ok" to false, "error" to "the IDE is busy (a modal dialog?)"))
-        } catch (e: java.util.concurrent.ExecutionException) {
-            throw e.cause ?: e
         }
-    }
 
     private fun JsonObject.str(k: String): String? = get(k)?.takeIf { it.isJsonPrimitive }?.asString
     private fun JsonObject.raw(k: String): Any? = get(k)?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.let {
@@ -164,21 +146,10 @@ class HumanReviewBridge : Disposable {
 
     // ------------------------------------------------------------------ projects
 
-    /** The project whose frame was focused last — the one a reader is looking at. */
-    private fun lastFocusedProject(): Project? =
-        IdeFocusManager.getGlobalInstance().lastFocusedFrame?.project?.takeIf { !it.isDisposed && !it.isDefault }
-            ?: Folders.openProjects().firstOrNull()
-
-    private fun remember(project: Project) {
-        lastTarget = WeakReference(project) to System.currentTimeMillis()
-    }
-
-    /** `ProjectUtil.focusProjectWindow(…, stealFocusIfAppInactive = true)` is the native raise
-     *  the IDE's own "open from the command line" runs: on macOS it activates the application
-     *  and brings that project's frame in front of the IDE's other frames. */
-    private fun raise(project: Project) = ProjectUtil.focusProjectWindow(project, true)
-
-    private fun firstFolder(project: Project?): String? = project?.let { Folders.ofProject(it).firstOrNull()?.name }
+    private fun lastFocusedProject(): Project? = Ide.lastFocusedProject()
+    private fun remember(project: Project) = Ide.remember(project)
+    private fun raise(project: Project) = Ide.raise(project)
+    private fun firstFolder(project: Project?): String? = Ide.firstFolder(project)
 
     // ------------------------------------------------------------------ routes
 
@@ -193,9 +164,10 @@ class HumanReviewBridge : Disposable {
                 "GET" to "/editor-state" -> send(ex, 200, editorState())
                 "POST" to "/command" -> command(ex)
                 "POST" to "/open-file" -> openFile(ex)
-                // M2/M3: the reviewed-version check across windows (review-open.js), the
-                // before/after diff (diff.js), and the review page beside the code.
-                "POST" to "/open-diff", "POST" to "/review-open", "POST" to "/open-url" ->
+                "POST" to "/open-diff" -> openDiff(ex)
+                "POST" to "/review-open" -> reviewOpen(ex)
+                // M3: the review page beside the code, in an embedded browser.
+                "POST" to "/open-url" ->
                     send(ex, 501, mapOf("ok" to false, "error" to "not yet in the IntelliJ plugin"))
                 else -> send(ex, 404, mapOf("ok" to false))
             }
@@ -236,10 +208,14 @@ class HumanReviewBridge : Disposable {
 
     // What the focused project's editor is showing, for a caller checking that an open landed —
     // read-only. The file, the selection, and the range still highlighted with the rest muted
-    // (RangeFocus.kt). `lastComment` is the PR comment-thread focus, which is M2.
+    // (RangeFocus.kt). `activeTab` is the selected tab's name, a text editor or not: a diff
+    // (`/open-diff`) is a tab with no text editor of its own, named `Owner@cb0988f5.java ↔
+    // Owner.java`. `lastComment` is the PR comment-thread focus, which is M3.
     private fun editorState(): Map<String, Any?> = onEdt(ModalityState.any()) {
         val p = lastFocusedProject()
         val ed = p?.let { FileEditorManager.getInstance(it).selectedTextEditor }
+        val tab = p?.let { pr -> FileEditorManager.getInstance(pr).selectedEditor?.file
+            ?.let { runCatching { EditorTabPresentationUtil.getEditorTabTitle(pr, it) }.getOrDefault(it.name) } }
         val selection = ed?.let {
             val sel = it.selectionModel
             fun pos(offset: Int) = it.offsetToLogicalPosition(offset)
@@ -251,6 +227,7 @@ class HumanReviewBridge : Disposable {
             "folder" to firstFolder(p),
             "focused" to appFocused(),
             "activeFile" to ed?.virtualFile?.path,
+            "activeTab" to tab,
             "selection" to selection,
             "lastComment" to null,
             "rangeFocus" to RangeFocus.active(),
@@ -319,57 +296,73 @@ class HumanReviewBridge : Disposable {
         send(ex, 200, mapOf("ok" to true, "folder" to firstFolder(project)))
     }
 
-    private fun recentTarget(): Project? {
-        val (ref, at) = lastTarget ?: return null
-        return ref.get()?.takeIf { !it.isDisposed && System.currentTimeMillis() - at < 15_000 }
-    }
+    private fun recentTarget(): Project? = Ide.recentTarget()
 
     // Open a file at a line (or a range, `endLine`) in the project that owns it, and raise that
-    // project's window. Opening a file focuses the editor *within* its frame but does not bring
-    // the frame (or the IDE) to the front, so a click from a browser in front "did nothing" as
-    // far as the reader could see; `raise()` is the native raise.
+    // project's window (Ide.open).
     private fun openFile(ex: HttpExchange) {
         val body = json(ex)
         val file = body.str("path") ?: ""
         if (!Path.of(file).isAbsolute) return send(ex, 400, mapOf("ok" to false, "error" to "absolute path required"))
-        val line0 = maxOf(1, (RangeSpan.num(body.raw("line")) ?: 1.0).toInt()) - 1
+        val line = maxOf(1, (RangeSpan.num(body.raw("line")) ?: 1.0).toInt())
         val endLine = body.raw("endLine")
         val warn = body.str("warn")?.takeIf { it.isNotEmpty() }
         val focus = !body.isFalse("focus")
-        // `comment: true` (focus the PR comment thread on the line) is M2: accepted, ignored.
+        // `comment: true` (focus the PR comment thread on the line) is M3: accepted, ignored.
 
         // The owner by longest prefix; a file no project owns still opens, in the window the
         // reader was last in — the same as VS Code opening any absolute path it is handed.
         val project = Folders.ownerProject(file) ?: onEdt(ModalityState.any()) { lastFocusedProject() }
             ?: return send(ex, 404, mapOf("ok" to false, "error" to "no project is open", "path" to file))
-        // Off the EDT: a refresh that finds a file created outside the IDE must not run inside
-        // a write-intent EDT event.
-        val vf = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(Path.of(file))
-        if (vf == null || vf.isDirectory) {
-            return send(ex, 404, mapOf("ok" to false, "error" to "cannot open $file", "path" to file))
+        val vf = Ide.findFile(file)
+            ?: return send(ex, 404, mapOf("ok" to false, "error" to "cannot open $file", "path" to file))
+
+        val opened = onEdtBusy { Ide.open(project, vf, line, endLine, warn, focus) }
+            ?: return send(ex, 404, mapOf("ok" to false, "error" to "cannot open $file in an editor", "path" to file))
+        val out = linkedMapOf<String, Any?>("ok" to true, "path" to opened.path, "line" to opened.line)
+        if (opened.ranged) out["endLine"] = RangeSpan.num(endLine)?.toInt()
+        send(ex, 200, out)
+    }
+
+    /** A call that waits on the EDT itself (Ide.open, DiffOpen.open), a busy EDT as a 503. */
+    private fun <T> onEdtBusy(block: () -> T): T =
+        try { block() } catch (_: IdeBusy) {
+            throw HttpError(503, mapOf("ok" to false, "error" to "the IDE is busy (a modal dialog?)"))
         }
 
-        val result = onEdt {
-            val editor = FileEditorManager.getInstance(project)
-                .openTextEditor(OpenFileDescriptor(project, vf, line0, 0), true) ?: return@onEdt null
-            // A caller that found the file edited since the commit it is quoting says so, on the
-            // line the reader lands on rather than in a toast elsewhere.
-            if (warn != null) EditedMark.mark(editor, line0, warn) else EditedMark.clear()
-            val ranged = RangeFocus.focus(project, editor, line0 + 1, endLine)
-            if (focus) runCatching { raise(project) }  // the file is open, which is the part that matters
-            ranged
-        } ?: return send(ex, 404, mapOf("ok" to false, "error" to "cannot open $file in an editor", "path" to file))
-        remember(project)
+    // Open a file as a diff in the project that owns it: a committed revision on the left, the
+    // working tree on the right (Diff.kt). A refusal is a 409 with a sentence the caller relays
+    // verbatim.
+    private fun openDiff(ex: HttpExchange) {
+        val body = json(ex)
+        val file = body.str("file")?.ifEmpty { null } ?: body.str("path") ?: ""
+        val refused = onEdtBusy {
+            DiffOpen.open(file, body.str("base") ?: "", (RangeSpan.num(body.raw("line")) ?: 0.0).toInt(), !body.isFalse("focus"))
+        }
+        if (refused != null) return send(ex, 409, mapOf("ok" to false, "error" to refused))
+        send(ex, 200, mapOf("ok" to true))
+    }
 
-        val out = linkedMapOf<String, Any?>("ok" to true, "path" to vf.path, "line" to line0 + 1)
-        if (result) out["endLine"] = RangeSpan.num(endLine)?.toInt()
-        send(ex, 200, out)
+    // Open a reference in the window holding the *reviewed* version of the file (ReviewOpen.kt).
+    // Any bridge can be asked: it finds the right window itself, here or in another editor.
+    private fun reviewOpen(ex: HttpExchange) {
+        val body = json(ex)
+        val ref = ReviewRef(
+            file = body.str("file") ?: "", line = body.raw("line"), endLine = body.raw("endLine"),
+            sha = body.str("sha") ?: "", root = body.str("root") ?: "", branch = body.str("branch") ?: "",
+            comment = body.get("comment")?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } == true,
+            commentLine = body.raw("commentLine"),
+        )
+        val (status, out) = onEdtBusy { ReviewOpen.open(ref) }
+        send(ex, status, out)
     }
 }
 
 /** Starts the bridge when the first project opens; later projects find it running. */
 class HumanReviewStartup : ProjectActivity {
     override suspend fun execute(project: Project) {
+        // Not in a test run: a test starts its own bridge on its own registry, when it wants one.
+        if (ApplicationManager.getApplication().isUnitTestMode) return
         service<HumanReviewBridge>().start()
     }
 }
