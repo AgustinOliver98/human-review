@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -197,7 +196,7 @@ class HumanReviewBridge : Disposable {
             "bridge" to "human-review",
             "ide" to ApplicationNamesInfo.getInstance().fullProductName,
             // Which build of the plugin answers: a hot reload (deploy-local.sh) is proven by it.
-            "version" to PluginManagerCore.getPlugin(HumanReviewPlugin.ID)?.version,
+            "version" to HumanReviewPlugin.version(),
             "focused" to focused,
             "folder" to folder,
             "folders" to folders,

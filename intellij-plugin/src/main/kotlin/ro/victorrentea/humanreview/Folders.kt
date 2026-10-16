@@ -1,9 +1,10 @@
 package ro.victorrentea.humanreview
 
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.util.Computable
 import java.io.File
 import java.nio.file.Path
 
@@ -66,9 +67,11 @@ object Folders {
     fun ofProject(project: Project): List<Folder> {
         val paths = LinkedHashSet<String>()
         project.basePath?.let { paths += it }
-        val roots = ReadAction.compute<Array<com.intellij.openapi.vfs.VirtualFile>, RuntimeException> {
+        // Application.runReadAction, not ReadAction.compute: deprecated from 2026.1 for a
+        // replacement (computeBlocking) that 2024.3 does not have.
+        val roots = ApplicationManager.getApplication().runReadAction(Computable {
             if (project.isDisposed) emptyArray() else ProjectRootManager.getInstance(project).contentRoots
-        }
+        })
         roots.filter { it.isInLocalFileSystem }.forEach { paths += it.path }
         return paths.map(::of)
     }

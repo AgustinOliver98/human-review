@@ -62,6 +62,12 @@ intellijPlatform {
             Installs and updates without restarting the IDE.
         """.trimIndent()
         changeNotes = """
+            <h3>0.3.1</h3>
+            <ul>
+              <li>No internal or deprecated IntelliJ API through 2026.3: the plugin's version, a
+                  project's content roots and opening a file at a line now go through public,
+                  non-deprecated calls that also exist in 2024.3.</li>
+            </ul>
             <h3>0.3.0</h3>
             <ul>
               <li><b>The review page inside IntelliJ</b>: a <i>Human Review</i> tool window with an
@@ -110,11 +116,18 @@ intellijPlatform {
             // Installed and updated without a restart (Lifecycle.kt): a non-dynamic extension
             // point or a component would quietly make every update a restart again.
             FailureLevel.NOT_DYNAMIC,
+            // The Marketplace lists both on the plugin page; 0.3.0 shipped with three of them.
+            FailureLevel.INTERNAL_API_USAGES,
+            FailureLevel.DEPRECATED_API_USAGES,
         )
         ides {
-            // The oldest IDE it claims (sinceBuild 243) and the one it is built against.
+            // The oldest IDE it claims (sinceBuild 243), the one it is built against, and the
+            // ones the Marketplace verifier runs: from 2025.3 IntelliJ IDEA is one product (IU).
             create(properties("platformType").get(), "2024.3")
             create(properties("platformType").get(), properties("platformVersion").get())
+            create("IU", "2026.1.5")
+            create("IU", "2026.2.3")
+            create("IU", "263.7031.23")
         }
     }
 }

@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -93,8 +94,11 @@ object Ide {
     fun open(project: Project, vf: VirtualFile, line: Int, endLine: Any?, warn: String?, focus: Boolean): Opened? {
         val line0 = maxOf(1, line) - 1
         val ranged = onEdt {
-            val editor = FileEditorManager.getInstance(project)
-                .openTextEditor(OpenFileDescriptor(project, vf, line0, 0), true) ?: return@onEdt null
+            // Navigate, then take the text editor it selected: every synchronous FileEditorManager
+            // open is deprecated in 2026.3, for a suspend replacement 2024.3 does not have.
+            if (!OpenFileDescriptor(project, vf, line0, 0).navigateInEditor(project, true)) return@onEdt null
+            val editor = (FileEditorManager.getInstance(project).getSelectedEditor(vf) as? TextEditor)?.editor
+                ?: return@onEdt null
             // A caller that found the file edited since the commit it is quoting says so, on the
             // line the reader lands on rather than in a toast elsewhere.
             if (!warn.isNullOrEmpty()) EditedMark.mark(editor, line0, warn) else EditedMark.clear()

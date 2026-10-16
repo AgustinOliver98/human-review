@@ -2,6 +2,7 @@ package ro.victorrentea.humanreview
 
 import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
+import com.intellij.ide.plugins.cl.PluginAwareClassLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.PluginId
@@ -26,6 +27,11 @@ import com.intellij.openapi.extensions.PluginId
 
 object HumanReviewPlugin {
     val ID: PluginId = PluginId.getId("ro.victorrentea.human-review")
+
+    /** The installed build, from the classloader that loaded this class — PluginManagerCore's
+     *  lookup by id is internal API from 2026.2. Null when not loaded as a plugin (unit tests). */
+    fun version(): String? =
+        (HumanReviewPlugin::class.java.classLoader as? PluginAwareClassLoader)?.pluginDescriptor?.version
 
     /** Take everything this plugin put into the IDE back out. EDT. Leaves the bridge
      *  restartable, so a test can call it and go on. */
