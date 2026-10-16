@@ -1,0 +1,23 @@
+<idea-plugin>
+    <id>ro.victorrentea.human-review</id>
+    <name>Human Review</name>
+    <vendor url="https://github.com/victorrentea/human-review">Victor Rentea</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- The loopback listener serve-review.py calls: one per IDE process (Bridge.kt). -->
+        <postStartupActivity implementation="ro.victorrentea.humanreview.HumanReviewStartup"/>
+
+        <!-- "human-review" in the status bar: is this checkout's review served? -->
+        <statusBarWidgetFactory id="HumanReview.Status"
+                                implementation="ro.victorrentea.humanreview.ReviewStatusWidgetFactory"
+                                order="first"/>
+
+        <applicationConfigurable parentId="tools" id="ro.victorrentea.human-review"
+                                 displayName="Human Review"
+                                 instance="ro.victorrentea.humanreview.HumanReviewConfigurable"/>
+
+        <notificationGroup id="Human Review" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>
