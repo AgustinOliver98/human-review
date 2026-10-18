@@ -470,15 +470,28 @@ def adopt_prompt(piece: str, title: str = "") -> str | None:
             "so and show it on a recent commit that does. Leave the changes uncommitted.")
 
 
+#: What the green fill in a package/module box means, left of the pill on a card that has one
+#: (Victor, 18 Oct 2026: "it's not clear what the progress bar means"). The swatch is a
+#: box drawn like the diagram's own, a third filled, so the legend looks like the thing.
+IMPACT_LEGEND = (
+    '<span class="impact-legend" data-tip="Hover a box for its changed files">'
+    '<svg viewBox="0 0 30 14" aria-hidden="true">'
+    '<rect x=".5" y=".5" width="29" height="13" rx="2" fill="var(--dgm-box-accent)" '
+    'stroke="var(--dgm-line-accent)"/>'
+    '<rect x=".5" y=".5" width="11" height="13" rx="2" fill="var(--dgm-diff-add)" '
+    'fill-opacity=".45"/></svg>'
+    '<span><b>green fill</b> = the box\'s share of the lines this PR added</span></span>')
+
+
 def adopt_html(piece: str, title: str = "", how: str = "in", page: bool = False,
-               explain: bool = True) -> str:
+               explain: bool = True, lead: str = "") -> str:
     prompt = adopt_prompt(piece, title)
     if not prompt:
         return ""
     # A pill on the tab's title row (`page`) is about the whole tab; every other placement,
     # a diagram card's included, is about a smaller area of a screen and keeps the short label.
     label = "Prompt to get this page" if page else "Prompt to get this"
-    return (f'<div class="adoptline adopt-{how}"><button type="button" class="adopt copycmd" '
+    return (f'<div class="adoptline adopt-{how}">{lead}<button type="button" class="adopt copycmd" '
             f'data-piece="{html.escape(piece)}" data-copy="{html.escape(prompt, quote=True)}" '
             'data-say="Copied — paste it to your coding agent" '
             'data-tip="Copy a prompt for your coding agent to get this into your project">'
@@ -548,14 +561,16 @@ def place_prompts(tid: str, body: str) -> str:
                 # The (i) rides the pill at the card's foot, like every other card's (Victor,
                 # 14 Oct 2026). From 8 Oct it sat in the header after the source file name,
                 # a card's height away from the button it explains.
+            lead = (IMPACT_LEGEND if piece is None and 'class="pkg-impact"' in card
+                    else "")
             if how == "in":
                 cap = _last_caption(body, hit.start(), span[0])
                 if cap:             # the card ends on a caption line: the pill shares it
                     edits.append((cap, cap, '<div class="adoptfoot">'))
                     edits.append((span[0], span[0],
-                                  adopt_html(name, title, "title") + "</div>"))
+                                  adopt_html(name, title, "title", lead=lead) + "</div>"))
                 else:
-                    edits.append((span[0], span[0], adopt_html(name, title, "in")))
+                    edits.append((span[0], span[0], adopt_html(name, title, "in", lead=lead)))
             elif how == "title":
                 edits.append((hit.start(), hit.start(), '<div class="adopthead">'))
                 edits.append((span[1], span[1], adopt_html(

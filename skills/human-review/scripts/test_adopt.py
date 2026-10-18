@@ -311,3 +311,14 @@ def test_the_pill_burst_is_a_square_so_no_angle_leaves_a_corner_bare():
     assert "aspect-ratio:1/1" in before and "height:700%" not in before
     hover = re.search(r"\.adoptline \.adopt:hover,[^{]*\{([^}]*)\}", css).group(1)
     assert "background:#7c3aed" in hover
+
+
+def test_a_card_with_green_fill_bars_explains_them_left_of_its_pill():
+    # Victor, 18 Oct 2026: "it's not clear what the progress bar means".
+    bar = '<svg><rect class="pkg-impact" x="1" y="1" width="5" height="9"/></svg>'
+    out = place_prompts("packages", _card("Java packages", "packages.puml", bar))
+    foot = out[out.index('<div class="adoptline'):]
+    assert foot.index('class="impact-legend"') < foot.index("Prompt to get this")
+    assert "share of the lines this PR added" in foot
+    plain = place_prompts("packages", _card("Java packages", "packages.puml"))
+    assert "impact-legend" not in plain
