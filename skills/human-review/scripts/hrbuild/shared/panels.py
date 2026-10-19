@@ -145,9 +145,13 @@ def stamp_panels(doc: str, out_dir: Path, page: str,
     """The document with its hashes on it, and the manifest the pieces are written from.
 
     The shell's hash is taken over the document with every pill and every panel cut out,
-    plus the action register (a control a new build declares is answered by the server's
-    probe, which a page only reads once — so new actions mean a reload). `actions` is the
-    register as `.actions.json` holds it; the build's own (`ACTIONS`) by default."""
+    plus the names in the action register (a control a new build declares is answered by
+    the server's probe, which a page only reads once — so a new or a dropped action means a
+    reload). Names only: the command behind one is read off `.actions.json` by the server
+    at every press, and it spells the paths the build was started with, which differ
+    between a build run from the terminal and the same build run by `refresh-card.py`.
+    `actions` is the register as `.actions.json` holds it; the build's own (`ACTIONS`) by
+    default."""
     doc = _PANEL_SHELL_STAMPED.sub(r"\1", _PANEL_STAMPED.sub(r"\1", doc), count=1)
     cut = split_panels(doc)
     if cut is None:
@@ -171,8 +175,8 @@ def stamp_panels(doc: str, out_dir: Path, page: str,
         shell.append(mark)
         pos = b
     shell.append(doc[pos:])
-    shell_hash = _panel_hash("".join(shell), json.dumps(ACTIONS if actions is None else actions,
-                                                       sort_keys=True, default=str))
+    shell_hash = _panel_hash("".join(shell), json.dumps(sorted(ACTIONS if actions is None
+                                                                else actions)))
 
     # Stamp from the end forwards so earlier offsets stay valid. Last in the opening tag:
     # every reader of the page that matches `<section class="panel" id="…"` keeps matching.

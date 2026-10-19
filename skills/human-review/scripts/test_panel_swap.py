@@ -112,11 +112,13 @@ def test_a_change_to_what_every_tab_shares_moves_the_shell(tmp_path, change):
     assert shell2 != shell and tabs2 == tabs
 
 
-def test_a_new_action_moves_the_shell(tmp_path):
-    """The page learns which actions the server runs once, from its probe."""
+def test_a_new_action_moves_the_shell_and_a_reworded_command_does_not(tmp_path):
+    """The page learns which actions the server runs once, from its probe; the command
+    behind one is the server's to read at each press."""
     shell, _ = _hashes(_stamp(_doc(), tmp_path, {"x": {"command": "true"}})[1])
     shell2, _ = _hashes(_stamp(_doc(), tmp_path, {"x": {"command": "true"}, "y": {}})[1])
-    assert shell2 != shell
+    shell3, _ = _hashes(_stamp(_doc(), tmp_path, {"x": {"command": "cd /elsewhere && true"}})[1])
+    assert shell2 != shell and shell3 == shell
 
 
 def test_a_file_the_panel_shows_by_reference_is_part_of_its_hash(tmp_path):
