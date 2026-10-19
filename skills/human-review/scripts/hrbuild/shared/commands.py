@@ -390,7 +390,7 @@ def drawio_open_html(app_url: str, web_url: str = "") -> str:
     Under the picture and not inside it: a rendered diagram cannot show a cursor, so an
     invitation painted onto the map has to spell out in words that it is clickable.
 
-    They are not the same offer, which is why both are named. **Edit on desktop** opens the
+    They are not the same offer, which is why both are named. **Edit in app** opens the
     file on disk, so an edit lands where the rerun command can pick it up. **Edit on web**
     opens a copy carried in the URL — nothing is uploaded, and nothing it saves reaches the
     repository either. It is the answer when draw.io is not installed on this machine.
@@ -407,11 +407,13 @@ def drawio_open_html(app_url: str, web_url: str = "") -> str:
 
     out = []
     if app_url:
-        out.append(btn(app_url, "Edit on desktop", "Open in the draw.io desktop app"))
+        out.append(btn(app_url, "Edit in app", "Open in the draw.io desktop app"))
     if web_url:
         # `data-local`: online it would open a copy whose saves reach nothing a reader can
         # use (Victor, 19 Oct 2026: "edit on desktop / web / revert … does not make sense
-        # in the online demo"), so it greys with the other two.
+        # in the online demo"), so it greys with the other two. The short words — *in app*,
+        # *on web*, *Revert* — leave room for the file name on the same row (Victor,
+        # 20 Oct 2026).
         out.append(btn(web_url, "Edit on web", "Open in draw.io on the web",
                        ' target="_blank" rel="noopener" data-local'))
     return "".join(out)
@@ -528,7 +530,7 @@ def command_html(cmd: str, action_id: str | None = None, *, tip: str = "",
     the offer is *do this here*.
 
     `play=False` drops the run half's mark altogether, for a labelled button whose lead
-    glyph already says what it does — the draw.io card's *Revert changes*: "buttons do run
+    glyph already says what it does — the draw.io card's *Revert*: "buttons do run
     stuff, so a play icon is irrelevant" (Victor, 7 Oct 2026). Mid-run the lead spins
     instead (`.cmd-run.has-word.running .cmd-lead`).
 
@@ -667,7 +669,7 @@ def regenerate_html(redraw: dict | None, rerun: dict, rebuild: str,
     served = "Your layout is saved in git stash"
     # ↺, not ⇤: it is the one way back on the card now that *Load changes* is gone, and the
     # card's own green ring already carries the forward half (Victor, 7 Oct 2026).
-    return (command_html(line, aid, label="Revert changes", icon="\u21ba", tip=served,
+    return (command_html(line, aid, label="Revert", icon="\u21ba", tip=served,
                          running="Putting automation's drawing back…", play=False), aid)
 
 
@@ -682,10 +684,16 @@ def rerun_html(rerun: dict | None, rebuild: str, name: str = "",
     `<img src>` renders those as decoration. So the file on disk and the picture in the page
     are two artefacts, and reloading the browser only ever refreshes the second one.
 
-    **`actions` go in the card's header**, right-aligned before the file name — Edit on
-    desktop, Edit on web, Revert changes. They are action buttons, and the header is where
-    the card's other press already sits (Victor, 7 Oct 2026). **`under`** is what stays
-    under the header: the guardrail sentence, and the status line a running Revert writes.
+    **`actions` go in the card's header**, before the file name — Edit in app, Edit on
+    web, Revert. They are action buttons, and the header is where the card's other press
+    already sits (Victor, 7 Oct 2026). **`under`** is what stays under the header: the
+    status line a running Revert writes, and nothing else.
+
+    **No guardrail sentence** ("Unit-tested against the Java Domain Model."). It was a
+    line of its own to say what the ✓ badge in the same header already claims; what the
+    test checks the drawing against is that badge's hover now (`diagram_provenance`), and
+    `tested_against` / `tested_against_path` are accepted and ignored here (Victor,
+    20 Oct 2026: "this line becomes redundant").
 
     **No *Load changes*.** It ran `drawio-diff.py` and rebuilt the page, which is exactly
     what the green ring at the top of the card does — the Data tab's rerun is
@@ -702,17 +710,6 @@ def rerun_html(rerun: dict | None, rebuild: str, name: str = "",
     not work is worse than no command, because it is tried first.
     """
     edit = drawio_open_html(app_url, web_url)
-    # One fact, and only when the project named a guardrail: the file's own name is the
-    # card's title right above, so the sentence does not repeat it ("This diagram is…").
-    # With `tested_against_path` the label is the way into the scanned package in VS Code.
-    sentence = ""
-    if tested_against:
-        label = html.escape(tested_against)
-        if tested_against_path:
-            label = (f'<a href="vscode://file/{html.escape(tested_against_path, quote=True)}">'
-                     f'{label}</a>')
-        sentence = f"Unit-tested against the {label}."
-    where = f'<p class="dgm-open">{sentence}</p>' if sentence else ""
     again = ""
     if rerun and rerun.get("command"):
         again, _ = regenerate_html(redraw, rerun, rebuild, name)
@@ -723,7 +720,7 @@ def rerun_html(rerun: dict | None, rebuild: str, name: str = "",
     # from `/__run_status__`. Only where there is something to run.
     status = ('<p class="runstatus" hidden role="status" aria-live="polite">'
               '<b class="rs-phase"></b><span class="rs-tail"></span></p>') if again else ""
-    under = f'<div class="rerun">{where}{status}</div>' if (where or status) else ""
+    under = f'<div class="rerun">{status}</div>' if status else ""
     return acts, under
 
 

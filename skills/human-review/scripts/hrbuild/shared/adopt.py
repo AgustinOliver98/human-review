@@ -231,7 +231,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'The same concepts, laid out by hand in draw.io, so they stay where you remember them.',
             'A unit test checks the boxes and lines against the code.',
             'A new line is a new dependency: is it wanted?',
-            '<b>✓ Tested vs …</b> after the title: what that test checks it against; click to open it.',
+            '<b>✓ Tested vs …</b> after the title: hover for the test and what it checks; click opens it.',
         ],
         "ex": 'e.g. a red line: the test wants it, so the author draws it.',
     },

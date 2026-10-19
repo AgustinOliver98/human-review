@@ -12,7 +12,7 @@
 .diagram .head > .badge { margin-left:0 !important; }
 .diagram .head > *:has(+ .badge) { margin-right:0 !important; }
 .diagram .head > .badge + * { margin-left:auto !important; }
-/* A draw.io card's presses (Edit on desktop, Edit on web, Revert changes) follow the title
+/* A draw.io card's presses (Edit in app, Edit on web, Revert) follow the title
    and its redraw ring at the header's ordinary gap; the file name after them takes the push
    to the right edge. Both neighbours asked for the free space before — the ring's
    `margin-right:auto` and the presses' `margin-left:auto` (commands.css) — so the buttons

@@ -916,7 +916,7 @@ def test_a_run_that_recorded_nothing_offers_no_half_command(tmp_path):
 
 
 def test_the_action_buttons_sit_in_the_card_header(tmp_path):
-    """Edit on desktop, Edit on web, Revert changes: action buttons, so they are in the
+    """Edit in app, Edit on web, Revert: action buttons, so they are in the
     header line, right-aligned before the file name — and *Load changes* is gone, because
     the green ring at the top of the card runs the same `drawio-diff.py` and rebuild
     (Victor, 7 Oct 2026)."""
@@ -928,15 +928,16 @@ def test_the_action_buttons_sit_in_the_card_header(tmp_path):
     head = out[out.index('<div class="head">'):out.index('<div class="rerun">')]
     acts = re.search(r'<div class="rerun-acts">(.*?)</div>', head, re.S).group(1)
     assert "Load changes" not in out and 'data-action="drawio:conceptual"' not in out
-    assert acts.index("Edit on desktop") < acts.index("Revert changes")
+    assert acts.index("Edit in app") < acts.index("Revert")
     assert head.index('class="rerun-acts"') < head.index('class="dgm-src"'), \
         "right-aligned before the file name"
     # ↺ on Revert, and no play: the button runs things, a play triangle says nothing more.
-    assert '<span class="cmd-lead">\u21ba</span><span class="cmd-word">Revert changes</span>' in acts
+    assert '<span class="cmd-lead">\u21ba</span><span class="cmd-word">Revert</span>' in acts
     assert build.CMD_PLAY not in acts
-    # The sentence stays under the header, with the status line a running Revert writes.
+    # Under the header only the status line a running Revert writes: the guardrail
+    # sentence went into the ✓ badge's hover (Victor, 20 Oct 2026).
     under = out[out.index('<div class="rerun">'):out.index('class="dgmviews"')]
-    assert "Unit-tested against the Java Domain Model." in under
+    assert "Unit-tested" not in under and "dgm-open" not in out
     assert 'class="runstatus"' in under and "rerun-acts" not in under
     assert "<code>" not in out, "the command is in a hover, not on the page"
 
@@ -1000,7 +1001,7 @@ def test_both_editors_are_offered_and_named(tmp_path):
         "drawio_web_url": "https://app.diagrams.net/?splash=0&title=C#R%3Cmx%3E"}))
     out = build.drawio_widget_html("conceptual", assets, tmp_path, REBUILD)
     # Pencil and label only: the ↗ after them went (Victor, 9 Oct 2026).
-    assert '<span class="cmd-word">Edit on desktop</span></a>' in out
+    assert '<span class="cmd-word">Edit in app</span></a>' in out
     assert '<span class="cmd-word">Edit on web</span></a>' in out
     assert '\u2197' not in out
     # Each says on hover where it opens (hand-added on the PR #51 page, 7 Oct 2026, and
@@ -1036,19 +1037,33 @@ REVEAL = {"command": "open -R /repo/docs/C.drawio.png", "in": "the Finder"}
 
 
 
-def test_a_named_guardrail_leads_the_sentence(tmp_path):
-    """`tested_against` (from human-review.json, via drawio-diff) turns the line into what
-    keeps the drawing honest first, then where to change it."""
-    out = _widget_with(tmp_path, rerun=RERUN, reveal=REVEAL,
+def test_a_named_guardrail_is_the_badge_hover_not_a_line(tmp_path):
+    """`tested_against` (from human-review.json, via drawio-diff) used to be a line of its
+    own under the header, "Unit-tested against the Java Domain Model." — a whole row for
+    what the ✓ badge beside the title already claims. It is that badge's hover now, with
+    the test's name, and the row is gone (Victor, 20 Oct 2026)."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    test = tmp_path / "src" / "test" / "java" / "ConceptualModelDiagramTest.java"
+    test.parent.mkdir(parents=True)
+    test.write_text('class ConceptualModelDiagramTest { String d = "docs/C.drawio.png"; }')
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-A"], check=True)
+    out = _widget_with(tmp_path, rerun=RERUN, reveal=REVEAL, diagram="docs/C.drawio.png",
                        drawio_url="drawio:///repo/docs/C.drawio.png",
-                       tested_against="Java Domain Model")
-    line = re.search(r'<p class="dgm-open">(.*?)</p>', out, re.S).group(1)
-    assert line == "Unit-tested against the Java Domain Model."
-    linked = _widget_with(tmp_path, rerun=RERUN, tested_against="Java Domain Model",
-                          tested_against_path="/repo/src/domain")
-    assert ('Unit-tested against the <a href="vscode://file//repo/src/domain">'
-            'Java Domain Model</a>.') in linked
-    assert 'class="dgm-open"' not in _widget_with(tmp_path, rerun=RERUN)
+                       tested_against="Java Domain Model",
+                       tested_against_path="/repo/src/domain")
+    assert "dgm-open" not in out and "Unit-tested against" not in out
+    badge = re.search(r'<a class="dgm-prov"[^>]*>', out).group(0)
+    assert ('data-tip="ConceptualModelDiagramTest checks this drawing against the Java '
+            'Domain Model: a mismatch fails the build"') in badge
+    assert "ConceptualModelDiagramTest.java:1:1" in badge
+    assert ">Tested vs code</a>" in out, "the face keeps its few words"
+    # Declared, and no test names the file: the badge still says so, unlinked.
+    lone = _widget_with(tmp_path / "x", rerun=RERUN, diagram="docs/C.drawio.png",
+                        tested_against="traced sequence diagrams")
+    assert ('<span class="dgm-prov" data-tip="A unit test checks this drawing against the '
+            'traced sequence diagrams: a mismatch fails the build">') in lone
+    # Nothing declared and nothing found: no badge, as before.
+    assert "dgm-prov" not in _widget_with(tmp_path / "y", rerun=RERUN)
 
 
 def test_the_web_link_is_dropped_when_the_verdict_has_none(tmp_path):
@@ -1059,7 +1074,7 @@ def test_the_web_link_is_dropped_when_the_verdict_has_none(tmp_path):
         "added": [], "removed": [], "changed": [], "moved": MOVED, "red": [],
         "drawio_url": "drawio:///repo/C.drawio.png"}))
     out = build.drawio_widget_html("conceptual", assets, tmp_path, REBUILD)
-    assert "Edit on desktop" in out
+    assert "Edit in app" in out
     assert "Edit on web" not in out
 
 
@@ -1224,7 +1239,7 @@ def test_a_repository_that_declared_no_redraw_is_offered_none(tmp_path):
 
 def test_there_is_one_way_back_and_it_is_the_generated_drawing(tmp_path):
     out = _widget_with(tmp_path, rerun=RERUN, revert=REVERT, redraw=REDRAW)
-    assert '<span class="cmd-lead">\u21ba</span><span class="cmd-word">Revert changes</span>' in out
+    assert '<span class="cmd-lead">\u21ba</span><span class="cmd-word">Revert</span>' in out
     # Named after what it produces, not after the gesture that gets you there: "start over"
     # is a direction and not a destination, and "undo your edits" is gone entirely.
     assert "start over" not in out and "undo your edits" not in out
@@ -1314,7 +1329,7 @@ def test_no_way_back_is_offered_for_a_repository_that_declared_no_script(tmp_pat
     naming convention and running it on a reader's click is not a trade worth making, so a
     diagram with no `redraw` gets the sentence and one offer."""
     out = _widget_with(tmp_path, rerun=RERUN)
-    assert "Revert changes" not in out and "drawio-redraw" not in out
+    assert "Revert" not in out and "drawio-redraw" not in out
     assert "Load changes" not in out and "cmd-run" not in out
 
 
@@ -1599,8 +1614,8 @@ def test_a_traced_diagram_with_undrawn_calls_is_not_the_unchanged_card(tmp_path)
     assert "Edit on" not in quiet and "unchanged" in quiet
     out = _widget_with(tmp_path, **base, traces={"undrawn": ["A → B"]},
                        drawio_url="drawio:///repo/d.png")
-    assert "Unit-tested against the traced sequence diagrams." in out
-    for word in ("Edit on desktop", "Revert changes"):
+    assert "Unit-tested against" not in out
+    for word in ("Edit in app", ">Revert<"):
         assert word in out
     assert "Load changes" not in out
     assert "drawio-redraw:conceptual" in build.ACTIONS

@@ -30,7 +30,7 @@ BODY = (
     'data-tip="Open in VS Code: src/A.java">A.java:12</a>'
     f'<a id="own" class="dgm-src" href="vscode://file/{ROOT}/.human-review/assets/c2/C.puml:1:1">'
     'C.puml</a>'
-    '<a id="desk" class="dgm-edit" href="drawio:///r/D.drawio.png">Edit on desktop</a>'
+    '<a id="desk" class="dgm-edit" href="drawio:///r/D.drawio.png">Edit in app</a>'
     '<a id="web" class="dgm-edit" href="https://app.diagrams.net/#R">Edit on web</a>'
     '<span class="takeaway-online">Browse it <a id="online" '
     'href="https://victorrentea.github.io/human-review/demo/review.html">online</a>. </span>'

@@ -245,7 +245,8 @@ def _drawio_unchanged_card(name: str, verdict: dict, assets: Path, root: Path) -
     # for the page to swap it in place; the ring after the title is the card's own.
     return (f'<div class="diagram" data-drawio="{html.escape(name, quote=True)}">'
             f'<div class="head"><b>{html.escape(title)}</b>'
-            + card_rerun_html(name, assets, root) + UNCHANGED_BADGE + diagram_provenance(rel, root)
+            + card_rerun_html(name, assets, root) + UNCHANGED_BADGE
+            + diagram_provenance(rel, root, verdict.get("tested_against") or "")
             + (_source_link(rel, root) if rel else "") + '</div>'
             f'<div class="svgbox">{inline_svg(svg, root)}</div>'
             + trace_legend(verdict) + '</div>')
@@ -311,7 +312,8 @@ def drawio_widget_html(name: str, assets: Path, root: Path, rebuild: str = "") -
                              verdict.get("tested_against_path") or "")
     return (f'<div class="diagram dgm-toggles" data-drawio="{html.escape(name, quote=True)}">'
             f'<div class="head"><b>{html.escape(title)}</b>'
-            + card_rerun_html(name, assets, root) + diagram_provenance(rel, root) + acts
+            + card_rerun_html(name, assets, root)
+            + diagram_provenance(rel, root, verdict.get("tested_against") or "") + acts
             + (_source_link(rel, root) if rel else "") + '</div>'
             + under
             + dgm_views_html(panes, initial="new" if red else "diff")
@@ -457,10 +459,22 @@ def diagram_provenance(rel: str, root: Path, against: str = "") -> str:
     source file that names it and writes something, its own header saying it generates
     preferred; what it reads is named (`_PROV_SOURCES`), else the generator is.
     **Tested** otherwise, when a test names the file in a string literal — it opens it:
-    *ArchUnit-tested vs code* when that test is ArchUnit's, *Tested vs <what>* when not,
-    `against` (a producer's own word for it) first."""
+    *ArchUnit-tested vs code* when that test is ArchUnit's, *Tested vs <what>* when not.
+
+    `against` is what the project declares the test checks the drawing against
+    (`tested_against` in human-review.json, e.g. *Java Domain Model*). It goes in the
+    hover, with the test's name — the badge face keeps its few words. It used to be a
+    sentence of its own under a draw.io card's header, "Unit-tested against the Java
+    Domain Model.", a whole line for what this badge already claims (Victor, 20 Oct 2026).
+    Declared but with no test found, the badge still says so, unlinked: the declaration
+    is the only carrier of that fact left on the card."""
     if not rel:
         return ""
+
+    def tested_tip(who: str) -> str:
+        """Which test, what it compares the drawing with, and what a difference costs."""
+        return f"{who} checks this drawing against the {against}: a mismatch fails the build"
+
     name = Path(rel).name
     mentions = _mentions(root, rel)
     if "generated" in Path(rel).parts[:-1]:
@@ -483,14 +497,15 @@ def diagram_provenance(rel: str, root: Path, against: str = "") -> str:
     literal = re.compile(r'"[^"\n]*' + re.escape(name) + '"')
     tests = [(p, t) for p, t in mentions if _TEST_PATH.search(p) and literal.search(t)]
     if not tests:
-        return ""
+        return prov_badge("Unit-tested", tested_tip("A unit test")) if against else ""
     archunit = [(p, t) for p, t in tests if "com.tngtech.archunit" in t]
     path, text = (archunit or tests)[0]
     href = f"vscode://file/{(Path(root) / path).resolve()}:1:1"
+    test = Path(path).name
+    tip = tested_tip(Path(path).stem) if against else f"Checked by {test}"
     if archunit:
-        return prov_badge("ArchUnit-tested vs code", f"Checked by {Path(path).name}", href)
-    what = against or _prov_source(text) or "code"
-    return prov_badge(f"Tested vs {what}", f"Checked by {Path(path).name}", href)
+        return prov_badge("ArchUnit-tested vs code", tip, href)
+    return prov_badge(f"Tested vs {_prov_source(text) or 'code'}", tip, href)
 
 
 def _provenance(rel: str, root: Path) -> str:
