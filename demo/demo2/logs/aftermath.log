@@ -1,3 +1,1 @@
-  * aftermath -> review
-    $ git rev-parse HEAD
-    $ git diff --numstat 4321c5bc3d67629c04c6eb2555c96b4d917d5efd..HEAD
+  = aftermath: unchanged, 0.1 s saved
