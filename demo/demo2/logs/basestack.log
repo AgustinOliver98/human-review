@@ -1,7 +1,2 @@
   * basestack -> (no tab)
-    $ git merge-base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf HEAD
-    $ git rev-parse f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf
-    $ git rev-parse --short f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf
-    $ ./start-docker.sh up --ref f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf --ttl 1800
-↻ petclinic-f7ebe11c is already up
-http://localhost:54512
+    skipped: dsaudit is unchanged or not running — no stack to start early

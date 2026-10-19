@@ -82,5 +82,9 @@
     }
    ]
   }
- ]
+ ],
+ "stale": {
+  "why": "test-mapping.json (10 Oct 22:59) is older than test-coverage.json (19 Oct 23:07)",
+  "command": "rerun-model.py"
+ }
 }

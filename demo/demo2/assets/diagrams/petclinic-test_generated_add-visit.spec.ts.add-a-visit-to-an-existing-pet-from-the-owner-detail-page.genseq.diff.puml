@@ -49,9 +49,13 @@ deactivate Backend
 Browser -[#C62828]> Backend: <color:#C62828><s>Add a visit for an owner's pet</s></color>\n<color:#C62828><s>POST /api/owners/{ownerId}/pets/{petId}/visits</s></color>
 Backend -[#C62828]> Backend: <color:#C62828><s>book-visit ↗</s></color>
 Backend -[#C62828]> Backend: <color:#C62828><s>VisitRepository.save ↗</s></color>
+group #FFEBEB <color:#C62828><s>tx</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>insert for victor.training.petclinic.domain.Visit</s></color>
+end
 Backend -[#C62828]> Backend: <color:#C62828><s>OwnerRepository.findById ↗</s></color>
+group #FFEBEB <color:#C62828><s>tx</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select owners</s></color>
+end
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> Commons: <color:#C62828><s>PhoneNumbers.normalize ↗</s></color>
 Commons -[#C62828]> Backend: <color:#C62828><s>NotificationServiceClient.homeDialCode ↗</s></color>
@@ -62,7 +66,9 @@ NotificationService -[#C62828]-> Backend: <color:#C62828><s>202</s></color>
 Backend -[#C62828]-> Browser: <color:#C62828><s>201</s></color>
 Browser -[#C62828]> Backend: <color:#C62828><s>Get an owner by ID</s></color>\n<color:#C62828><s>GET /api/owners/{ownerId}</s></color>
 Backend -[#C62828]> Backend: <color:#C62828><s>OwnerRepository.findById ↗</s></color>
+group #FFEBEB <color:#C62828><s>tx</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select owners</s></color>
+end
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select visits</s></color>
 Backend -[#C62828]-> Browser: <color:#C62828><s>200</s></color>

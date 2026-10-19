@@ -1,4 +1,4 @@
   * logging -> logging
     $ git merge-base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf HEAD
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/0071f98803ee/skills/human-review/scripts/logextract.py petclinic-backend --repo . --since f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf --json .human-review/assets/logging.json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/logextract.py petclinic-backend --repo . --since f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf --json .human-review/assets/logging.json
 0 logging statement(s) on added/modified lines

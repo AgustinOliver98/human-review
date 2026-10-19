@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpenAPI visual diff</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui.css">
 <style>
   /* `:host` beside every `:root`: embedded in another page (the review's API tab), this
      stylesheet is moved into a shadow root on a host element, where `:root` matches
@@ -174,9 +174,14 @@
     display: flex; gap: 8px; align-items: baseline;
     padding: 4px 14px 4px 12px; font-size: 13px; line-height: 1.45; color: var(--dv-fg);
   }
+  /* A property path is one unbroken word — `items/pets/items/visits/items/vetFirstName` —
+     and a flex item will not shrink below its longest word, so on a phone the row pushed
+     the whole page 60px sideways. The text may break anywhere, the badge never. */
+  .dv-change > span:not(.lvl) { min-width: 0; overflow-wrap: anywhere; }
   .dv-change code {
     background: var(--dv-code); padding: 1px 5px; border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+    overflow-wrap: anywhere;
   }
   .dv-change .lvl {
     flex: none; font-size: 10px; font-weight: 700; letter-spacing: .05em;
@@ -754,7 +759,7 @@
 <div id="swagger-ui"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui-bundle.js"></script>
 <script>
 // One function scope for all of it: embedded, this script runs in the host page's global
 // scope, where a top-level `const root` or `function apply` would clash with the page's own.
@@ -874,13 +879,20 @@ const HASH = HOST ? (HOST.dataset.hash || '') : location.hash;
     bubble.style.top = top + 'px';
   }
 
-  function show(el) {
+  function show(el, said) {
     // `data-tip-html` is for a tip that has to SHOW a component rather than name it -- a
     // coverage badge, say, where "UI x2" in prose makes the reader translate back to the
     // badge they are looking at. The markup is the page's own; nothing user-supplied
     // reaches here. Plain `data-tip` stays the default and stays escaped.
-    var html = el.getAttribute('data-tip-html'), text = el.getAttribute('data-tip');
+    var html = said ? null : el.getAttribute('data-tip-html');
+    var text = said || el.getAttribute('data-tip');
     if (!html && !text) return;              // data-tip="" shows nothing, by design
+    // "Open in VS Code" says IntelliJ when that is the IDE the reader picked (editor.js):
+    // reworded here, as it is shown, so a tip any script sets at any time follows the pick.
+    if (window.HR && window.HR.ideWords) {
+      html = window.HR.ideWords(html, el);
+      text = window.HR.ideWords(text, el);
+    }
     current = el;
     if (html) bubble.innerHTML = html; else bubble.textContent = text;
     bubble.classList.remove('visible');
@@ -898,20 +910,139 @@ const HASH = HOST ? (HOST.dataset.hash || '') : location.hash;
   }
 
   function trigger(ev) {
-    var el = ev.target.closest && ev.target.closest('[data-tip],[data-tip-html]');
+    // Online, a control that only works on a local copy says that, whatever its own tip
+    // says about what it would do (server.js, `data-local`).
+    var off = window.HR && window.HR.localOnly && window.HR.localOnly(ev.target);
+    var el = off || (ev.target.closest && ev.target.closest('[data-tip],[data-tip-html]'));
     if (!el || el === current) return;
     hide();
-    show(el);
+    show(el, off ? window.HR.localHint(off) : null);
   }
 
-  document.addEventListener('pointerover', trigger);
-  document.addEventListener('focusin', trigger);   // focus/blur do not bubble
+  // ---- `data-tip-pop`: a tip you can walk into ------------------------------------------
+  // The bubble above lets the pointer through, which is right for a label and wrong for a
+  // list of files the reader wants to click: the files a package box or a `+26` chip
+  // stands for. Those carry their list in `data-tip-pop` (the page's own markup, built at
+  // build time), and get a second bubble that takes the pointer, scrolls when the list is
+  // long, and holds its links in the Tab order: Tab or ↓ from the owner walks into it,
+  // Escape walks back out. It stays open while the pointer is on the owner or on it, with
+  // a quarter-second grace for the gap between the two.
+  var pop = document.createElement('div');
+  pop.className = 'tip tippop';
+  pop.setAttribute('role', 'dialog');
+  pop.tabIndex = -1;
+  css.textContent +=
+    '.tip.tippop{pointer-events:auto;width:max-content;max-width:calc(100vw - 16px);' +
+    'max-height:min(60vh,28rem);overflow:auto;overscroll-behavior:contain;padding:.55rem .8rem .65rem}' +
+    '.tip.tippop:not(.visible){visibility:hidden}' +
+    '.tip.tippop .tippophead{margin:0 0 .3rem;font-size:13px;opacity:.75}' +
+    '.tip.tippop ul.tiplist{padding-left:1.1rem}' +
+    '.tip.tippop ul.tiplist li{white-space:nowrap}' +
+    '.tip.tippop a{color:#8ab4f8;text-decoration:none;cursor:pointer}' +
+    '.tip.tippop a:hover,.tip.tippop a:focus-visible{text-decoration:underline}' +
+    '.tip.tippop .tipnum{font-family:-apple-system,system-ui,sans-serif;font-size:12px;' +
+    'opacity:.7;margin-left:.45rem;font-variant-numeric:tabular-nums}' +
+    '[data-tip-pop]{cursor:help}';
+  document.body.appendChild(pop);
+  var popFor = null, popShow = null, popHide = null;
+
+  function popClose(refocus) {
+    clearTimeout(popShow); clearTimeout(popHide);
+    var was = popFor;
+    popFor = null;
+    pop.classList.remove('visible');
+    if (refocus && was && pop.contains(document.activeElement)) ownerFocus(was);
+  }
+  // A package box is focused through the link it wraps; a chip's number through itself.
+  function ownerFocus(el) {
+    var t = el.matches('a,button,[tabindex]') ? el : el.querySelector('a,button,[tabindex]');
+    (t || el).focus();
+  }
+  function popSoon() { clearTimeout(popHide); popHide = setTimeout(function () { popClose(false); }, 250); }
+  function popOpen(el) {
+    clearTimeout(popHide);
+    if (popFor === el) return;
+    hide();
+    popFor = el;
+    pop.innerHTML = el.getAttribute('data-tip-pop');
+    pop.scrollTop = 0;
+    pop.classList.remove('visible');
+    var keep = bubble;
+    bubble = pop; place(el); bubble = keep;     // the same placement rule as the plain tip
+    pop.classList.add('visible');
+  }
+  function popOwner(t) { return t && t.closest && t.closest('[data-tip-pop]'); }
+
+  document.addEventListener('pointerover', function (ev) {
+    if (pop.contains(ev.target)) { clearTimeout(popHide); return; }
+    var el = popOwner(ev.target);
+    if (!el) return;
+    clearTimeout(popHide);
+    if (el === popFor) return;
+    clearTimeout(popShow);
+    popShow = setTimeout(function () { popOpen(el); }, 150);
+  });
+  document.addEventListener('pointerout', function (ev) {
+    var to = ev.relatedTarget;
+    if (!popFor && !popShow) return;
+    if (to && (pop.contains(to) || (popFor && popFor.contains(to)))) return;
+    if (pop.contains(ev.target) || popOwner(ev.target)) { clearTimeout(popShow); popShow = null; popSoon(); }
+  });
+  document.addEventListener('focusin', function (ev) {
+    if (pop.contains(ev.target)) { clearTimeout(popHide); return; }
+    var el = popOwner(ev.target);
+    if (el) popOpen(el); else if (popFor) popClose(false);
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (!popFor) return;
+    if (ev.key === 'Escape') { popClose(true); return; }
+    var inside = pop.contains(document.activeElement);
+    if (!inside && popFor.contains(document.activeElement)
+        && ((ev.key === 'Tab' && !ev.shiftKey) || ev.key === 'ArrowDown')) {
+      var first = pop.querySelector('a,button,[tabindex]');
+      ev.preventDefault();
+      (first || pop).focus();
+    } else if (inside && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+      var links = Array.prototype.slice.call(pop.querySelectorAll('a,button'));
+      var i = links.indexOf(document.activeElement);
+      if (i < 0) return;
+      ev.preventDefault();
+      var next = links[i + (ev.key === 'ArrowDown' ? 1 : -1)];
+      if (next) next.focus();
+    } else if (inside && ev.key === 'Tab' && ev.shiftKey
+               && document.activeElement === pop.querySelector('a,button')) {
+      ev.preventDefault();
+      ownerFocus(popFor);
+    }
+  });
+  pop.addEventListener('focusout', function (ev) {
+    var to = ev.relatedTarget;
+    if (!pop.contains(to) && !(popFor && to && popFor.contains(to))) popClose(false);
+  });
+
+  document.addEventListener('pointerover', function (ev) {
+    // Inside the walk-in bubble, or on its owner, the plain tip stays down.
+    if (pop.contains(ev.target) || popOwner(ev.target)) return;
+    trigger(ev);
+  });
+  document.addEventListener('focusin', function (ev) {
+    if (pop.contains(ev.target) || popOwner(ev.target)) return;
+    trigger(ev);
+  });   // focus/blur do not bubble
   document.addEventListener('pointerout', function (ev) {
     if (current && !current.contains(ev.relatedTarget)) hide();
   });
   document.addEventListener('focusout', hide);
-  document.addEventListener('touchstart', hide, {passive: true});
-  window.addEventListener('scroll', hide, true);   // a fixed bubble would float away
+  document.addEventListener('touchstart', function (ev) {
+    hide();
+    if (!pop.contains(ev.target)) popClose(false);
+  }, {passive: true});
+  // A fixed bubble would float away from what it explains. Scrolling inside the walk-in
+  // bubble is the one scroll that must not close it.
+  window.addEventListener('scroll', function (ev) {
+    hide();
+    if (!(ev.target instanceof Node && pop.contains(ev.target))) popClose(false);
+  }, true);
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') hide(); });
 })();
 
@@ -1308,11 +1439,13 @@ async function revealTarget(op, c, run) {
 
 // Open the tree down to the node `steps` names -- and that node too when `openLast`, which
 // is what a removed property needs: its ghost row lives inside its parent's body.
-// Booted on "Schema" (`defaultModelRendering: 'model'`), an `array<object>` response body's
-// `Items` node ignores its own toggle: it stays collapsed however often it is clicked, and
-// a walk through it gave up ("could not be opened") on 9 of test-pr's 25 changes. The same
-// tree drawn again by a tab switch -- Example Value, then Schema -- opens normally, which
-// is the path the walk always took before the page opened on Schema. So once per walk.
+// Booted on "Schema" (`defaultModelRendering: 'model'`), Swagger UI 5.29.1 froze an
+// `array<object>` response body's tree: `Items`, the root's caret and "Collapse all" all
+// ignored their clicks, and a walk through it gave up ("could not be opened") on 9 of
+// test-pr's 25 changes. The reader's own clicks did nothing either (Victor, 12 Oct 2026),
+// which is why the page loads 5.33.1, where the same tree opens. The same tree drawn again
+// by a tab switch -- Example Value, then Schema -- opened even on 5.29.1, so it stays as
+// the walk's second try, once per walk.
 async function redrawSchema(host) {
   const tab = name => [...host.querySelectorAll('.tab li button')]
     .find(b => b.textContent.trim() === name);
@@ -1793,13 +1926,13 @@ root.getElementById('dv-expand').onchange = async e => {
 // `domNode`, not `dom_id`: Swagger UI looks a `dom_id` up on the document, and embedded
 // our node is in a shadow root the document's lookups never enter.
 //
-// Swagger UI itself comes off cdnjs, and when that one request fails nothing else on the
+// Swagger UI itself comes off jsdelivr, and when that one request fails nothing else on the
 // page says so: the bar above renders, the space under it stays empty, and the reader is
 // left asking where the rows went (Victor, 9 Oct 2026 — "I see there are no rows"). So a
 // missing bundle is fetched once more from a second CDN, and if that fails too the
 // changed endpoints are listed plainly from DATA, with the reason on top.
-const FALLBACK = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui-bundle.js';
-const FALLBACK_CSS = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.1/swagger-ui.css';
+const FALLBACK = 'https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui-bundle.js';
+const FALLBACK_CSS = 'https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui.css';
 let booted = false, retried = false;
 function boot() {
   if (booted) return;
@@ -1846,7 +1979,7 @@ function plainList() {
   const box = root.getElementById('swagger-ui');
   box.className = 'dv-global dv-plain';
   box.innerHTML = '<h2>Changed endpoints</h2>'
-    + '<p class="dv-plain-why">Swagger UI could not be loaded (cdnjs and jsdelivr both '
+    + '<p class="dv-plain-why">Swagger UI could not be loaded (jsdelivr and unpkg both '
     + 'unreachable — offline?), so this is the plain list. Reload to try again.</p>'
     + ops.map(([key, e]) => `<div class="dv-plain-op"><span class="dot ${e.state}"></span>`
       + `<b>${md(key)}</b> · ${LABELS[e.state]}`

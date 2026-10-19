@@ -27,7 +27,7 @@
   "tested_against": "Java Domain Model",
   "rerun": {
     "cwd": "/Users/victorrentea/workspace/petclinic-visits-paginated",
-    "command": "/Users/victorrentea/.claude/plugins/cache/human-review/human-review/0071f98803ee/skills/human-review/scripts/drawio-diff.py --base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
+    "command": "/Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
   },
   "redraw": {
     "cwd": "/Users/victorrentea/workspace/petclinic-visits-paginated",

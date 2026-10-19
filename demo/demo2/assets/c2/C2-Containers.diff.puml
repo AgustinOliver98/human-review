@@ -12,9 +12,9 @@ System_Boundary(c2_system, "PetClinic") {
   Container(NotificationService, "NotificationService", "Java 21 / Spring Boot 3.5", "")
   System_Ext(SMS_gateway, "SMS gateway", "SMS provider (simulated)", "")
 }
-Rel(Backend, DB, "SQL", "")
+Rel(Backend, DB, "SQL + HTTP", "")
 Rel(Backend, NotificationService, "[[genseq://c2-279a196c9d{Click for the calls behind this line} HTTP ⊕]]", "1 ops")
-Rel(Browser, Backend, "[[genseq://c2-43d2943456{Click for the calls behind this line} HTTP ⊕]]", "4 ops")
+Rel(Browser, Backend, "[[genseq://c2-692c43cd1c{Click for the calls behind this line} HTTP ⊕]]", "4 ops (was 5)")
 Rel(NotificationService, SMS_gateway, "[[genseq://c2-cb01a30b7a{Click for the calls behind this line} calls ⊕]]", "1 ops")
-caption Diagram generated from sequence diagrams of the test traces
+caption Diagram generated from [[#sequence{Open the Sequence tab} sequence diagrams]] of the test traces
 @enduml

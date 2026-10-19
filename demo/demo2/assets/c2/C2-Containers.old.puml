@@ -16,5 +16,5 @@ Rel(Backend, DB, "SQL", "")
 Rel(Backend, NotificationService, "[[genseq://c2-279a196c9d{Click for the calls behind this line} HTTP ⊕]]", "1 ops")
 Rel(Browser, Backend, "[[genseq://c2-43d2943456{Click for the calls behind this line} HTTP ⊕]]", "4 ops")
 Rel(NotificationService, SMS_gateway, "[[genseq://c2-cb01a30b7a{Click for the calls behind this line} calls ⊕]]", "1 ops")
-caption Diagram generated from sequence diagrams of the test traces
+caption Diagram generated from [[#sequence{Open the Sequence tab} sequence diagrams]] of the test traces
 @enduml
