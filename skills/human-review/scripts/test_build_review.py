@@ -5502,8 +5502,8 @@ def test_ci_green_links_to_the_run_it_rests_on(tmp_path):
     build.grade_signals(spec, out, root=None)
     panel = build.grade_reasons_html(spec)
     # The bullet's own "CI" is the link (Victor, 19 Oct 2026), no trailing `— CI run 37 ↗`.
-    assert ('<li>\u2705 <a href="https://github.com/acme/shop/actions/runs/37" '
-            'target="_blank" rel="noopener">CI</a> green on 0746abc5</li>') in panel
+    assert ('<li><a href="https://github.com/acme/shop/actions/runs/37" '
+            'target="_blank" rel="noopener">CI</a> \u2705 on 0746abc5</li>') in panel
     assert "CI run" not in panel and "↗" not in panel
 
 

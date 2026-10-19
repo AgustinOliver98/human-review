@@ -168,14 +168,7 @@
   Array.prototype.forEach.call(list.querySelectorAll('.rm-t[data-catoff]'), function (r) {
     delete r.dataset.catoff;
   });
-  var total = 0;
-  if (inv) { try { total = (JSON.parse(inv.textContent).tests || []).length; } catch (e) {} }
-  if (box) {
-    var label = box.closest('label');
-    label.setAttribute('data-tip', total
-      ? 'Also list the ' + total + ' other tests that ran: name and file only'
-      : 'Also list the tests that ran no changed line: unmeasured, deleted');
-  }
+  // No tooltip on "Show all tests": what it does is on its face (Victor, 20 Oct 2026).
 
   function otherRow(t) {
     var file = t.file || '', cat = CH.some(function (c) { return c[0] === t.cat; }) ? t.cat : 'unit';

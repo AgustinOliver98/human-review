@@ -1916,16 +1916,20 @@ def grade_reasons_html(spec) -> str:
             full = full[len(head):].lstrip(" .:;,—–-")
         return "" if full.rstrip(" .") == short.rstrip(" .") else full
 
-    # Good news gets a tick: green CI is the one bullet that is not a worry. A red build
-    # gets a cross, on the reviewed commit and on the branch's head alike; pending keeps
-    # the plain wording.
-    good = lambda short: (
-        "\u2705 " if re.match(r"CI (?:and Sonar )?green on \S+(?: \((?:reviewed|latest)\))?$",
-                               short)
-        else "\u274c " if short.startswith("CI failed") else "")
+    # The verdict sits on each check, after its word, and stands in for "green"/"failed"
+    # (Victor, 20 Oct 2026): "CI ✅ and Sonar ✅ on be762955". Pending keeps its wording.
+    def face(short: str, at) -> str:
+        m = re.match(r"CI (and Sonar )?(green|failed) on ", short)
+        if not m:
+            return bullet(short, at)
+        mark = "\u2705" if m[2] == "green" else "\u274c"
+        out = bullet(short.replace(f" {m[2]} on ", " on ", 1), at)
+        for word in ("CI", "Sonar") if m[1] else ("CI",):
+            out = re.sub(rf"(<a [^>]*>{word}</a>|\b{word}\b)", rf"\1 {mark}", out, count=1)
+        return out
     items = "".join(
-        f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{good(short)}{bullet(short, at)}</li>'
-        if full and rest(short, full) else f"<li>{good(short)}{bullet(short, at)}</li>"
+        f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{face(short, at)}</li>'
+        if full and rest(short, full) else f"<li>{face(short, at)}</li>"
         for short, full, at in reasons)
     was = v.get("modelScore")
     # The word, not the arithmetic: "was 7" struck through raised the question it was meant

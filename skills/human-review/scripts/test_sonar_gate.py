@@ -327,8 +327,8 @@ def _a(href: str, face: str) -> str:
 
 def test_ci_and_sonar_green_is_one_bullet_with_two_links(tmp_path):
     panel, spec = _panel(tmp_path, {"verdict": "success", "gate": "success", "url": DASH})
-    assert (f'<li>✅ {_a(RUN_URL, "CI")} and {_a(html_amp(DASH), "Sonar")} '
-            'green on be762955</li>') in panel
+    assert (f'<li>{_a(RUN_URL, "CI")} ✅ and {_a(html_amp(DASH), "Sonar")} ✅ '
+            'on be762955</li>') in panel
     assert spec["verdict"]["score"] == 9
 
 
@@ -339,7 +339,7 @@ def html_amp(url: str) -> str:
 def test_a_red_sonar_gate_under_green_ci_is_its_own_bullet_and_caps_at_7(tmp_path):
     panel, spec = _panel(tmp_path, {"verdict": "failure", "gate": "failure", "url": DASH,
                                     "gateStep": "SonarCloud Quality Gate check"})
-    assert f'<li>✅ {_a(RUN_URL, "CI")} green on be762955</li>' in panel
+    assert f'<li>{_a(RUN_URL, "CI")} ✅ on be762955</li>' in panel
     assert (f'{_a(html_amp(DASH), "Sonar")} quality gate failed on be762955 '
             '(caps the grade at 7)</li>') in panel
     assert "SonarCloud Quality Gate check step concluded failure" in panel
@@ -351,13 +351,13 @@ def test_a_red_sonar_gate_under_green_ci_is_its_own_bullet_and_caps_at_7(tmp_pat
 @pytest.mark.parametrize("sonar", [None, {"verdict": "skipped", "url": DASH}])
 def test_no_sonar_or_a_skipped_one_leaves_the_ci_bullet_as_it_was(tmp_path, sonar):
     panel, spec = _panel(tmp_path, sonar)
-    assert f'<li>✅ {_a(RUN_URL, "CI")} green on be762955</li>' in panel
+    assert f'<li>{_a(RUN_URL, "CI")} ✅ on be762955</li>' in panel
     assert "Sonar" not in panel and spec["verdict"] == {"score": 9}
 
 
 def test_sonar_green_without_a_dashboard_url_links_only_ci(tmp_path):
     panel, _ = _panel(tmp_path, {"verdict": "success", "url": "javascript:alert(1)"})
-    assert f'<li>✅ {_a(RUN_URL, "CI")} and Sonar green on be762955</li>' in panel
+    assert f'<li>{_a(RUN_URL, "CI")} ✅ and Sonar ✅ on be762955</li>' in panel
 
 
 HEAD = "39346ec541cac0bc8b4a1c207e5507fb4f98bd83"
@@ -380,9 +380,9 @@ def test_a_red_head_is_its_own_bullet_and_caps_like_a_red_build(tmp_path):
     """Petclinic, 20 Oct 2026: "✅ CI and Sonar green" on be762955 while 39346ec5 was red."""
     panel, spec = _panel(tmp_path, GREEN_SONAR,
                          head=_head("failure", {"verdict": "skipped", "url": DASH}))
-    assert (f'<li>\u2705 {_a(RUN_URL, "CI")} and {_a(html_amp(DASH), "Sonar")} '
-            'green on be762955 (reviewed)</li>') in panel
-    assert (f'\u274c {_a(HEAD_RUN_URL, "CI")} failed on 39346ec5 (latest), Sonar skipped '
+    assert (f'<li>{_a(RUN_URL, "CI")} \u2705 and {_a(html_amp(DASH), "Sonar")} \u2705 '
+            'on be762955 (reviewed)</li>') in panel
+    assert (f'{_a(HEAD_RUN_URL, "CI")} \u274c on 39346ec5 (latest), Sonar skipped '
             '(caps the grade at 4)</li>') in panel
     assert "CI (run 39326398747, attempt 2) concluded failure" in panel
     assert spec["verdict"] == {"score": 4, "modelScore": 9}
@@ -391,8 +391,8 @@ def test_a_red_head_is_its_own_bullet_and_caps_like_a_red_build(tmp_path):
 
 def test_a_green_head_with_sonar_reads_like_the_reviewed_one_with_latest(tmp_path):
     panel, spec = _panel(tmp_path, GREEN_SONAR, head=_head("green", GREEN_SONAR))
-    assert (f'<li>\u2705 {_a(HEAD_RUN_URL, "CI")} and {_a(html_amp(DASH), "Sonar")} '
-            'green on 39346ec5 (latest)</li>') in panel
+    assert (f'<li>{_a(HEAD_RUN_URL, "CI")} \u2705 and {_a(html_amp(DASH), "Sonar")} \u2705 '
+            'on 39346ec5 (latest)</li>') in panel
     assert spec["verdict"] == {"score": 9}
 
 
@@ -400,7 +400,7 @@ def test_a_green_head_with_sonar_reads_like_the_reviewed_one_with_latest(tmp_pat
                                          ("cancelled", "was cancelled")])
 def test_a_head_no_build_proved_says_so_and_caps_like_an_unproven_one(tmp_path, verdict, why):
     panel, spec = _panel(tmp_path, None, head=_head(verdict))
-    assert f'<li>\u2705 {_a(RUN_URL, "CI")} green on be762955 (reviewed)</li>' in panel
+    assert f'<li>{_a(RUN_URL, "CI")} \u2705 on be762955 (reviewed)</li>' in panel
     assert (f'No {_a(HEAD_RUN_URL, "build")} proved 39346ec5 (latest) '
             '(caps the grade at 6)</li>') in panel
     assert why in panel and spec["verdict"] == {"score": 6, "modelScore": 9}
@@ -408,5 +408,5 @@ def test_a_head_no_build_proved_says_so_and_caps_like_an_unproven_one(tmp_path, 
 
 def test_a_head_that_is_the_reviewed_commit_changes_nothing(tmp_path):
     panel, spec = _panel(tmp_path, None, head=dict(_head("failure"), sha=SHA))
-    assert f'<li>\u2705 {_a(RUN_URL, "CI")} green on be762955</li>' in panel
+    assert f'<li>{_a(RUN_URL, "CI")} \u2705 on be762955</li>' in panel
     assert "latest" not in panel and spec["verdict"] == {"score": 9}
