@@ -846,9 +846,14 @@ TEMPLATE = r"""<!doctype html>
     display: flex; gap: 8px; align-items: baseline;
     padding: 4px 14px 4px 12px; font-size: 13px; line-height: 1.45; color: var(--dv-fg);
   }
+  /* A property path is one unbroken word — `items/pets/items/visits/items/vetFirstName` —
+     and a flex item will not shrink below its longest word, so on a phone the row pushed
+     the whole page 60px sideways. The text may break anywhere, the badge never. */
+  .dv-change > span:not(.lvl) { min-width: 0; overflow-wrap: anywhere; }
   .dv-change code {
     background: var(--dv-code); padding: 1px 5px; border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+    overflow-wrap: anywhere;
   }
   .dv-change .lvl {
     flex: none; font-size: 10px; font-weight: 700; letter-spacing: .05em;

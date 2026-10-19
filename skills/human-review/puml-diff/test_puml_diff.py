@@ -50,6 +50,25 @@ def test_end_label_holding_a_role_beside_its_multiplicity_still_names_its_elemen
     assert (m._endpoint(left), m._endpoint(right)) == ("Pet", "Visit")
 
 
+def test_an_edge_whose_multiplicity_changed_is_marked_not_drawn_plain():
+    """`Vet --> "~* specialties" Specialty` becoming `Vet "~*" --> …` is a change.
+
+    Same two ends, same role — only the near end's multiplicity moved. The end labels are
+    part of the relationship's identity, so the new edge is drawn green and the old one
+    stays as a struck red ghost beside it; neither may come out plain grey, which would
+    tell the reader that Old and New agree about an edge they visibly disagree about.
+    """
+    old = m.parse('@startuml\nclass Vet\nclass Specialty\n'
+                  'Vet --> "~* specialties" Specialty\n@enduml\n')
+    new = m.parse('@startuml\nclass Vet\nclass Specialty\n'
+                  'Vet "~*" --> "~* specialties" Specialty\n@enduml\n')
+    edges = [ln for ln in m.diff(old, new).splitlines() if "Specialty" in ln and "->" in ln]
+    assert len(edges) == 2, edges
+    assert any(f"[{m.ADDED}," in ln and '"~*"' in ln for ln in edges), edges
+    assert any(f"[{m.REMOVED}," in ln and '"~*" -' not in ln for ln in edges), edges
+    assert m._impacted(old, new) == {"Vet", "Specialty"}
+
+
 def test_cardinality_dots_not_mistaken_for_connector():
     d = _parse(BEFORE)
     vet_rel = next(r for r in d.relationships if r[0].startswith("Vet"))
@@ -518,6 +537,67 @@ def test_an_untouched_arrow_stays_plain():
     assert "-[#" not in out
 
 
+# ── Everything an added call brings is marked, not only its arrows ──────────────
+# The E2E "add a visit" delta drew `GET /api/vets` and its `SELECT DISTINCT v FROM Vet …`
+# green, inside a black `tx` box on a plain activation bar: two parts of one new call
+# reading as context the base already had.
+
+_BASE_CALLS = ("Browser -> Backend: getPet\\nGET /api/pets/{petId}\n"
+               "activate Backend\n"
+               "Backend -> DB: [[genseq://p1{Click for the statement} select pets]]\n"
+               "Backend --> Browser: 200\n"
+               "deactivate Backend")
+_VETS_CALL = ("Browser -> Backend: listVets\\nGET /api/vets\n"
+              "activate Backend\n"
+              "group tx\n"
+              "Backend -> DB: [[genseq://v1{Click for the statement} SELECT DISTINCT v FROM Vet v]]\n"
+              "end\n"
+              "Backend --> Browser: 200\n"
+              "deactivate Backend")
+_SEQ_FRAME = ("@startuml\nparticipant Browser\nparticipant Backend\nparticipant DB\n"
+              "%s\n@enduml\n")
+
+
+def test_an_added_call_marks_its_query_its_transaction_and_its_activation():
+    out = _no_caption(sq.diff(_SEQ_FRAME % _BASE_CALLS,
+                              _SEQ_FRAME % (_VETS_CALL + "\n" + _BASE_CALLS)))
+    lines = out.splitlines()
+    query = next(l for l in lines if "SELECT DISTINCT" in l)
+    assert f"-[{sq.ADDED}]>" in query
+    assert f"group {sq.ADDED_TINT} <color:{sq.ADDED}>tx</color>" in lines
+    assert lines.count("end") == 1
+    assert lines[lines.index(next(l for l in lines if "listVets" in l)) + 1] \
+        == f"activate Backend {sq.ADDED_TINT}"
+    # The base's own call underneath stays exactly as it was.
+    assert "Backend -> DB: [[genseq://p1{Click for the statement} select pets]]" in lines
+    assert "activate Backend" in lines
+
+
+def test_a_removed_call_puts_its_transaction_back_struck_and_balanced():
+    out = _no_caption(sq.diff(_SEQ_FRAME % (_VETS_CALL + "\n" + _BASE_CALLS),
+                              _SEQ_FRAME % _BASE_CALLS))
+    lines = out.splitlines()
+    assert f"group {sq.REMOVED_TINT} <color:{sq.REMOVED}><s>tx</s></color>" in lines
+    assert lines.count("end") == 1
+    gone = next(l for l in lines if "SELECT DISTINCT" in l)
+    assert f"-[{sq.REMOVED}]>" in gone and "<s>" in gone
+    # Activation brackets are still never re-inserted on the removal side.
+    assert lines.count("activate Backend") == 1 and lines.count("deactivate Backend") == 1
+
+
+def test_a_removed_bracket_whose_partner_survived_is_dropped():
+    old = _SEQ_FRAME % "group tx\nBackend -> DB: a\nBackend -> DB: b\nend"
+    new = _SEQ_FRAME % "Backend -> DB: a\nBackend -> DB: b\nend"
+    out = _no_caption(sq.diff(old, new))
+    assert "group" not in out          # its `end` is NEW's, so it cannot come back alone
+
+
+def test_a_block_that_chose_its_own_colour_keeps_it():
+    out = _no_caption(sq.diff(_SEQ_FRAME % "Backend -> DB: a",
+                              _SEQ_FRAME % "Backend -> DB: a\nalt #Gold ok\nBackend -> DB: b\nend"))
+    assert "alt #Gold ok" in out.splitlines()
+
+
 # The label itself changing is a different call, not the same one restated: that is a
 # genuine removal plus a genuine addition.
 def test_a_changed_label_is_still_a_removal_and_an_addition():
@@ -790,7 +870,7 @@ def test_the_body_follows_the_participant_it_renamed():
             if not l.startswith(("participant", "caption", "@"))]
     assert '"Notification module"' not in "\n".join(body), body
     assert any("> Notification_module:" in l for l in body), body
-    assert "activate Notification_module" in body
+    assert f"activate Notification_module {sq.ADDED_TINT}" in body
 
 
 def test_a_one_word_participant_is_left_alone():

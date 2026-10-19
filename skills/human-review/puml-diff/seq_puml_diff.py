@@ -17,6 +17,14 @@ emit a single merged diagram built on NEW, where:
   * added participant                  -> green-tinted lifeline box
   * removed participant                -> red-tinted box, struck name (kept, so the
                                           struck arrows still have something to point at)
+  * added group / alt / loop (a `tx`)  -> green-tinted frame, green title
+  * removed group, whole in the run    -> red-tinted frame, struck title, re-inserted
+  * added activation bar               -> green-tinted bar
+
+Everything an added call brings with it is marked, not only its arrows: its query, the
+transaction box around that query, the activation bar under it. Left plain, the box and
+the bar read as context the base already had, and the reviewer has to work out from the
+arrows inside them that they are new too.
 
 The two colours come from `puml_diff`, the structural differ beside this one, so the two
 deltas a reviewer flips between on the same page cannot mean different things by the same
@@ -108,9 +116,11 @@ def _paint(text: str, removed: bool):
     Wrapping the link from outside is no better, because the wrap is applied per rendered
     line and a two-line label then has `[[` on one line and `]]` on the next.
 
-    So an added arrow keeps its link and lets the green arrowhead carry the meaning, and a
-    removed one gives the link up — its detail was never recorded in this diagram's
-    sidecar, so the handle is dead either way — and strikes the words instead.
+    So an added arrow keeps its link and lets the green arrowhead carry the meaning — the
+    page paints a linked label in its arrow's colour (`genseq.css`), keyed off that very
+    arrowhead — and a removed one gives the link up — its detail was never recorded in
+    this diagram's sidecar, so the handle is dead either way — and strikes the words
+    instead.
     """
     m = LINK.match(text.strip())
     if not m:
@@ -132,10 +142,55 @@ def _colorize_arrow(arrow: str, colour: str) -> str:
     return arrow
 
 
-def _mark_line(line: str, removed: bool) -> str | None:
+# A block that frames calls — the traced `group tx` is the common one. `else` divides a
+# block rather than opening one; `end` closes it (`end note` and friends are not this).
+BLOCK_RE = re.compile(
+    r"^(?P<kw>group|alt|else|opt|loop|par|break|critical)\b\s*(?P<rest>.*)$", re.I)
+BLOCK_END_RE = re.compile(r"^end$", re.I)
+ACTIVATE_RE = re.compile(r"^activate\s+(?P<who>\S.*?)\s*$", re.I)
+
+
+def _balanced_blocks(lines: list) -> set:
+    """Indexes of the block lines (opener, `else`, `end`) that pair up inside `lines`.
+
+    A removed call's `group tx … end` can be put back where it was only when both of its
+    brackets are among the removed lines: then it nests inside whatever is open there,
+    and the script stays balanced. A bracket whose partner survived is dropped, as before.
+    """
+    keep, stack = set(), []
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        m = BLOCK_RE.match(stripped)
+        if m and m["kw"].lower() != "else":
+            stack.append([i])
+        elif m:
+            if stack:
+                stack[-1].append(i)
+        elif BLOCK_END_RE.match(stripped) and stack:
+            keep.update(stack.pop())
+            keep.add(i)
+    return keep
+
+
+def _mark_block(m: "re.Match[str]", removed: bool) -> str:
+    """`group tx` -> `group #EAF6EC <color:…>tx</color>`.
+
+    PlantUML draws a block's frame in black whatever it is told — `group#hex` paints only
+    the title tab, solid — so the tint behind the whole frame and the colour of its title
+    are what can say "this transaction is new"."""
+    rest = m["rest"].strip()
+    if rest.startswith("#"):        # the source chose a colour already; it keeps it
+        return f'{m["kw"]} {rest}'
+    tint = REMOVED_TINT if removed else ADDED_TINT
+    title = (_struck(rest) if removed else _added(rest)) if rest else ""
+    return f'{m["kw"]} {tint} {title}'.rstrip()
+
+
+def _mark_line(line: str, removed: bool, balanced: bool = False) -> str | None:
     """Re-render one body line as an addition (removed=False) or a removal.
 
-    Returns None for lines that must not be re-emitted on the removal side.
+    Returns None for lines that must not be re-emitted on the removal side. `balanced`
+    says a removed block bracket has its partner in the same removed run.
     """
     stripped = line.strip()
     paint = _struck if removed else _added
@@ -144,7 +199,20 @@ def _mark_line(line: str, removed: bool) -> str | None:
 
     if ACTIVATION_RE.match(stripped):
         # See the module docstring: never re-inject old activation brackets.
-        return None if removed else line
+        if removed:
+            return None
+        m = ACTIVATE_RE.match(stripped)
+        if m and "#" not in m["who"]:
+            return f'activate {m["who"]} {ADDED_TINT}'
+        return line
+
+    m = BLOCK_RE.match(stripped)
+    if m:
+        if removed and not balanced:
+            return None
+        return _mark_block(m, removed)
+    if BLOCK_END_RE.match(stripped):
+        return None if removed and not balanced else stripped
 
     m = ARROW_RE.match(stripped)
     if m:
@@ -163,9 +231,8 @@ def _mark_line(line: str, removed: bool) -> str | None:
         # full-strength ADDED/REMOVED there is a slab with unreadable text on it.
         return f"{m['head']} {tint}: {paint(m['text'])}"
 
-    # group / alt / opt / loop / end and anything unrecognised: PlantUML offers no
-    # inline colour for these, so an addition passes through and a removal is
-    # dropped rather than risking an unbalanced block.
+    # Anything unrecognised: an addition passes through and a removal is dropped rather
+    # than risking an unbalanced script.
     return None if removed else line
 
 
@@ -362,8 +429,10 @@ def diff(old: str, new: str) -> str:
                 out.append(_mark_line(new_line, removed=False) or new_line if changed else new_line)
             continue
         if tag in ("replace", "delete"):
-            for line in old_body[i1:i2]:
-                marked = _mark_line(line, removed=True)
+            gone = old_body[i1:i2]
+            paired = _balanced_blocks(gone)
+            for k, line in enumerate(gone):
+                marked = _mark_line(line, removed=True, balanced=k in paired)
                 if marked is not None:
                     out.append(marked)
         if tag in ("replace", "insert"):

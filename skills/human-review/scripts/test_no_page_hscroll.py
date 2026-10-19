@@ -130,3 +130,65 @@ def test_the_masthead_keeps_its_chips_on_one_row(width, scheme, tmp_path):
             assert page.evaluate(measure)[2], "a click outside closes it"
         finally:
             browser.close()
+
+
+# ---------------------------------------------------------------------------------------- #
+# The API tab on a phone. A property path oasdiff names is one unbroken word —
+# `items/pets/items/visits/items/vetFirstName` — and the change row is a flex line, whose
+# text item will not shrink below its longest word: at 390px the row ran 61px past the
+# window and the whole page scrolled sideways. The row lives in the shadow root the page
+# moves `openapi-visual-diff.html` into, styled only by that producer's own stylesheet, so
+# that is what this page is made of: the real page CSS outside, the producer's inside.
+# ---------------------------------------------------------------------------------------- #
+
+def _visual_diff_css() -> str:
+    import re
+    spec = importlib.util.spec_from_file_location("ovd_hscroll", HERE / "openapi-visual-diff.py")
+    ovd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ovd)
+    return "".join(re.findall(r"<style\b[^>]*>.*?</style>", ovd.TEMPLATE, re.S))
+
+
+_LONG_PATHS = ("items/pets/items/visits/items/vetFirstName",
+               "items/pets/items/visits/items/vetLastName", "pets/items/visits/items/vetId")
+
+
+@pytest.mark.parametrize("scheme", ["light", "dark"])
+def test_an_api_change_naming_a_deep_property_wraps_on_a_phone(scheme, tmp_path):
+    sync = pytest.importorskip("playwright.sync_api")
+    rows = "".join(
+        f'<div class="dv-change l1"><span class="lvl">info</span><span>added the optional '
+        f'response property <code>{p}</code> with the <code>200</code> status</span></div>'
+        for p in _LONG_PATHS)
+    inner = (_visual_diff_css() + '<div class="swagger-ui"><div class="opblock">'
+             + rows + "</div></div>")
+    page_file = tmp_path / "api.html"
+    page_file.write_text(f"""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>{assets.CSS}</style></head><body><div class="wrap"><section class="panel">
+<div class="oavhost" id="embed-swaggerdiff"></div>
+<template id="embed-swaggerdiff-tpl">{inner}</template>
+<script>(function(){{var h=document.getElementById('embed-swaggerdiff'),
+t=document.getElementById('embed-swaggerdiff-tpl');
+h.attachShadow({{mode:'open'}}).appendChild(t.content);t.remove();}})();</script>
+</section></div></body></html>""", encoding="utf-8")
+    with sync.sync_playwright() as p:
+        try:
+            browser = p.chromium.launch()
+        except Exception as e:  # no browser downloaded for this interpreter
+            pytest.skip(f"chromium unavailable: {e}")
+        try:
+            page = browser.new_page(viewport={"width": 390, "height": 844},
+                                    color_scheme=scheme)
+            page.goto(page_file.as_uri())
+            sw, cw, past = page.evaluate(
+                "() => { const r = document.getElementById('embed-swaggerdiff').shadowRoot,"
+                " W = document.documentElement.clientWidth;"
+                " return [document.documentElement.scrollWidth, W,"
+                "   [...r.querySelectorAll('.dv-change code')]"
+                "     .filter(c => c.getBoundingClientRect().right > W + 1)"
+                "     .map(c => c.textContent)]; }")
+        finally:
+            browser.close()
+    assert not past, f"these paths run past a 390px window: {past}"
+    assert sw <= cw, f"the page scrolls {sw - cw}px sideways at 390px"
