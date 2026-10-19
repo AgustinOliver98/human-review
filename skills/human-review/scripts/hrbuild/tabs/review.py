@@ -3905,7 +3905,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if (st === 'complete' && (rec.review_url || rec.url)) {
       // A fact, not a control (Victor, 19 Oct 2026): grey "✓ Published", the check in
       // green from the CSS, nothing to press — re-publish is the action that is left.
-      b.textContent = 'Published'; b.dataset.state = 'done';
+      b.textContent = 'Published on GitHub'; b.dataset.state = 'done';
       b.tabIndex = -1; b.setAttribute('aria-disabled', 'true');
       b.dataset.tip = 'Published as a review on '
         + (rec.pr ? 'PR #' + rec.pr : 'the pull request') + (rec.pushed_at
@@ -4028,7 +4028,7 @@ def push_pr_button(spec) -> str:
     n = c['fixed'] + c['ignored'] + c['assumption']
     if done:
         # A fact, not a control (Victor, 19 Oct 2026): the check comes from the CSS.
-        label, state = "Published", "done"
+        label, state = "Published on GitHub", "done"
         tip = ("Published as a review on "
                + (f"PR #{pp['pr']}" if pp.get("pr") else "the pull request")
                + (f" — {pp['pushedAt'][:16].replace('T', ' ')}" if pp.get("pushedAt") else ""))

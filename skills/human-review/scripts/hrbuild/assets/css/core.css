@@ -164,7 +164,7 @@ figcaption { color:var(--muted); font-size:.86rem; }
    title's own face and weight, not a monospace stamp (Victor, 19 Oct 2026): kind, number
    and title read as one bold run. */
 .f-confidence { font:inherit; font-weight:650; border-radius:4px;
-        padding:.05rem .4rem; margin-left:.35rem; vertical-align:baseline; cursor:help; }
+        padding:.05rem .15rem; margin-left:.35rem; vertical-align:baseline; cursor:help; }
 .f-confidence.sev-high { background:#fde2e1; color:#a3161f; }
 .f-confidence.sev-med  { background:#fdf0d5; color:#7a4a00; }
 .f-confidence.sev-info { background:#e3f4e6; color:#1c6b33; }

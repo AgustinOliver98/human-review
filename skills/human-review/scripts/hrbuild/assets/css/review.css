@@ -65,7 +65,7 @@ ol.findings > li { counter-increment:f; background:var(--card); border:1px solid
    fills below are dark in BOTH themes and their white numeral is right in both; --accent
    is not, it lifts to a pastel after dark, and the fallback bubble came out white on
    #f08a8a at 2.4:1. `info` is the severity that lands here, so it is not a rare path. */
-ol.findings > li::before { content:counter(f); float:left; margin:.1rem .7rem 0 0; width:1.6rem; height:1.6rem;
+ol.findings > li::before { content:counter(f); float:left; margin:.1rem .4rem 0 0; width:1.6rem; height:1.6rem;
     border-radius:50%; background:var(--num-bg,#8a1c1c); color:#fff; font-size:.8rem; font-weight:700;
     display:grid; place-items:center; }
 ol.findings > li.n-high { --num-bg:#8a1c1c; }
@@ -112,7 +112,9 @@ a.f-src:hover, a.f-src:focus-visible { color:var(--link); border-color:var(--lin
    weight rather than small uppercase (Victor, 19 Oct 2026): kind, `(60%)` and title are
    one bold run, told apart by colour alone. */
 ol.findings > li > .badge { font:inherit; font-weight:650; text-transform:none;
-  letter-spacing:0; padding:.05rem .4rem; }
+  letter-spacing:0; padding:.05rem .4rem; display:inline-block; }
+/* "Assumption", not "assumption" (Victor, 20 Oct 2026): the kind opens the title run. */
+ol.findings > li > .badge::first-letter { text-transform:uppercase; }
 ol.findings > li.fixed > .badge { font-weight:600; }
 .f-why { color:var(--muted); font-size:.9rem; margin:.35rem 0 0; }
 .f-why b { color:var(--fg); font-weight:650; }
