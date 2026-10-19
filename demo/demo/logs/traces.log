@@ -1,755 +1,9 @@
   * traces -> requirements
     $ cd petclinic-test && PW_TRACE=on COVERAGE_DIR=../.human-review/coverage ./test-on-own-stack.sh npm test
-🐳 building petclinic-b5bf4153 from b5bf4153  (this takes a few minutes the first time)
- Image petclinic-env-reset:b5bf4153 Building 
- Image petclinic-env-backend:b5bf4153 Building 
- Image petclinic-env-notification:b5bf4153 Building 
- Image petclinic-env-frontend:b5bf4153 Building 
-#1 [internal] load local bake definitions
-#1 reading from stdin 2.79kB done
-#1 DONE 0.0s
-
-#2 [reset internal] load build definition from Dockerfile
-#2 transferring dockerfile: 1.31kB 0.0s done
-#2 DONE 0.2s
-
-#3 [reset internal] load metadata for docker.io/library/alpine:3.20
-#3 DONE 0.0s
-
-#4 [frontend internal] load build definition from Dockerfile
-#4 transferring dockerfile: 1.67kB 0.0s done
-#4 DONE 0.4s
-
-#5 [notification internal] load build definition from Dockerfile
-#5 transferring dockerfile: 1.22kB 0.0s done
-#5 DONE 0.3s
-
-#6 [backend internal] load build definition from Dockerfile
-#6 transferring dockerfile: 1.22kB 0.0s done
-#6 DONE 0.3s
-
-#7 [notification internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
-#7 DONE 0.0s
-
-#8 [notification internal] load metadata for docker.io/library/eclipse-temurin:21-jre
-#8 DONE 0.0s
-
-#9 [notification context commons] load .dockerignore
-#9 DONE 0.0s
-
-#10 [reset context fixtures] load .dockerignore
-#10 ...
-
-#8 [backend internal] load metadata for docker.io/library/eclipse-temurin:21-jre
-#8 DONE 0.0s
-
-#7 [backend internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
-#7 DONE 0.0s
-
-#11 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
-#11 DONE 0.0s
-
-#12 [frontend internal] load metadata for docker.io/library/node:18-bookworm-slim
-#12 DONE 0.0s
-
-#10 [reset context fixtures] load .dockerignore
-#10 transferring fixtures: 0.0s
-#10 transferring fixtures: 2B 0.1s done
-#10 DONE 0.4s
-
-#9 [notification context commons] load .dockerignore
-#9 transferring commons: 2B done
-#9 DONE 0.3s
-
-#13 [frontend internal] load .dockerignore
-#13 transferring context: 67B done
-#13 DONE 0.3s
-
-#14 [reset internal] load .dockerignore
-#14 transferring context: 2B 0.0s done
-#14 DONE 0.1s
-
-#15 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
-#15 DONE 0.0s
-
-#16 [frontend runtime 1/4] FROM docker.io/library/nginx:1.27-alpine
-#16 DONE 0.0s
-
-#17 [backend internal] load .dockerignore
-#17 transferring context: 230B 0.0s done
-#17 DONE 0.1s
-
-#18 [notification internal] load .dockerignore
-#18 transferring context: 60B 0.0s done
-#18 DONE 0.1s
-
-#19 [reset stage-0 1/5] FROM docker.io/library/alpine:3.20
-#19 DONE 0.0s
-
-#20 [backend stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre
-#20 DONE 0.0s
-
-#21 [backend build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
-#21 DONE 0.0s
-
-#22 [backend context commons] load from client
-#22 transferring commons: 12.03kB done
-#22 DONE 0.1s
-
-#23 [reset internal] load build context
-#23 transferring context: 6.45kB 0.0s done
-#23 DONE 0.1s
-
-#24 [reset context fixtures] load from client
-#24 transferring fixtures: 2.80kB 0.0s done
-#24 DONE 0.1s
-
-#25 [notification internal] load build context
-#25 transferring context: 9.47kB 0.0s done
-#25 DONE 0.1s
-
-#26 [frontend internal] load build context
-#26 transferring context: 2.90MB 0.1s done
-#26 DONE 0.2s
-
-#27 [backend context commons] load from client
-#27 transferring commons: 4.01kB 0.0s done
-#27 transferring commons: 4.01kB 0.0s done
-#27 DONE 0.2s
-
-#28 [reset stage-0 2/5] RUN apk add --no-cache postgresql16-client python3
-#28 CACHED
-
-#29 [reset stage-0 3/5] COPY reset-server.py /reset-server.py
-#29 CACHED
-
-#30 [backend internal] load build context
-#30 transferring context: 472.91kB 0.1s done
-#30 DONE 0.3s
-
-#31 [reset stage-0 4/5] COPY --from=fixtures . /fixtures/
-#31 DONE 0.1s
-
-#15 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
-#15 CACHED
-
-#32 [backend build 6/8] COPY pom.xml .
-#32 CACHED
-
-#33 [notification build 5/8] WORKDIR /app
-#33 CACHED
-
-#34 [notification stage-1 3/4] WORKDIR /app
-#34 CACHED
-
-#35 [notification build 4/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B -f /commons/pom.xml install
-#35 CACHED
-
-#36 [notification build 6/8] COPY pom.xml .
-#36 CACHED
-
-#37 [notification build 2/8] COPY --from=commons pom.xml /commons/pom.xml
-#37 CACHED
-
-#38 [notification build 7/8] COPY src ./src
-#38 CACHED
-
-#39 [notification stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
-#39 CACHED
-
-#40 [notification build 3/8] COPY --from=commons src /commons/src
-#40 CACHED
-
-#41 [notification build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
-#41 CACHED
-
-#42 [notification stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
-#42 CACHED
-
-#43 [notification] exporting to image
-#43 exporting layers done
-#43 writing image sha256:afdfb954b11fe79e2e45042886623058648e4d93605efcf39c87d5b49b3cf333 done
-#43 naming to docker.io/library/petclinic-env-notification:b5bf4153 done
-#43 DONE 0.0s
-
-#44 [backend build 7/8] COPY src ./src
-#44 DONE 0.2s
-
-#45 [reset stage-0 5/5] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
-#45 ...
-
-#46 [notification] resolving provenance for metadata file
-#46 DONE 0.1s
-
-#47 [backend build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
-#47 ...
-
-#45 [reset stage-0 5/5] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
-#45 DONE 0.9s
-
-#48 [reset] exporting to image
-#48 exporting layers 0.3s done
-#48 writing image sha256:704da26cbd5c10c5a5e6c66d45ef11d93bb8b0a47c646adee40e137af392296c done
-#48 naming to docker.io/library/petclinic-env-reset:b5bf4153 0.0s done
-#48 DONE 0.3s
-
-#49 [reset] resolving provenance for metadata file
-#49 DONE 0.0s
-
-#50 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
-#50 1.556 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
-#50 1.960 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
-#50 2.156 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
-#50 2.314 Get:4 http://deb.debian.org/debian bookworm/main arm64 Packages [8689 kB]
-#50 6.388 Get:5 http://deb.debian.org/debian bookworm-updates/main arm64 Packages [6936 B]
-#50 6.454 Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [352 kB]
-#50 7.385 Fetched 9290 kB in 6s (1524 kB/s)
-#50 7.385 Reading package lists...
-#50 8.163 Reading package lists...
-#50 8.761 Building dependency tree...
-#50 8.901 Reading state information...
-#50 9.215 The following additional packages will be installed:
-#50 9.215   binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 g++-12 gcc
-#50 9.215   gcc-12 libasan8 libatomic1 libbinutils libc-bin libc-dev-bin libc6 libc6-dev
-#50 9.215   libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libexpat1 libgcc-12-dev libgomp1
-#50 9.215   libgprofng0 libgssapi-krb5-2 libhwasan0 libisl23 libitm1 libjansson4
-#50 9.215   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 liblsan0 libmpc3
-#50 9.215   libmpfr6 libncursesw6 libnsl-dev libnsl2 libpython3-stdlib
-#50 9.215   libpython3.11-minimal libpython3.11-stdlib libreadline8 libsqlite3-0 libssl3
-#50 9.215   libstdc++-12-dev libtirpc-common libtirpc-dev libtirpc3 libtsan2 libubsan1
-#50 9.215   linux-libc-dev media-types python3-minimal python3.11 python3.11-minimal
-#50 9.215   readline-common rpcsvc-proto
-#50 9.216 Suggested packages:
-#50 9.216   binutils-doc cpp-doc gcc-12-locales cpp-12-doc gcc-12-doc gcc-multilib
-#50 9.216   manpages-dev autoconf automake libtool flex bison gdb gcc-doc glibc-doc
-#50 9.216   libc-l10n locales libnss-nis libnss-nisplus krb5-doc krb5-user
-#50 9.216   libstdc++-12-doc make-doc python3-doc python3-tk python3-venv
-#50 9.216   python3.11-venv python3.11-doc binfmt-support readline-doc
-#50 9.216 Recommended packages:
-#50 9.216   manpages manpages-dev libc-devtools krb5-locales libgpm2 ca-certificates
-#50 9.686 The following NEW packages will be installed:
-#50 9.686   binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 g++ g++-12
-#50 9.686   gcc gcc-12 libasan8 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0
-#50 9.686   libcrypt-dev libctf-nobfd0 libctf0 libexpat1 libgcc-12-dev libgomp1
-#50 9.686   libgprofng0 libgssapi-krb5-2 libhwasan0 libisl23 libitm1 libjansson4
-#50 9.686   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 liblsan0 libmpc3
-#50 9.686   libmpfr6 libncursesw6 libnsl-dev libnsl2 libpython3-stdlib
-#50 9.686   libpython3.11-minimal libpython3.11-stdlib libreadline8 libsqlite3-0 libssl3
-#50 9.686   libstdc++-12-dev libtirpc-common libtirpc-dev libtirpc3 libtsan2 libubsan1
-#50 9.686   linux-libc-dev make media-types python3 python3-minimal python3.11
-#50 9.686   python3.11-minimal readline-common rpcsvc-proto
-#50 9.687 The following packages will be upgraded:
-#50 9.687   libc-bin libc6
-#50 9.962 2 upgraded, 58 newly installed, 0 to remove and 26 not upgraded.
-#50 9.962 Need to get 68.2 MB of archives.
-#50 9.962 After this operation, 276 MB of additional disk space will be used.
-#50 9.962 Get:1 http://deb.debian.org/debian bookworm/main arm64 libc6 arm64 2.36-9+deb12u14 [2325 kB]
-#50 11.18 Get:2 http://deb.debian.org/debian bookworm/main arm64 libc-bin arm64 2.36-9+deb12u14 [535 kB]
-#50 11.47 Get:3 http://deb.debian.org/debian-security bookworm-security/main arm64 libssl3 arm64 3.0.22-1~deb12u1 [1828 kB]
-#50 11.86 Get:4 http://deb.debian.org/debian-security bookworm-security/main arm64 libpython3.11-minimal arm64 3.11.2-6+deb12u9 [814 kB]
-#50 11.98 Get:5 http://deb.debian.org/debian-security bookworm-security/main arm64 libexpat1 arm64 2.5.0-1+deb12u4 [89.2 kB]
-#50 11.99 Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 python3.11-minimal arm64 3.11.2-6+deb12u9 [1862 kB]
-#50 12.26 Get:7 http://deb.debian.org/debian bookworm/main arm64 python3-minimal arm64 3.11.2-1+b1 [26.3 kB]
-#50 12.26 Get:8 http://deb.debian.org/debian bookworm/main arm64 media-types all 10.0.0 [26.1 kB]
-#50 12.27 Get:9 http://deb.debian.org/debian bookworm/main arm64 libncursesw6 arm64 6.4-4 [122 kB]
-#50 12.28 Get:10 http://deb.debian.org/debian bookworm/main arm64 libkrb5support0 arm64 1.20.1-2+deb12u5 [32.6 kB]
-#50 12.28 Get:11 http://deb.debian.org/debian bookworm/main arm64 libk5crypto3 arm64 1.20.1-2+deb12u5 [79.9 kB]
-#50 12.29 Get:12 http://deb.debian.org/debian bookworm/main arm64 libkeyutils1 arm64 1.6.3-2 [8844 B]
-#50 12.39 Get:13 http://deb.debian.org/debian bookworm/main arm64 libkrb5-3 arm64 1.20.1-2+deb12u5 [316 kB]
-#50 12.41 Get:14 http://deb.debian.org/debian bookworm/main arm64 libgssapi-krb5-2 arm64 1.20.1-2+deb12u5 [124 kB]
-#50 12.42 Get:15 http://deb.debian.org/debian bookworm/main arm64 libtirpc-common all 1.3.3+ds-1 [14.0 kB]
-#50 12.42 Get:16 http://deb.debian.org/debian bookworm/main arm64 libtirpc3 arm64 1.3.3+ds-1 [80.9 kB]
-#50 12.43 Get:17 http://deb.debian.org/debian bookworm/main arm64 libnsl2 arm64 1.3.0-2 [36.9 kB]
-#50 12.43 Get:18 http://deb.debian.org/debian bookworm/main arm64 readline-common all 8.2-1.3 [69.0 kB]
-#50 12.51 Get:19 http://deb.debian.org/debian bookworm/main arm64 libreadline8 arm64 8.2-1.3 [155 kB]
-#50 12.57 Get:20 http://deb.debian.org/debian bookworm/main arm64 libsqlite3-0 arm64 3.40.1-2+deb12u2 [786 kB]
-#50 12.78 Get:21 http://deb.debian.org/debian-security bookworm-security/main arm64 libpython3.11-stdlib arm64 3.11.2-6+deb12u9 [1750 kB]
-#50 13.18 Get:22 http://deb.debian.org/debian-security bookworm-security/main arm64 python3.11 arm64 3.11.2-6+deb12u9 [575 kB]
-#50 13.35 Get:23 http://deb.debian.org/debian bookworm/main arm64 libpython3-stdlib arm64 3.11.2-1+b1 [9296 B]
-#50 13.35 Get:24 http://deb.debian.org/debian bookworm/main arm64 python3 arm64 3.11.2-1+b1 [26.3 kB]
-#50 13.37 Get:25 http://deb.debian.org/debian bookworm/main arm64 binutils-common arm64 2.40-2 [2487 kB]
-#50 13.80 Get:26 http://deb.debian.org/debian bookworm/main arm64 libbinutils arm64 2.40-2 [645 kB]
-#50 13.94 Get:27 http://deb.debian.org/debian bookworm/main arm64 libctf-nobfd0 arm64 2.40-2 [144 kB]
-#50 13.97 Get:28 http://deb.debian.org/debian bookworm/main arm64 libctf0 arm64 2.40-2 [79.2 kB]
-#50 13.97 Get:29 http://deb.debian.org/debian bookworm/main arm64 libgprofng0 arm64 2.40-2 [680 kB]
-#50 14.09 Get:30 http://deb.debian.org/debian bookworm/main arm64 libjansson4 arm64 2.14-2 [40.2 kB]
-#50 14.16 Get:31 http://deb.debian.org/debian bookworm/main arm64 binutils-aarch64-linux-gnu arm64 2.40-2 [2637 kB]
-#50 14.41 Get:32 http://deb.debian.org/debian bookworm/main arm64 binutils arm64 2.40-2 [64.9 kB]
-#50 ...
-
-#47 [backend build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
-#47 DONE 14.3s
-
-#50 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
-#50 14.41 Get:33 http://deb.debian.org/debian bookworm/main arm64 libisl23 arm64 0.25-1.1 [610 kB]
-#50 14.55 Get:34 http://deb.debian.org/debian bookworm/main arm64 libmpfr6 arm64 4.2.0-1 [600 kB]
-#50 14.61 Get:35 http://deb.debian.org/debian bookworm/main arm64 libmpc3 arm64 1.3.1-1 [49.2 kB]
-#50 14.61 Get:36 http://deb.debian.org/debian bookworm/main arm64 cpp-12 arm64 12.2.0-14+deb12u1 [8228 kB]
-#50 ...
-
-#39 [backend stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
-#39 CACHED
-
-#34 [backend stage-1 3/4] WORKDIR /app
-#34 CACHED
-
-#51 [backend stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
-#51 DONE 0.1s
-
-#50 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
-#50 ...
-
-#52 [backend] exporting to image
-#52 exporting layers 0.1s done
-#52 writing image sha256:e6d0c79062df8be790c882ab7dda155d4bd36693f3e25489e33c38ea2b57ce1e done
-#52 naming to docker.io/library/petclinic-env-backend:b5bf4153 done
-#52 DONE 0.1s
-
-#53 [backend] resolving provenance for metadata file
-#53 DONE 0.0s
-
-#50 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
-#50 15.78 Get:37 http://deb.debian.org/debian bookworm/main arm64 cpp arm64 4:12.2.0-3 [6832 B]
-#50 15.78 Get:38 http://deb.debian.org/debian bookworm/main arm64 libcc1-0 arm64 12.2.0-14+deb12u1 [37.7 kB]
-#50 15.79 Get:39 http://deb.debian.org/debian bookworm/main arm64 libgomp1 arm64 12.2.0-14+deb12u1 [104 kB]
-#50 15.79 Get:40 http://deb.debian.org/debian bookworm/main arm64 libitm1 arm64 12.2.0-14+deb12u1 [24.0 kB]
-#50 15.80 Get:41 http://deb.debian.org/debian bookworm/main arm64 libatomic1 arm64 12.2.0-14+deb12u1 [9568 B]
-#50 15.91 Get:42 http://deb.debian.org/debian bookworm/main arm64 libasan8 arm64 12.2.0-14+deb12u1 [2096 kB]
-#50 16.32 Get:43 http://deb.debian.org/debian bookworm/main arm64 liblsan0 arm64 12.2.0-14+deb12u1 [926 kB]
-#50 18.88 Get:44 http://deb.debian.org/debian bookworm/main arm64 libtsan2 arm64 12.2.0-14+deb12u1 [2178 kB]
-#50 19.32 Get:45 http://deb.debian.org/debian bookworm/main arm64 libubsan1 arm64 12.2.0-14+deb12u1 [862 kB]
-#50 19.67 Get:46 http://deb.debian.org/debian bookworm/main arm64 libhwasan0 arm64 12.2.0-14+deb12u1 [999 kB]
-#50 19.96 Get:47 http://deb.debian.org/debian bookworm/main arm64 libgcc-12-dev arm64 12.2.0-14+deb12u1 [956 kB]
-#50 20.27 Get:48 http://deb.debian.org/debian bookworm/main arm64 gcc-12 arm64 12.2.0-14+deb12u1 [16.3 MB]
-#50 22.90 Get:49 http://deb.debian.org/debian bookworm/main arm64 gcc arm64 4:12.2.0-3 [5244 B]
-#50 22.90 Get:50 http://deb.debian.org/debian bookworm/main arm64 libc-dev-bin arm64 2.36-9+deb12u14 [47.2 kB]
-#50 22.92 Get:51 http://deb.debian.org/debian-security bookworm-security/main arm64 linux-libc-dev arm64 6.1.190-1 [2385 kB]
-#50 23.71 Get:52 http://deb.debian.org/debian bookworm/main arm64 libcrypt-dev arm64 1:4.4.33-2 [121 kB]
-#50 24.00 Get:53 http://deb.debian.org/debian bookworm/main arm64 libtirpc-dev arm64 1.3.3+ds-1 [194 kB]
-#50 24.01 Get:54 http://deb.debian.org/debian bookworm/main arm64 libnsl-dev arm64 1.3.0-2 [66.1 kB]
-#50 24.01 Get:55 http://deb.debian.org/debian bookworm/main arm64 rpcsvc-proto arm64 1.4.3-1 [59.7 kB]
-#50 24.06 Get:56 http://deb.debian.org/debian bookworm/main arm64 libc6-dev arm64 2.36-9+deb12u14 [1436 kB]
-#50 24.40 Get:57 http://deb.debian.org/debian bookworm/main arm64 libstdc++-12-dev arm64 12.2.0-14+deb12u1 [2007 kB]
-#50 27.98 Get:58 http://deb.debian.org/debian bookworm/main arm64 g++-12 arm64 12.2.0-14+deb12u1 [9072 kB]
-#50 29.62 Get:59 http://deb.debian.org/debian bookworm/main arm64 g++ arm64 4:12.2.0-3 [1336 B]
-#50 29.62 Get:60 http://deb.debian.org/debian bookworm/main arm64 make arm64 4.3-4.1 [391 kB]
-#50 29.78 debconf: delaying package configuration, since apt-utils is not installed
-#50 29.79 Fetched 68.2 MB in 20s (3419 kB/s)
-#50 29.81 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6083 files and directories currently installed.)
-#50 29.83 Preparing to unpack .../libc6_2.36-9+deb12u14_arm64.deb ...
-#50 29.87 debconf: unable to initialize frontend: Dialog
-#50 29.87 debconf: (TERM is not set, so the dialog frontend is not usable.)
-#50 29.87 debconf: falling back to frontend: Readline
-#50 29.87 debconf: unable to initialize frontend: Readline
-#50 29.87 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/aarch64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
-#50 29.87 debconf: falling back to frontend: Teletype
-#50 29.89 Unpacking libc6:arm64 (2.36-9+deb12u14) over (2.36-9+deb12u10) ...
-#50 30.52 Setting up libc6:arm64 (2.36-9+deb12u14) ...
-#50 30.56 debconf: unable to initialize frontend: Dialog
-#50 30.56 debconf: (TERM is not set, so the dialog frontend is not usable.)
-#50 30.56 debconf: falling back to frontend: Readline
-#50 30.56 debconf: unable to initialize frontend: Readline
-#50 30.56 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/aarch64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
-#50 30.56 debconf: falling back to frontend: Teletype
-#50 31.63 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6083 files and directories currently installed.)
-#50 31.63 Preparing to unpack .../libc-bin_2.36-9+deb12u14_arm64.deb ...
-#50 31.64 Unpacking libc-bin (2.36-9+deb12u14) over (2.36-9+deb12u10) ...
-#50 31.74 Setting up libc-bin (2.36-9+deb12u14) ...
-#50 31.80 Selecting previously unselected package libssl3:arm64.
-#50 31.80 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6083 files and directories currently installed.)
-#50 31.80 Preparing to unpack .../libssl3_3.0.22-1~deb12u1_arm64.deb ...
-#50 31.81 Unpacking libssl3:arm64 (3.0.22-1~deb12u1) ...
-#50 31.98 Selecting previously unselected package libpython3.11-minimal:arm64.
-#50 31.98 Preparing to unpack .../libpython3.11-minimal_3.11.2-6+deb12u9_arm64.deb ...
-#50 32.00 Unpacking libpython3.11-minimal:arm64 (3.11.2-6+deb12u9) ...
-#50 32.08 Selecting previously unselected package libexpat1:arm64.
-#50 32.08 Preparing to unpack .../libexpat1_2.5.0-1+deb12u4_arm64.deb ...
-#50 32.08 Unpacking libexpat1:arm64 (2.5.0-1+deb12u4) ...
-#50 32.11 Selecting previously unselected package python3.11-minimal.
-#50 32.11 Preparing to unpack .../python3.11-minimal_3.11.2-6+deb12u9_arm64.deb ...
-#50 32.11 Unpacking python3.11-minimal (3.11.2-6+deb12u9) ...
-#50 32.24 Setting up libssl3:arm64 (3.0.22-1~deb12u1) ...
-#50 32.25 Setting up libpython3.11-minimal:arm64 (3.11.2-6+deb12u9) ...
-#50 32.25 Setting up libexpat1:arm64 (2.5.0-1+deb12u4) ...
-#50 32.26 Setting up python3.11-minimal (3.11.2-6+deb12u9) ...
-#50 32.72 Selecting previously unselected package python3-minimal.
-#50 32.72 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6411 files and directories currently installed.)
-#50 32.72 Preparing to unpack .../00-python3-minimal_3.11.2-1+b1_arm64.deb ...
-#50 32.72 Unpacking python3-minimal (3.11.2-1+b1) ...
-#50 32.75 Selecting previously unselected package media-types.
-#50 32.75 Preparing to unpack .../01-media-types_10.0.0_all.deb ...
-#50 32.76 Unpacking media-types (10.0.0) ...
-#50 32.79 Selecting previously unselected package libncursesw6:arm64.
-#50 32.79 Preparing to unpack .../02-libncursesw6_6.4-4_arm64.deb ...
-#50 32.79 Unpacking libncursesw6:arm64 (6.4-4) ...
-#50 32.82 Selecting previously unselected package libkrb5support0:arm64.
-#50 32.82 Preparing to unpack .../03-libkrb5support0_1.20.1-2+deb12u5_arm64.deb ...
-#50 32.82 Unpacking libkrb5support0:arm64 (1.20.1-2+deb12u5) ...
-#50 32.84 Selecting previously unselected package libk5crypto3:arm64.
-#50 32.84 Preparing to unpack .../04-libk5crypto3_1.20.1-2+deb12u5_arm64.deb ...
-#50 32.84 Unpacking libk5crypto3:arm64 (1.20.1-2+deb12u5) ...
-#50 32.86 Selecting previously unselected package libkeyutils1:arm64.
-#50 32.86 Preparing to unpack .../05-libkeyutils1_1.6.3-2_arm64.deb ...
-#50 32.87 Unpacking libkeyutils1:arm64 (1.6.3-2) ...
-#50 32.88 Selecting previously unselected package libkrb5-3:arm64.
-#50 32.88 Preparing to unpack .../06-libkrb5-3_1.20.1-2+deb12u5_arm64.deb ...
-#50 32.88 Unpacking libkrb5-3:arm64 (1.20.1-2+deb12u5) ...
-#50 32.92 Selecting previously unselected package libgssapi-krb5-2:arm64.
-#50 32.92 Preparing to unpack .../07-libgssapi-krb5-2_1.20.1-2+deb12u5_arm64.deb ...
-#50 32.92 Unpacking libgssapi-krb5-2:arm64 (1.20.1-2+deb12u5) ...
-#50 32.94 Selecting previously unselected package libtirpc-common.
-#50 32.94 Preparing to unpack .../08-libtirpc-common_1.3.3+ds-1_all.deb ...
-#50 32.95 Unpacking libtirpc-common (1.3.3+ds-1) ...
-#50 32.96 Selecting previously unselected package libtirpc3:arm64.
-#50 32.97 Preparing to unpack .../09-libtirpc3_1.3.3+ds-1_arm64.deb ...
-#50 32.97 Unpacking libtirpc3:arm64 (1.3.3+ds-1) ...
-#50 32.99 Selecting previously unselected package libnsl2:arm64.
-#50 32.99 Preparing to unpack .../10-libnsl2_1.3.0-2_arm64.deb ...
-#50 32.99 Unpacking libnsl2:arm64 (1.3.0-2) ...
-#50 33.00 Selecting previously unselected package readline-common.
-#50 33.00 Preparing to unpack .../11-readline-common_8.2-1.3_all.deb ...
-#50 33.01 Unpacking readline-common (8.2-1.3) ...
-#50 33.02 Selecting previously unselected package libreadline8:arm64.
-#50 33.02 Preparing to unpack .../12-libreadline8_8.2-1.3_arm64.deb ...
-#50 33.03 Unpacking libreadline8:arm64 (8.2-1.3) ...
-#50 33.05 Selecting previously unselected package libsqlite3-0:arm64.
-#50 33.05 Preparing to unpack .../13-libsqlite3-0_3.40.1-2+deb12u2_arm64.deb ...
-#50 33.05 Unpacking libsqlite3-0:arm64 (3.40.1-2+deb12u2) ...
-#50 33.11 Selecting previously unselected package libpython3.11-stdlib:arm64.
-#50 33.11 Preparing to unpack .../14-libpython3.11-stdlib_3.11.2-6+deb12u9_arm64.deb ...
-#50 33.11 Unpacking libpython3.11-stdlib:arm64 (3.11.2-6+deb12u9) ...
-#50 33.23 Selecting previously unselected package python3.11.
-#50 33.23 Preparing to unpack .../15-python3.11_3.11.2-6+deb12u9_arm64.deb ...
-#50 33.23 Unpacking python3.11 (3.11.2-6+deb12u9) ...
-#50 33.25 Selecting previously unselected package libpython3-stdlib:arm64.
-#50 33.25 Preparing to unpack .../16-libpython3-stdlib_3.11.2-1+b1_arm64.deb ...
-#50 33.26 Unpacking libpython3-stdlib:arm64 (3.11.2-1+b1) ...
-#50 33.27 Setting up python3-minimal (3.11.2-1+b1) ...
-#50 33.35 Selecting previously unselected package python3.
-#50 33.35 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6919 files and directories currently installed.)
-#50 33.35 Preparing to unpack .../00-python3_3.11.2-1+b1_arm64.deb ...
-#50 33.36 Unpacking python3 (3.11.2-1+b1) ...
-#50 33.37 Selecting previously unselected package binutils-common:arm64.
-#50 33.37 Preparing to unpack .../01-binutils-common_2.40-2_arm64.deb ...
-#50 33.37 Unpacking binutils-common:arm64 (2.40-2) ...
-#50 33.53 Selecting previously unselected package libbinutils:arm64.
-#50 33.53 Preparing to unpack .../02-libbinutils_2.40-2_arm64.deb ...
-#50 33.53 Unpacking libbinutils:arm64 (2.40-2) ...
-#50 33.59 Selecting previously unselected package libctf-nobfd0:arm64.
-#50 33.59 Preparing to unpack .../03-libctf-nobfd0_2.40-2_arm64.deb ...
-#50 33.60 Unpacking libctf-nobfd0:arm64 (2.40-2) ...
-#50 33.63 Selecting previously unselected package libctf0:arm64.
-#50 33.63 Preparing to unpack .../04-libctf0_2.40-2_arm64.deb ...
-#50 33.64 Unpacking libctf0:arm64 (2.40-2) ...
-#50 33.67 Selecting previously unselected package libgprofng0:arm64.
-#50 33.67 Preparing to unpack .../05-libgprofng0_2.40-2_arm64.deb ...
-#50 33.68 Unpacking libgprofng0:arm64 (2.40-2) ...
-#50 33.75 Selecting previously unselected package libjansson4:arm64.
-#50 33.75 Preparing to unpack .../06-libjansson4_2.14-2_arm64.deb ...
-#50 33.76 Unpacking libjansson4:arm64 (2.14-2) ...
-#50 33.78 Selecting previously unselected package binutils-aarch64-linux-gnu.
-#50 33.78 Preparing to unpack .../07-binutils-aarch64-linux-gnu_2.40-2_arm64.deb ...
-#50 33.78 Unpacking binutils-aarch64-linux-gnu (2.40-2) ...
-#50 34.02 Selecting previously unselected package binutils.
-#50 34.02 Preparing to unpack .../08-binutils_2.40-2_arm64.deb ...
-#50 34.02 Unpacking binutils (2.40-2) ...
-#50 34.07 Selecting previously unselected package libisl23:arm64.
-#50 34.07 Preparing to unpack .../09-libisl23_0.25-1.1_arm64.deb ...
-#50 34.08 Unpacking libisl23:arm64 (0.25-1.1) ...
-#50 34.16 Selecting previously unselected package libmpfr6:arm64.
-#50 34.16 Preparing to unpack .../10-libmpfr6_4.2.0-1_arm64.deb ...
-#50 34.17 Unpacking libmpfr6:arm64 (4.2.0-1) ...
-#50 34.23 Selecting previously unselected package libmpc3:arm64.
-#50 34.23 Preparing to unpack .../11-libmpc3_1.3.1-1_arm64.deb ...
-#50 34.24 Unpacking libmpc3:arm64 (1.3.1-1) ...
-#50 34.28 Selecting previously unselected package cpp-12.
-#50 34.28 Preparing to unpack .../12-cpp-12_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.28 Unpacking cpp-12 (12.2.0-14+deb12u1) ...
-#50 34.76 Selecting previously unselected package cpp.
-#50 34.76 Preparing to unpack .../13-cpp_4%3a12.2.0-3_arm64.deb ...
-#50 34.76 Unpacking cpp (4:12.2.0-3) ...
-#50 34.78 Selecting previously unselected package libcc1-0:arm64.
-#50 34.78 Preparing to unpack .../14-libcc1-0_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.78 Unpacking libcc1-0:arm64 (12.2.0-14+deb12u1) ...
-#50 34.80 Selecting previously unselected package libgomp1:arm64.
-#50 34.80 Preparing to unpack .../15-libgomp1_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.80 Unpacking libgomp1:arm64 (12.2.0-14+deb12u1) ...
-#50 34.82 Selecting previously unselected package libitm1:arm64.
-#50 34.82 Preparing to unpack .../16-libitm1_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.82 Unpacking libitm1:arm64 (12.2.0-14+deb12u1) ...
-#50 34.84 Selecting previously unselected package libatomic1:arm64.
-#50 34.84 Preparing to unpack .../17-libatomic1_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.84 Unpacking libatomic1:arm64 (12.2.0-14+deb12u1) ...
-#50 34.86 Selecting previously unselected package libasan8:arm64.
-#50 34.86 Preparing to unpack .../18-libasan8_12.2.0-14+deb12u1_arm64.deb ...
-#50 34.86 Unpacking libasan8:arm64 (12.2.0-14+deb12u1) ...
-#50 34.99 Selecting previously unselected package liblsan0:arm64.
-#50 34.99 Preparing to unpack .../19-liblsan0_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.00 Unpacking liblsan0:arm64 (12.2.0-14+deb12u1) ...
-#50 35.07 Selecting previously unselected package libtsan2:arm64.
-#50 35.07 Preparing to unpack .../20-libtsan2_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.07 Unpacking libtsan2:arm64 (12.2.0-14+deb12u1) ...
-#50 35.22 Selecting previously unselected package libubsan1:arm64.
-#50 35.22 Preparing to unpack .../21-libubsan1_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.22 Unpacking libubsan1:arm64 (12.2.0-14+deb12u1) ...
-#50 35.30 Selecting previously unselected package libhwasan0:arm64.
-#50 35.30 Preparing to unpack .../22-libhwasan0_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.30 Unpacking libhwasan0:arm64 (12.2.0-14+deb12u1) ...
-#50 35.38 Selecting previously unselected package libgcc-12-dev:arm64.
-#50 35.38 Preparing to unpack .../23-libgcc-12-dev_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.38 Unpacking libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
-#50 35.48 Selecting previously unselected package gcc-12.
-#50 35.48 Preparing to unpack .../24-gcc-12_12.2.0-14+deb12u1_arm64.deb ...
-#50 35.48 Unpacking gcc-12 (12.2.0-14+deb12u1) ...
-#50 36.01 Selecting previously unselected package gcc.
-#50 36.01 Preparing to unpack .../25-gcc_4%3a12.2.0-3_arm64.deb ...
-#50 36.01 Unpacking gcc (4:12.2.0-3) ...
-#50 36.03 Selecting previously unselected package libc-dev-bin.
-#50 36.03 Preparing to unpack .../26-libc-dev-bin_2.36-9+deb12u14_arm64.deb ...
-#50 36.03 Unpacking libc-dev-bin (2.36-9+deb12u14) ...
-#50 36.05 Selecting previously unselected package linux-libc-dev:arm64.
-#50 36.05 Preparing to unpack .../27-linux-libc-dev_6.1.190-1_arm64.deb ...
-#50 36.05 Unpacking linux-libc-dev:arm64 (6.1.190-1) ...
-#50 36.14 Selecting previously unselected package libcrypt-dev:arm64.
-#50 36.14 Preparing to unpack .../28-libcrypt-dev_1%3a4.4.33-2_arm64.deb ...
-#50 36.15 Unpacking libcrypt-dev:arm64 (1:4.4.33-2) ...
-#50 36.18 Selecting previously unselected package libtirpc-dev:arm64.
-#50 36.18 Preparing to unpack .../29-libtirpc-dev_1.3.3+ds-1_arm64.deb ...
-#50 36.18 Unpacking libtirpc-dev:arm64 (1.3.3+ds-1) ...
-#50 36.21 Selecting previously unselected package libnsl-dev:arm64.
-#50 36.21 Preparing to unpack .../30-libnsl-dev_1.3.0-2_arm64.deb ...
-#50 36.21 Unpacking libnsl-dev:arm64 (1.3.0-2) ...
-#50 36.22 Selecting previously unselected package rpcsvc-proto.
-#50 36.23 Preparing to unpack .../31-rpcsvc-proto_1.4.3-1_arm64.deb ...
-#50 36.23 Unpacking rpcsvc-proto (1.4.3-1) ...
-#50 36.25 Selecting previously unselected package libc6-dev:arm64.
-#50 36.25 Preparing to unpack .../32-libc6-dev_2.36-9+deb12u14_arm64.deb ...
-#50 36.25 Unpacking libc6-dev:arm64 (2.36-9+deb12u14) ...
-#50 36.37 Selecting previously unselected package libstdc++-12-dev:arm64.
-#50 36.37 Preparing to unpack .../33-libstdc++-12-dev_12.2.0-14+deb12u1_arm64.deb ...
-#50 36.37 Unpacking libstdc++-12-dev:arm64 (12.2.0-14+deb12u1) ...
-#50 36.56 Selecting previously unselected package g++-12.
-#50 36.56 Preparing to unpack .../34-g++-12_12.2.0-14+deb12u1_arm64.deb ...
-#50 36.56 Unpacking g++-12 (12.2.0-14+deb12u1) ...
-#50 37.08 Selecting previously unselected package g++.
-#50 37.08 Preparing to unpack .../35-g++_4%3a12.2.0-3_arm64.deb ...
-#50 37.08 Unpacking g++ (4:12.2.0-3) ...
-#50 37.10 Selecting previously unselected package make.
-#50 37.10 Preparing to unpack .../36-make_4.3-4.1_arm64.deb ...
-#50 37.10 Unpacking make (4.3-4.1) ...
-#50 37.14 Setting up media-types (10.0.0) ...
-#50 37.15 Setting up libkeyutils1:arm64 (1.6.3-2) ...
-#50 37.16 Setting up libtirpc-common (1.3.3+ds-1) ...
-#50 37.16 Setting up libsqlite3-0:arm64 (3.40.1-2+deb12u2) ...
-#50 37.17 Setting up binutils-common:arm64 (2.40-2) ...
-#50 37.17 Setting up linux-libc-dev:arm64 (6.1.190-1) ...
-#50 37.18 Setting up libctf-nobfd0:arm64 (2.40-2) ...
-#50 37.19 Setting up libgomp1:arm64 (12.2.0-14+deb12u1) ...
-#50 37.19 Setting up libjansson4:arm64 (2.14-2) ...
-#50 37.20 Setting up libkrb5support0:arm64 (1.20.1-2+deb12u5) ...
-#50 37.20 Setting up rpcsvc-proto (1.4.3-1) ...
-#50 37.21 Setting up make (4.3-4.1) ...
-#50 37.21 Setting up libmpfr6:arm64 (4.2.0-1) ...
-#50 37.22 Setting up libmpc3:arm64 (1.3.1-1) ...
-#50 37.22 Setting up libatomic1:arm64 (12.2.0-14+deb12u1) ...
-#50 37.23 Setting up libncursesw6:arm64 (6.4-4) ...
-#50 37.23 Setting up libk5crypto3:arm64 (1.20.1-2+deb12u5) ...
-#50 37.24 Setting up libubsan1:arm64 (12.2.0-14+deb12u1) ...
-#50 37.24 Setting up libhwasan0:arm64 (12.2.0-14+deb12u1) ...
-#50 37.25 Setting up libcrypt-dev:arm64 (1:4.4.33-2) ...
-#50 37.25 Setting up libasan8:arm64 (12.2.0-14+deb12u1) ...
-#50 37.26 Setting up libkrb5-3:arm64 (1.20.1-2+deb12u5) ...
-#50 37.27 Setting up libtsan2:arm64 (12.2.0-14+deb12u1) ...
-#50 37.27 Setting up libbinutils:arm64 (2.40-2) ...
-#50 37.28 Setting up libisl23:arm64 (0.25-1.1) ...
-#50 37.28 Setting up libc-dev-bin (2.36-9+deb12u14) ...
-#50 37.29 Setting up readline-common (8.2-1.3) ...
-#50 37.29 Setting up libcc1-0:arm64 (12.2.0-14+deb12u1) ...
-#50 37.30 Setting up liblsan0:arm64 (12.2.0-14+deb12u1) ...
-#50 37.31 Setting up libitm1:arm64 (12.2.0-14+deb12u1) ...
-#50 37.31 Setting up libctf0:arm64 (2.40-2) ...
-#50 37.31 Setting up cpp-12 (12.2.0-14+deb12u1) ...
-#50 37.32 Setting up libreadline8:arm64 (8.2-1.3) ...
-#50 37.32 Setting up libgprofng0:arm64 (2.40-2) ...
-#50 37.33 Setting up libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
-#50 37.33 Setting up libgssapi-krb5-2:arm64 (1.20.1-2+deb12u5) ...
-#50 37.34 Setting up cpp (4:12.2.0-3) ...
-#50 37.35 Setting up libtirpc3:arm64 (1.3.3+ds-1) ...
-#50 37.36 Setting up binutils-aarch64-linux-gnu (2.40-2) ...
-#50 37.36 Setting up binutils (2.40-2) ...
-#50 37.37 Setting up libtirpc-dev:arm64 (1.3.3+ds-1) ...
-#50 37.37 Setting up gcc-12 (12.2.0-14+deb12u1) ...
-#50 37.38 Setting up libnsl2:arm64 (1.3.0-2) ...
-#50 37.38 Setting up libpython3.11-stdlib:arm64 (3.11.2-6+deb12u9) ...
-#50 37.39 Setting up gcc (4:12.2.0-3) ...
-#50 37.40 Setting up libnsl-dev:arm64 (1.3.0-2) ...
-#50 37.40 Setting up libc6-dev:arm64 (2.36-9+deb12u14) ...
-#50 37.41 Setting up libpython3-stdlib:arm64 (3.11.2-1+b1) ...
-#50 37.42 Setting up python3.11 (3.11.2-6+deb12u9) ...
-#50 37.89 Setting up libstdc++-12-dev:arm64 (12.2.0-14+deb12u1) ...
-#50 37.89 Setting up python3 (3.11.2-1+b1) ...
-#50 37.90 running python rtupdate hooks for python3.11...
-#50 37.90 running python post-rtupdate hooks for python3.11...
-#50 37.94 Setting up g++-12 (12.2.0-14+deb12u1) ...
-#50 37.95 Setting up g++ (4:12.2.0-3) ...
-#50 37.95 update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
-#50 37.95 Processing triggers for libc-bin (2.36-9+deb12u14) ...
-#50 DONE 38.4s
-
-#54 [frontend build 3/7] WORKDIR /app
-#54 DONE 0.0s
-
-#55 [frontend build 4/7] COPY package.json package-lock.json ./
-#55 DONE 0.0s
-
-#56 [frontend build 5/7] RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
-#56 1.414 npm warn EBADENGINE Unsupported engine {
-#56 1.414 npm warn EBADENGINE   package: 'karma-cli@1.0.1',
-#56 1.414 npm warn EBADENGINE   required: { node: '0.10 || 0.12 || 4 || 5 || 6' },
-#56 1.414 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
-#56 1.414 npm warn EBADENGINE }
-#56 9.554 npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
-#56 10.31 npm warn deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigin.
-#56 14.14 npm warn deprecated tslint@6.1.3: TSLint has been deprecated in favor of ESLint. Please see https://github.com/palantir/tslint/issues/4534 for more information.
-#56 14.24 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
-#56 15.11 npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
-#56 18.12 npm warn deprecated protractor@7.0.0: We have news to share - Protractor is deprecated and will reach end-of-life by Summer 2023. To learn more and find out about other options please refer to this post on the Angular blog. Thank you for using and contributing to Protractor. https://goo.gle/state-of-e2e-in-angular
-#56 24.23 npm warn deprecated har-validator@5.1.5: this library is no longer supported
-#56 30.00 npm warn deprecated @wessberg/ts-evaluator@0.0.27: this package has been renamed to ts-evaluator. Please install ts-evaluator instead
-#56 52.82 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-#56 210.8 
-#56 210.8 added 1643 packages, and audited 1644 packages in 4m
-#56 210.8 
-#56 210.8 239 packages are looking for funding
-#56 210.8   run `npm fund` for details
-#56 211.7 
-#56 211.7 148 vulnerabilities (11 low, 45 moderate, 83 high, 9 critical)
-#56 211.7 
-#56 211.7 To address issues that do not require attention, run:
-#56 211.7   npm audit fix
-#56 211.7 
-#56 211.7 To address all issues possible (including breaking changes), run:
-#56 211.7   npm audit fix --force
-#56 211.7 
-#56 211.7 Some issues need review, and may require choosing
-#56 211.7 a different dependency.
-#56 211.7 
-#56 211.7 Run `npm audit` for details.
-#56 211.7 npm notice
-#56 211.7 npm notice New major version of npm available! 10.8.2 -> 12.2.0
-#56 211.7 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
-#56 211.7 npm notice To update run: npm install -g npm@12.2.0
-#56 211.7 npm notice
-#56 DONE 211.8s
-
-#57 [frontend build 6/7] COPY . .
-#57 DONE 0.0s
-
-#58 [frontend build 7/7] RUN npx ng build --configuration docker
-#58 1.441 - Generating browser application bundles (phase: setup)...
-#58 27.87 ✔ Browser application bundle generation complete.
-#58 30.30 ✔ Browser application bundle generation complete.
-#58 30.30 - Copying assets...
-#58 30.31 ✔ Copying assets complete.
-#58 30.31 - Generating index html...
-#58 30.46 ✔ Index html generation complete.
-#58 30.46 
-#58 30.46 Initial Chunk Files           | Names         |  Raw Size | Estimated Transfer Size
-#58 30.46 main.db03b0361f3f3791.js      | main          |   1.25 MB |               250.47 kB
-#58 30.46 styles.5a832aed5e36d6b9.css   | styles        | 198.13 kB |                24.13 kB
-#58 30.46 scripts.15a866ab6acfa108.js   | scripts       | 150.92 kB |                44.00 kB
-#58 30.46 polyfills.96561b4e147d79cf.js | polyfills     |  33.06 kB |                10.69 kB
-#58 30.46 runtime.cc455d20bec59982.js   | runtime       |   1.73 kB |               879 bytes
-#58 30.46 
-#58 30.46 | Initial Total |   1.62 MB |               330.15 kB
-#58 30.46 
-#58 30.46 Build at: 2026-10-19T07:51:41.589Z - Hash: be56a46a096ef48a - Time: 28762ms
-#58 30.53 npm notice
-#58 30.53 npm notice New major version of npm available! 10.8.2 -> 12.2.0
-#58 30.53 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
-#58 30.53 npm notice To update run: npm install -g npm@12.2.0
-#58 30.53 npm notice
-#58 DONE 30.6s
-
-#59 [frontend runtime 2/4] COPY --from=build /app/dist/ /usr/share/nginx/html/
-#59 CACHED
-
-#60 [frontend runtime 3/4] COPY nginx.conf /etc/nginx/conf.d/default.conf
-#60 CACHED
-
-#61 [frontend runtime 4/4] COPY proxy-backend.conf /etc/nginx/proxy-backend.conf
-#61 CACHED
-
-#62 [frontend] exporting to image
-#62 exporting layers done
-#62 writing image sha256:50244b7eaed57a375d76f1b77591071d121ea2c4cd5f5d8f645ecc6bb134c9e2 done
-#62 naming to docker.io/library/petclinic-env-frontend:b5bf4153 done
-#62 DONE 0.0s
-
-#63 [frontend] resolving provenance for metadata file
-#63 DONE 0.0s
- Image petclinic-env-notification:b5bf4153 Built 
- Image petclinic-env-backend:b5bf4153 Built 
- Image petclinic-env-frontend:b5bf4153 Built 
- Image petclinic-env-reset:b5bf4153 Built 
- Network petclinic-b5bf4153_default Creating 
- Network petclinic-b5bf4153_default Created 
- Volume petclinic-b5bf4153_seed Creating 
- Volume petclinic-b5bf4153_seed Created 
- Volume petclinic-b5bf4153_pgdata Creating 
- Volume petclinic-b5bf4153_pgdata Created 
- Volume petclinic-b5bf4153_activity Creating 
- Volume petclinic-b5bf4153_activity Created 
- Container petclinic-b5bf4153-reaper-1 Creating 
- Container petclinic-b5bf4153-notification-1 Creating 
- Container petclinic-b5bf4153-db-1 Creating 
- Container petclinic-b5bf4153-reaper-1 Created 
- Container petclinic-b5bf4153-notification-1 Created 
- Container petclinic-b5bf4153-db-1 Created 
- Container petclinic-b5bf4153-backend-1 Creating 
- Container petclinic-b5bf4153-backend-1 Created 
- Container petclinic-b5bf4153-reset-1 Creating 
- Container petclinic-b5bf4153-frontend-1 Creating 
- Container petclinic-b5bf4153-reset-1 Created 
- Container petclinic-b5bf4153-frontend-1 Created 
- Container petclinic-b5bf4153-db-1 Starting 
- Container petclinic-b5bf4153-reaper-1 Starting 
- Container petclinic-b5bf4153-notification-1 Starting 
- Container petclinic-b5bf4153-notification-1 Started 
- Container petclinic-b5bf4153-reaper-1 Started 
- Container petclinic-b5bf4153-db-1 Started 
- Container petclinic-b5bf4153-db-1 Waiting 
- Container petclinic-b5bf4153-notification-1 Waiting 
- Container petclinic-b5bf4153-db-1 Healthy 
- Container petclinic-b5bf4153-notification-1 Healthy 
- Container petclinic-b5bf4153-backend-1 Starting 
- Container petclinic-b5bf4153-backend-1 Started 
- Container petclinic-b5bf4153-backend-1 Waiting 
- Container petclinic-b5bf4153-backend-1 Waiting 
- Container petclinic-b5bf4153-backend-1 Healthy 
- Container petclinic-b5bf4153-reset-1 Starting 
- Container petclinic-b5bf4153-backend-1 Healthy 
- Container petclinic-b5bf4153-frontend-1 Starting 
- Container petclinic-b5bf4153-reset-1 Started 
- Container petclinic-b5bf4153-frontend-1 Started 
- Container petclinic-b5bf4153-reaper-1 Waiting 
- Container petclinic-b5bf4153-db-1 Waiting 
- Container petclinic-b5bf4153-backend-1 Waiting 
- Container petclinic-b5bf4153-notification-1 Waiting 
- Container petclinic-b5bf4153-frontend-1 Waiting 
- Container petclinic-b5bf4153-reset-1 Waiting 
- Container petclinic-b5bf4153-db-1 Healthy 
- Container petclinic-b5bf4153-reaper-1 Healthy 
- Container petclinic-b5bf4153-backend-1 Healthy 
- Container petclinic-b5bf4153-notification-1 Healthy 
- Container petclinic-b5bf4153-frontend-1 Healthy 
- Container petclinic-b5bf4153-reset-1 Healthy 
-
-✅ petclinic-b5bf4153 ready — reaps itself after 30 idle minutes
-   http://localhost:63257
-   (copied to the clipboard)
-📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:63230)
-🧪 npm test → app http://127.0.0.1:63257, backend http://127.0.0.1:63231 (petclinic-b5bf4153)
+↻ petclinic-b5bf4153 is already up
+http://localhost:56347
+📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:56268)
+🧪 npm test → app http://127.0.0.1:56347, backend http://127.0.0.1:56269 (petclinic-b5bf4153)
 
 > qa@1.0.0 test
 > playwright test
@@ -757,37 +11,37 @@
 
 Running 13 tests using 1 worker
 
-  ✓   1 [chromium] › src/add-owner.spec.ts:47:5 › adds an owner from the New Owner form and finds them by last name (1.3s)
-  ✓   2 [chromium] › src/add-owner.spec.ts:59:5 › edits an owner from their own page and the change sticks (868ms)
-  ✓   3 [chromium] › src/add-visit.spec.ts:31:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (10.6s)
+  ✓   1 [chromium] › src/add-owner.spec.ts:47:5 › adds an owner from the New Owner form and finds them by last name (2.1s)
+  ✓   2 [chromium] › src/add-owner.spec.ts:59:5 › edits an owner from their own page and the change sticks (955ms)
+  ✓   3 [chromium] › src/add-visit.spec.ts:31:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (8.7s)
   -   4 [chromium] › src/chatbot.spec.ts:20:7 › PetClinic Assistant (chatbot) › shows the signed-in owner from the JWT as read-only text (no editable name field)
   -   5 [chromium] › src/chatbot.spec.ts:31:7 › PetClinic Assistant (chatbot) › answers a triage question without a server error
-  ✓   6 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /__reset is not a route this application serves (21ms)
+  ✓   6 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /__reset is not a route this application serves (13ms)
   ✓   7 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/__reset is not a route this application serves (10ms)
   ✓   8 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /reset is not a route this application serves (7ms)
-  ✓   9 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/reset is not a route this application serves (9ms)
-  ✓  10 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /actuator/reset is not a route this application serves (10ms)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/shows_all_visits_on_initial_load_2026-10-19T07-52-20-701Z.png
-  ✓  11 [chromium] › src/visits.spec.ts:27:7 › Visits Page › shows all visits on initial load (887ms)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-19T07-52-21-432Z.png
-  ✓  12 [chromium] › src/visits.spec.ts:44:7 › Visits Page › rows are sorted descending by date (673ms)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-19T07-52-22-037Z.png
-  ✓  13 [chromium] › src/visits.spec.ts:52:7 › Visits Page › owner link navigates to owner detail (569ms)
+  ✓   9 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/reset is not a route this application serves (21ms)
+  ✓  10 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /actuator/reset is not a route this application serves (7ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/shows_all_visits_on_initial_load_2026-10-19T20-54-43-155Z.png
+  ✓  11 [chromium] › src/visits.spec.ts:27:7 › Visits Page › shows all visits on initial load (1.2s)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-19T20-54-44-034Z.png
+  ✓  12 [chromium] › src/visits.spec.ts:44:7 › Visits Page › rows are sorted descending by date (789ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-19T20-54-44-749Z.png
+  ✓  13 [chromium] › src/visits.spec.ts:52:7 › Visits Page › owner link navigates to owner detail (624ms)
 🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
 🔭 Tempo behind http://localhost:3300
-⏳ Waiting 2.2s for the last trace window to close…
+⏳ Waiting 1.4s for the last trace window to close…
 ⚠️  "Add a visit to an existing pet from the owner detail page": fetch failed — skipped
 📊 Generated 0 diagram(s)
 
   2 skipped
-  11 passed (18.4s)
+  11 passed (17.0s)
     $ git rev-parse HEAD
     $ git rev-parse --short HEAD
     $ cd petclinic-test && PW_TRACE=on COVERAGE_DIR=../.human-review/coverage ./test-on-own-stack.sh npm run test:cucumber
 ↻ petclinic-b5bf4153 is already up
-http://localhost:63257
-📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:63230)
-🧪 npm run test:cucumber → app http://127.0.0.1:63257, backend http://127.0.0.1:63231 (petclinic-b5bf4153)
+http://localhost:56347
+📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:56268)
+🧪 npm run test:cucumber → app http://127.0.0.1:56347, backend http://127.0.0.1:56269 (petclinic-b5bf4153)
 
 > qa@1.0.0 test:cucumber
 > SKIP_SERVER_START=1 cucumber-js
@@ -801,6 +55,6 @@ http://localhost:63257
 
 7 scenarios (7 passed)
 28 steps (28 passed)
-0m18.629s (executing steps: 0m13.608s)
+0m21.393s (executing steps: 0m16.349s)
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/playwright-traces.py --report "petclinic-test/test-results/playwright-report" --out .human-review/assets --json .human-review/assets/traces.json --limit 16 --project-dir "petclinic-test" --cucumber "petclinic-test/test-results/cucumber-traces"
-[traces] 15 trace(s), 3.4 MB -> .human-review/assets/traces
+[traces] 15 trace(s), 3.3 MB -> .human-review/assets/traces

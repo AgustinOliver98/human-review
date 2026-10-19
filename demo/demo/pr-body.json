@@ -1,5 +1,5 @@
 {
  "number": 49,
  "url": "https://github.com/victorrentea/petclinic/pull/49",
- "body": "Closes #37.\n\nReimplemented from scratch by an unguided Opus run of `/implement-ticket` (session 47d2ba31): commit #1 is the implementation, commit #2 the fixes it accepted from `/code-review` plus `review-points.md` (3 fixed, 6 declined with reasons, 7 assumptions). Tooling commits from `main` are cherry-picked on top. The previous `test-pr` tip is tagged `test-pr-pre-reimpl-2026-09-17`.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)"
+ "body": "Closes #37.\n\nReimplemented from scratch by an unguided Opus run (session 82329d0a): commit #1 is the implementation, commit #2 the fixes it accepted from `/code-review` plus `review-points.md` (4 fixed, 9 declined with reasons, 6 assumptions). Tooling commits from `main` are cherry-picked on top. The previous `test-pr` tip is tagged `test-pr-pre-reimpl-2026-09-17`.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n"
 }
