@@ -1,5 +1,6 @@
-"""The VSC badge beside `Served`: green when a VS Code window is on the reviewed commit,
-amber when the reviewed branch is open at another commit, red otherwise."""
+"""The IDE logos beside `Served`: which IDE a click on code opens in (green, one at most),
+and, served, whether that IDE's window is on the reviewed commit (amber when the reviewed
+branch is open at another commit)."""
 from __future__ import annotations
 
 import http.server
@@ -574,10 +575,10 @@ def browser():
         b.close()
 
 
-def _picker_page(browser, ides):
-    """A served page with the masthead badge, one source link and one *in VS Code* link,
+def _picker_page(browser, ides, pick=None, extra=""):
+    """A served page with the masthead logos, one source link and one *in VS Code* link,
     against a fake server whose badge poll answers `ides`. Returns the page and the
-    requests it sent."""
+    requests it sent (`METHOD path`, and the body of a POST)."""
     from test_action_server import build
     sent = []
     link = build.gh_comment_link({"_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
@@ -586,28 +587,35 @@ def _picker_page(browser, ides):
     body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
             + '<style>' + build.CSS + '</style>' + build.SERVER_JS
             + '</head><body><div class="titlerow"><span class="titleside">'
-            '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
-            '</span></div><a class="srcref" id="ref" href="vscode://file//r/src/A.java:3:1">'
-            f'A.java:3</a><p id="gh">{link}</p>' + build.TIP_JS + build.EDITOR_JS
+            + build.IDE_CHIPS
+            + '</span></div><a class="srcref" id="ref" href="vscode://file//r/src/A.java:3:1">'
+            f'A.java:3</a><p id="gh">{link}</p>' + extra + build.TIP_JS + build.EDITOR_JS
             + '</body></html>')
 
     def serve(route):
-        url = route.request.url
-        sent.append(url.split("127.0.0.1:9", 1)[1])
+        req = route.request
+        url = req.url
+        sent.append(req.method + " " + url.split("127.0.0.1:9", 1)[1]
+                    + (" " + (req.post_data or "") if req.method == "POST" else ""))
         if url.endswith("/review.html"):
             return route.fulfill(body=body, content_type="text/html")
         if "/__human_review__" in url:
             return route.fulfill(body='{"humanReview": 1, "token": "t"}',
                                  content_type="application/json")
         if "/__editor__" in url:
-            return route.fulfill(body=json.dumps({"state": "on", "tip": "Click\nstate",
+            return route.fulfill(body=json.dumps({"state": "on", "tip": "Click\nstate line",
                                                   "ides": ides}),
+                                 content_type="application/json")
+        if "/__editor_open__" in url:
+            return route.fulfill(body='{"how": "focused", "window": "r", "opened": "/r"}',
                                  content_type="application/json")
         if "/__open__" in url:
             return route.fulfill(body='{"ide": "idea", "fallback": false}',
                                  content_type="application/json")
         return route.fulfill(status=404, body="")
     page = browser.new_page()
+    if pick:
+        page.add_init_script(f"localStorage.setItem('hr-ide', '{pick}')")
     page.route("http://127.0.0.1:9/**", serve)
     page.goto("http://127.0.0.1:9/review.html")
     return page, sent
@@ -617,36 +625,87 @@ IDES2 = [{"app": "vscode", "label": "VS Code", "focused": False},
          {"app": "idea", "label": "IntelliJ IDEA", "focused": True}]
 
 
-def test_two_ides_on_the_checkout_make_the_badge_a_picker_and_clicks_follow_it(browser):
+def _states(page):
+    """Each logo as `app:state`, `app:hidden` when the masthead does not show it."""
+    return page.eval_on_selector_all(
+        ".chip-ide", "cs => cs.map(c => c.dataset.ide + ':' + (c.hidden ? 'hidden' : "
+        "(['ide-on', 'ide-near', 'ide-off'].find(k => c.classList.contains(k)) || '-')))")
+
+
+def test_the_logos_connect_one_ide_at_a_time_and_clicks_follow_it(browser):
     page, sent = _picker_page(browser, IDES2)
-    page.wait_for_selector("#hr-ide:not([hidden])")
-    assert page.eval_on_selector_all("#hr-ide option", "os => os.map(o => o.textContent)") == [
-        "VS Code", "IntelliJ"]
-    assert page.locator("#hr-ide").input_value() == "vscode", "nothing picked yet: VS Code"
-    assert page.locator("#hr-vsc").inner_text() == "↗"
-    page.select_option("#hr-ide", "idea")
+    page.wait_for_timeout(300)
+    # Nothing connected until the reader connects one, whatever has a window: both red.
+    assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
+    assert page.evaluate("document.documentElement.classList.contains('ide-none')")
+    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Connect IntelliJ"
+    assert "IntelliJ has a window on this checkout." in page.get_attribute(
+        "#hr-ide-idea", "data-tip-html")
+    # Red → connected, alone in the masthead, green.
+    page.click("#hr-ide-idea")
+    assert _states(page) == ["vscode:hidden", "idea:ide-on"]
+    assert page.get_attribute("#hr-ide-idea", "aria-pressed") == "true"
+    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Disconnect IntelliJ"
     assert page.evaluate("document.documentElement.classList.contains('ide-idea')")
-    assert page.locator("a.f-vsc .ide-word").inner_text() == "IntelliJ"
+    assert page.locator("a.f-vsc .ide-word").text_content() == "IntelliJ"
     assert page.locator("a.f-vsc svg.ij-ico").is_visible()
     assert not page.locator("a.f-vsc svg.vsc-ico").is_visible()
+    page.wait_for_timeout(200)
+    assert any(u.startswith("POST /__editor_open__") and '"ide":"idea"' in u for u in sent), sent
     page.click("#ref")
     page.wait_for_timeout(200)
-    assert any(u.startswith("/__open__?") and "&ide=idea" in u for u in sent), sent
-    assert any(u.startswith("/__editor__?") and "&ide=idea" in u for u in sent), sent
+    assert any(u.startswith("GET /__open__?") and "&ide=idea" in u for u in sent), sent
+    assert any(u.startswith("GET /__editor__?") and "&ide=idea" in u for u in sent), sent
     # The pick is the reader's, kept across a reload.
     page.reload()
-    page.wait_for_selector("#hr-ide:not([hidden])")
-    assert page.locator("#hr-ide").input_value() == "idea"
+    page.wait_for_function("document.querySelector('#hr-ide-idea.ide-on')")
+    assert _states(page) == ["vscode:hidden", "idea:ide-on"]
+    # Green → disconnected: both back, red; no IDE link, and a click on code copies.
+    page.click("#hr-ide-idea")
+    assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
+    assert not page.locator("a.f-vsc").is_visible()
+    before = len([u for u in sent if "/__open__" in u])
+    page.click("#ref")
+    page.wait_for_timeout(200)
+    assert len([u for u in sent if "/__open__" in u]) == before, sent
+    assert "no IDE connected" in page.locator("#copy-toast").inner_text()
+    # …and the other one can be connected now.
+    page.click("#hr-ide-vscode")
+    assert _states(page) == ["vscode:ide-on", "idea:hidden"]
     page.close()
 
 
-def test_one_ide_connected_is_a_plain_badge_naming_it(browser):
-    page, sent = _picker_page(browser, IDES2[1:])
-    page.wait_for_function("document.getElementById('hr-vsc').textContent === 'IntelliJ'")
-    assert page.locator("#hr-ide").count() == 0
-    page.click("#ref")
+def test_the_connected_logo_tip_carries_the_servers_state_line(browser):
+    page, sent = _picker_page(browser, IDES2[1:], pick="idea")
+    page.wait_for_function("document.querySelector('#hr-ide-idea.ide-on')")
+    page.wait_for_timeout(300)
+    tip = page.get_attribute("#hr-ide-idea", "data-tip-html")
+    assert "state line" in tip and "Click" not in tip
+    page.close()
+
+
+def test_a_findings_title_opens_its_reference_in_the_picked_ide(browser):
+    """Victor, 20 Oct 2026: a click on the card's title opens its lines; the GitHub and IDE
+    icons sit at the right end of its header row, icons only."""
+    from test_action_server import build
+    card = build._render_finding_items([{
+        "severity": "high", "title": "Unknown vetId", "body": "b",
+        "_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
+        "_ghFile": "vscode://file//r/src/A.java:12:1", "_ghWhere": "src/A.java:12"}])
+    page, sent = _picker_page(browser, IDES2, pick="idea", extra=f'<ol class="findings">{card}</ol>')
+    page.wait_for_timeout(300)
+    li = page.locator("ol.findings > li").first
+    box, gh, ide = (li.bounding_box(), li.locator("> a.f-gh").bounding_box(),
+                    li.locator("> a.f-vsc").bounding_box())
+    assert gh["x"] + gh["width"] > box["x"] + box["width"] - 40, (box, gh)
+    # Icons only, the same size, on one centre line, the IDE's left of GitHub's.
+    assert ide["width"] < 20 and abs(ide["width"] - gh["width"]) < 1, (ide, gh)
+    assert ide["x"] < gh["x"] and abs((ide["y"] + ide["height"] / 2)
+                                      - (gh["y"] + gh["height"] / 2)) < 1.5, (ide, gh)
+    page.click("ol.findings .f-title")
     page.wait_for_timeout(200)
-    assert any(u.startswith("/__open__?") and "&ide=idea" in u for u in sent), sent
+    assert any(u.startswith("GET /__open__?") and "A.java" in u and "&ide=idea" in u
+               for u in sent), sent
     page.close()
 
 
@@ -657,13 +716,15 @@ def test_a_folder_box_names_the_picked_ide_to_a_screen_reader_too(browser):
     body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
             + '<style>' + build.CSS + '</style>' + build.SERVER_JS
             + '</head><body><div class="titlerow"><span class="titleside">'
-            '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
-            '</span></div><svg><g id="box" data-folder="src/owner" data-folder-name="owner">'
+            + build.IDE_CHIPS
+            + '</span></div><svg><g id="box" data-folder="src/owner" data-folder-name="owner">'
             '<rect width="9" height="9"/></g></svg>'
             + build.TIP_JS + build.EDITOR_JS + build.FOLDERS_JS + '</body></html>')
+    sent = []
 
     def serve(route):
         url = route.request.url
+        sent.append(url)
         if url.endswith("/review.html"):
             return route.fulfill(body=body, content_type="text/html")
         if "/__human_review__" in url:
@@ -676,38 +737,82 @@ def test_a_folder_box_names_the_picked_ide_to_a_screen_reader_too(browser):
     page = browser.new_page()
     page.route("http://127.0.0.1:9/**", serve)
     page.goto("http://127.0.0.1:9/review.html")
-    page.wait_for_selector("#hr-ide:not([hidden])")
+    page.wait_for_timeout(300)
+    page.click("#hr-ide-vscode")
     assert page.get_attribute("#box", "aria-label") == "Reveal owner in VS Code"
-    page.select_option("#hr-ide", "idea")
+    page.click("#hr-ide-vscode")
+    page.click("#hr-ide-idea")
     assert page.get_attribute("#box", "aria-label") == "Reveal owner in IntelliJ"
+    # None connected: the box raises no IDE.
+    page.click("#hr-ide-idea")
+    page.click("#box")
+    page.wait_for_timeout(200)
+    assert not any("/__reveal_folder__" in u for u in sent), sent
     page.close()
 
 
-def test_off_disk_the_remembered_intellij_pick_words_the_links(browser):
-    """No server: nothing to pick from, but a reader who picked IntelliJ before still reads
-    "in IntelliJ" — the clicks go to its plugin (`ideaLink`)."""
+def _offdisk_page(browser, tmp_path, pick=None):
+    """The page read off disk (`file:`): no server, the pick only picks the link scheme."""
+    from test_action_server import build
+    f = tmp_path / "review.html"
+    f.write_text('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
+                 + '<style>' + build.CSS + '</style>' + build.SERVER_JS + '</head><body>'
+                 + '<div class="titlerow"><span class="titleside">' + build.IDE_CHIPS
+                 + '</span></div>'
+                 + build.gh_comment_link({"_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
+                                          "_ghFile": "vscode://file//r/src/A.java:12:1",
+                                          "_ghWhere": "src/A.java:12"})
+                 + build.TIP_JS + build.EDITOR_JS + '</body></html>')
+    page = browser.new_page()
+    if pick:
+        page.add_init_script(f"localStorage.setItem('hr-ide', '{pick}')")
+    page.goto(f.as_uri())
+    page.wait_for_timeout(200)
+    return page
+
+
+def test_off_disk_the_remembered_intellij_pick_words_the_links(browser, tmp_path):
+    """No server: a reader who picked IntelliJ before still reads "in IntelliJ" — the clicks
+    go to its plugin (`ideaLink`)."""
+    for pick, word in (("idea", "IntelliJ"), ("vscode", "VS Code"), (None, "your IDE")):
+        page = _offdisk_page(browser, tmp_path, pick)
+        assert page.locator("a.f-vsc .ide-word").text_content() == word
+        assert page.evaluate("document.documentElement.classList.contains('ide-idea')") == (pick == "idea")
+        page.close()
+
+
+def test_off_disk_the_logos_toggle_too(browser, tmp_path):
+    page = _offdisk_page(browser, tmp_path)
+    assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
+    assert "Needs the Human Review plugin in IntelliJ." in page.get_attribute(
+        "#hr-ide-idea", "data-tip-html")
+    page.click("#hr-ide-idea")
+    assert _states(page) == ["vscode:hidden", "idea:ide-on"]
+    assert page.locator("a.f-vsc .ide-word").text_content() == "IntelliJ"
+    page.click("#hr-ide-idea")
+    assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
+    assert page.evaluate("localStorage.getItem('hr-ide')") == "none"
+    page.close()
+
+
+def test_online_the_logos_are_greyed_and_a_press_changes_nothing(browser):
+    """GitHub Pages: no IDE on the reader's machine is reachable from here."""
     from test_action_server import build
     body = ('<!doctype html><html data-hr-head="abc" data-hr-root="/r"><head>'
             + '<style>' + build.CSS + '</style>' + build.SERVER_JS + '</head><body>'
-            + build.gh_comment_link({"_ghUrl": "https://github.com/o/r/pull/51#discussion_r1",
-                                     "_ghFile": "vscode://file//r/src/A.java:12:1",
-                                     "_ghWhere": "src/A.java:12"})
-            + build.TIP_JS + build.EDITOR_JS + '</body></html>')
-
-    def serve(route):
-        if route.request.url.endswith("/review.html"):
-            return route.fulfill(body=body, content_type="text/html")
-        return route.fulfill(status=404, body="")      # no review server answers the probe
-    for pick, word in (("idea", "IntelliJ"), (None, "VS Code")):
-        page = browser.new_page()
-        if pick:
-            page.add_init_script(f"localStorage.setItem('hr-ide', '{pick}')")
-        page.route("http://127.0.0.1:9/**", serve)
-        page.goto("http://127.0.0.1:9/review.html")
-        page.wait_for_timeout(300)
-        assert page.locator("a.f-vsc .ide-word").inner_text() == word
-        assert page.evaluate("document.documentElement.classList.contains('ide-idea')") == bool(pick)
-        page.close()
+            + '<div class="titlerow"><span class="titleside">' + build.IDE_CHIPS
+            + '</span></div>' + build.TIP_JS + build.EDITOR_JS + '</body></html>')
+    page = browser.new_page()
+    page.route("https://example.github.io/**",
+               lambda route: route.fulfill(body=body, content_type="text/html"))
+    page.goto("https://example.github.io/review.html")
+    page.wait_for_timeout(200)
+    assert _states(page) == ["vscode:-", "idea:-"]
+    assert page.evaluate("getComputedStyle(document.getElementById('hr-ide-idea')).opacity") == "0.45"
+    page.click("#hr-ide-idea", force=True)            # aria-disabled: Playwright would wait
+    assert _states(page) == ["vscode:-", "idea:-"]
+    assert "local copy" in page.locator("#copy-toast").inner_text()
+    page.close()
 
 
 def _idea_link(href, face="", tip="", attrs=None, stamp=None):

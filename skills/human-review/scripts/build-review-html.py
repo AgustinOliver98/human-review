@@ -229,7 +229,7 @@ from hrbuild.tabs.review import (
     PR_POSTED_JSON, PR_PUSH_JS, push_pr_button, push_pr_dialog, PUSH_PR_ACTION,
     PUSH_PR_DRY_ACTION, _PR_SLUG_MAX, PR_PREVIEW_TAG, PR_RESULT_TAG, _payload_changed,
     VSCODE_PR_URI, vscode_pr_uri, vscode_pr_link, _PR_URL, VSC_ICON, vscode_file_link,
-    IJ_ICON, IDE_FACE,
+    IJ_ICON, IDE_FACE, IDE_CHIPS, GH_ICON,
     _taken_fold_html, _tooling_fold_html,
     API_VERDICT_HTML, FILM_VERDICT_JSON, GATE_JSON, GRADE_CAPS, MODEL_GRADE_LINES, PILE_SIGNALS,
     SEQUENCE_VERDICT_JSON, _after_review_signal, _api_signal, _base_ref, _ci_signal,
@@ -1371,8 +1371,9 @@ def _main(argv=None) -> int:
                      ' || xdg-open "$u") && exit')
         # Two chips, not one. `static` only says what this copy is, so it has no hover;
         # `Serve` is the thing to do about it, and it is the one that explains why.
-        # VSC first, hidden: only the served page can ask the editor bridges whether a
-        # window is on the reviewed commit, so editor.js raises it there and colours it.
+        # The two IDE logos first (`IDE_CHIPS`): which IDE a click on code opens in, green
+        # for the connected one. Shown everywhere — off disk the pick picks the link scheme,
+        # served it routes through the bridges — and greyed online (`data-local`).
         # The repository and branch this page reviews, for the published copy's Serve tip.
         pr = spec.get("pr") or {}
         pr_repo = pr.get("repo") or github_blob_base(root) or ""
@@ -1380,7 +1381,7 @@ def _main(argv=None) -> int:
             ["git", "-C", str(root), "branch", "--show-current"],
             capture_output=True, text=True).stdout.strip()
         mode_html = (
-            '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
+            IDE_CHIPS +
             '<span class="chip chip-mode" id="hr-mode">Static</span>'
             '<button type="button" class="chip chip-serve copycmd" id="hr-serve" '
             f'data-copy="{html.escape(serve_cmd, quote=True)}" '

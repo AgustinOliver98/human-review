@@ -332,7 +332,7 @@ span.tabre > button.chip-rerun span.rr-mark { font-size:9px; line-height:1; colo
 #copy-toast.asks .ct-close { background:none; color:inherit; padding:0 .1rem; margin-left:-.2rem;
               font-size:1.05rem; line-height:1; font-weight:400; opacity:.75; }
 #copy-toast.asks .ct-close:hover { opacity:1; }
-.titlerow .chip-vsc, .titlerow .chip-mode, .titlerow .chip-serve, .titlerow .chip-rerun, .titlerow .titlescore {
+.titlerow .chip-ide, .titlerow .chip-mode, .titlerow .chip-serve, .titlerow .chip-rerun, .titlerow .titlescore {
             flex:0 0 auto; align-self:center;
             padding:.15rem .7rem; border-radius:999px; border-width:1px;
             border-style:solid; font-size:.82rem; line-height:1.6;
@@ -368,7 +368,7 @@ span.tabre > button.chip-rerun span.rr-mark { font-size:9px; line-height:1; colo
 .titlerow button.chip-serve.launches { cursor:pointer; }
 .titlerow button.chip-serve.starting { cursor:progress; opacity:.6; }
 .titlerow button.chip-serve.off, .titlerow button.chip-serve.off:hover { cursor:not-allowed; opacity:.45; border-color:var(--line); color:var(--muted); }
-.titlerow .chip-vsc[hidden], .titlerow .chip-mode[hidden], .titlerow .chip-serve[hidden], .titlerow .chip-rerun[hidden] { display:none; }
+.titlerow .chip-ide[hidden], .titlerow .chip-mode[hidden], .titlerow .chip-serve[hidden], .titlerow .chip-rerun[hidden] { display:none; }
 /* Stop: the ⏹️ after the word `Served`, inside its pill. A bare glyph with no ring of its
    own — the pill's border is the only border — at about the text's cap height, and its own
    click target. */
@@ -376,28 +376,28 @@ span.tabre > button.chip-rerun span.rr-mark { font-size:9px; line-height:1; colo
             font-size:.85rem; line-height:1; cursor:pointer; vertical-align:-.05em; }
 .titlerow .chip-stop:hover:not(:disabled) { filter:brightness(1.15); }
 .titlerow .chip-stop:disabled { opacity:.5; cursor:progress; }
-/* Is a VS Code window on this checkout, at the reviewed commit? Green: yes, and a press
-   brings it forward. Amber: the window is there but the checkout is on another branch or
-   commit, so only unchanged files open and a press also offers a checkout prompt. Red: no
-   window has the checkout; a press opens one. */
-.chip-vsc { font-weight:600; letter-spacing:.04em; cursor:pointer; }
-.chip-vsc.vsc-on { color:#2e7d32; border-color:#2e7d32; }
-.chip-vsc.vsc-near { color:#b26a00; border-color:#b26a00; }
-/* Why it is green, at a glance: a link glyph in front of the word while connected. */
-.chip-vsc.vsc-on::before { content:"🔌"; margin-right:.3rem; }
-.chip-vsc.vsc-off { color:#c62828; border-color:#c62828; }
+/* The IDE logos (editor.js, `paintChips`), in their own colours; the state is the ring
+   and a halo of its colour behind the logo. Nothing connected (the default): both, red, a
+   press connects one. Connected: that one alone, green (amber when its window is on another
+   commit of this checkout), and a press disconnects it. No state class (online, before the
+   probe): the page's line, greyed by core.css like every `data-local` control. Spelled at
+   the title row's specificity, which the row's own chip rules would otherwise beat. */
+.titlerow .titleside .chip-ide { padding:0 .3rem; cursor:pointer; color:var(--muted);
+            background:var(--card); border-color:var(--line); border-width:1.5px; }
+.titlerow .titleside .chip-ide svg { display:block; width:12px; height:12px; }
+.titlerow .titleside .chip-ide.ide-on { --ide:#2e7d32; }
+.titlerow .titleside .chip-ide.ide-near { --ide:#b26a00; }
+.titlerow .titleside .chip-ide.ide-off { --ide:#c62828; }
+.titlerow .titleside .chip-ide:is(.ide-on, .ide-near, .ide-off) { border-color:var(--ide);
+            background:color-mix(in srgb, var(--ide) 22%, var(--card)); }
+.titlerow .titleside .chip-ide:is(.ide-on, .ide-near, .ide-off):hover {
+            background:color-mix(in srgb, var(--ide) 40%, var(--card)); }
+/* IntelliJ's mark is a black square: on the dark page it needs the halo's edge to show. */
+.titlerow .titleside .chip-ide .ij-ico { outline:1px solid color-mix(in srgb, var(--fg) 25%, transparent); }
 @media (prefers-color-scheme:dark) {
-  .chip-vsc.vsc-on { color:#6bd48a; border-color:#3f7f52; }
-  .chip-vsc.vsc-near { color:#e0a44a; border-color:#8a6420; }
-  .chip-vsc.vsc-off { color:#f0757f; border-color:#8f3a40; } }
-/* The IDE picker in front of the badge (editor.js), only while two IDEs have a window on
-   this checkout: the badge after it is then the press alone, a ↗ in the picked IDE's
-   colour. */
-.titlerow select.chip-ide { display:inline-block; font:inherit; font-size:.8rem; font-weight:600;
-            color:var(--fg); background:var(--card); border:1px solid var(--line); border-radius:999px;
-            padding:0 .4rem; cursor:pointer; }
-.titlerow select.chip-ide[hidden] { display:none; }
-.titlerow .titleside .chip-vsc.split { padding-left:.4rem; padding-right:.4rem; }
+  .titlerow .titleside .chip-ide.ide-on { --ide:#4fbf6f; }
+  .titlerow .titleside .chip-ide.ide-near { --ide:#e0a44a; }
+  .titlerow .titleside .chip-ide.ide-off { --ide:#e5535f; } }
 /* The prompt a press on an amber badge leaves under it: the sentence, the prompt itself,
    and a 📋 that copies it (editor.js, `offerCheckout`). Placed by script under the badge. */
 #hr-vsc-pop { position:fixed; z-index:61; max-width:min(34rem, calc(100vw - 16px));

@@ -20,10 +20,12 @@
 /* The IDE a click on an arrow's label opens it in, where the generator wrote `↗`: genseq.js
    swaps the glyph for both marks, and the IDE picked in the masthead shows its own
    (editor.js puts `ide-idea` on <html>), as the `in VS Code` links do (review.css).
-   `seq-noide`: a page no click can open an editor from (embedded off disk, online): none. */
+   `seq-noide`: a page no click can open an editor from (embedded off disk, online): none.
+   `ide-none`: the reader disconnected both IDEs in the masthead: none either. */
 .diagram svg .seq-ide .ij-ico { display:none; }
 html.ide-idea .diagram svg .seq-ide .ij-ico { display:inline; }
-html.ide-idea .diagram svg .seq-ide .vsc-ico, html.seq-noide .diagram svg .seq-ide { display:none; }
+html.ide-idea .diagram svg .seq-ide .vsc-ico, html.seq-noide .diagram svg .seq-ide,
+html.ide-none .diagram svg .seq-ide { display:none; }
 /* On the Diff pane an added or removed call's arrow is green or red, and its label was still
    link blue, so the change showed only in a thin line. The label takes the arrow's colour;
    the ⊕ and the IDE logo still say it is a link. The open one keeps its own ink, above. */

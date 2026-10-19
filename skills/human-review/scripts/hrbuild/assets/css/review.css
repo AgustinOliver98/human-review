@@ -259,6 +259,22 @@ details.fmtonly > summary[data-tip] { cursor:help; }
 a.f-gh { text-decoration:none; margin-left:.35rem; color:var(--muted); font-size:.8rem;
           font-weight:400; white-space:nowrap; }
 a.f-gh:hover, a.f-gh:focus-visible { color:var(--link); }
+/* On a card the two are icons at the right end of its header row (Victor, 20 Oct 2026):
+   GitHub's mark rightmost, the picked IDE's to its left. Floated, and first in the card,
+   so they share the title's line whatever its length. The IDE's name stays for a screen
+   reader only (`.sr`). */
+ol.findings > li > a.f-gh, ol.findings > li > a.f-vsc { float:right; margin:.2rem 0 0 .55rem;
+          line-height:0; }
+ol.findings > li > a.f-gh .gh-ico, ol.findings > li > a.f-vsc svg { width:16px; height:16px;
+          vertical-align:0; }
+/* IntelliJ's black square needs an edge on the dark card. */
+ol.findings > li > a.f-vsc .ij-ico { outline:1px solid color-mix(in srgb, var(--fg) 25%, transparent); }
+a.f-vsc .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%);
+          white-space:nowrap; }
+/* The card's title opens its first reference in the picked IDE (editor.js, `.opens`). */
+.f-title.opens { cursor:pointer; }
+.f-title.opens:hover { text-decoration:underline; text-decoration-color:var(--muted);
+          text-underline-offset:2px; }
 /* "in VS Code" beside it: the same PR in the GitHub Pull Requests view. */
 a.f-vsc, a.pr-vsc { text-decoration:none; margin-left:.35rem; color:var(--muted); font-size:.8rem;
           font-weight:400; white-space:nowrap; }
@@ -271,6 +287,9 @@ a.f-vsc .vsc-ico, a.pr-vsc .vsc-ico { vertical-align:-2px; }
 a.f-vsc .ij-ico { display:none; vertical-align:-2px; }
 html.ide-idea a.f-vsc .ij-ico { display:inline; }
 html.ide-idea a.f-vsc .vsc-ico, html.ide-idea a.pr-vsc { display:none; }
+/* No IDE connected (both masthead logos red), or online: no IDE link, GitHub's only. */
+html.ide-none a.f-vsc, html.ide-none a.pr-vsc, html.hr-online ol.findings > li > a.f-vsc
+  { display:none; }
 /* The PR's own description, under the grade (Victor, 8 Oct 2026): the author's words,
    quoted — a muted box with a left rule, capped in height so a long description does not
    push the counts line a screen down. */

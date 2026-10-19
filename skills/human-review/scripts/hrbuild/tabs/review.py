@@ -1940,11 +1940,10 @@ def _render_finding_items(findings) -> str:
         li_cls = cls.replace("sev-", "n-")
         refs = _finding_refs(f)
         items.append(
-            f'<li class="{li_cls}">'
-            f'<span class="badge {cls}">{html.escape(label)}</span>'
+            f'<li class="{li_cls}">' + gh_comment_link(f)
+            + f'<span class="badge {cls}">{html.escape(label)}</span>'
             + _finding_source(f)
             + f' <span class="f-title">{f["title"]}</span>'
-            + gh_comment_link(f)
             + (f'<p class="f-obs"><b>{_obs_label(f)}:</b> {f["observation"]}</p>'
                if f.get("observation") else "")
             + (f'<p>{f["body"]}</p>' if f.get("body") else "")
@@ -2061,12 +2060,11 @@ def render_assumptions(items, mode: str = "") -> str:
         # distinction the counts line above now draws), and it wears the badge's purple so
         # the pile still reads as the one the human owns.
         out.append(
-            '<li class="n-assumed">'
-            f'<span class="badge sev-assumed">{ASSUMPTION_BADGE}</span>'
+            '<li class="n-assumed">' + gh_comment_link(f)
+            + f'<span class="badge sev-assumed">{ASSUMPTION_BADGE}</span>'
             + _confidence_chip(f)
             + _decided_by(f)
             + f' <span class="f-title">{f["title"]}</span>'
-            + gh_comment_link(f)
             + (f'<p>{f["body"]}</p>' if f.get("body") else "")
             + (f'<p class="f-alt"><b>Read the other way:</b> {f["alternative"]}</p>'
                if f.get("alternative") else "")
@@ -2104,11 +2102,10 @@ def render_autofixes(fixes, badge: str = "auto-fixed") -> str:
     for f in fixes:
         refs = _finding_refs(f)
         items.append(
-            '<li class="fixed">'
-            f'<span class="badge sev-fixed">{html.escape(badge)}</span>'
+            '<li class="fixed">' + gh_comment_link(f)
+            + f'<span class="badge sev-fixed">{html.escape(badge)}</span>'
             + _finding_source(f)
             + f' <span class="f-title">{f["title"]}</span>'
-            + gh_comment_link(f)
             + (f'<p class="f-obs"><b>{_obs_label(f)}:</b> {f["observation"]}</p>'
                if f.get("observation") else "")
             + (f'<p class="f-why">{f["why"]}</p>' if f.get("why") else "")
@@ -3691,16 +3688,43 @@ VSC_ICON = ('<svg class="vsc-ico" viewBox="0 0 24 24" width="13" height="13" ari
 
 #: The IntelliJ mark, beside the VS Code one in every *in VS Code* that opens a file: the
 #: page shows one of the two, the IDE picked in the masthead (editor.js, `html.ide-idea`).
-IJ_ICON = ('<svg class="ij-ico" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">'
-           '<rect width="24" height="24" rx="3" fill="#FE315D"/>'
-           '<rect x="2.5" y="2.5" width="19" height="19" rx="1" fill="#000"/>'
-           '<path fill="#fff" d="M5.5 5.5h4.6V7H8.7v5.6h1.4v1.5H5.5v-1.5h1.4V7H5.5zM13.6 5.5h1.8'
-           'v6.4c0 1.8-1 2.6-2.5 2.6-.7 0-1.2-.2-1.7-.5l.5-1.4c.3.2.6.3 1 .3.6 0 .9-.3.9-1.1z"/>'
-           '<rect x="5.5" y="17" width="8" height="1.6" fill="#fff"/></svg>')
+#: The classic face Victor asked for (20 Oct 2026): the black square with a bold white `IJ`
+#: top left and the bar under it, bottom left. The letters are JetBrains' own paths
+#: (`idea.svg`, whose black square spans 12-52 of its 64-px grid), stroked a little bolder.
+IJ_ICON = ('<svg class="ij-ico" viewBox="12 12 40 40" width="13" height="13" aria-hidden="true">'
+           '<path fill="#000" d="M12 12H52V52H12Z"/>'
+           '<path fill="#fff" stroke="#fff" stroke-width=".7" d="M17 29.39h2.98v-9.78H17V17'
+           'h8.84v2.61h-2.98v9.78h2.98V32H17zM27.34 29.3h2.15c.44 0 .82-.09 1.16-.28.34-.19.6'
+           '-.45.79-.79.19-.34.28-.73.28-1.16V17h2.92v10.27c0 .9-.2 1.71-.62 2.43a4.3 4.3 0 0 1'
+           '-1.71 1.69c-.73.41-1.55.61-2.45.61h-2.52z"/>'
+           '<path fill="#fff" d="M17 44h16v3.4H17z"/></svg>')
 
-#: The face of a link that opens a file in the reader's IDE: both marks and the IDE's name,
-#: which editor.js rewrites (`.ide-word`) to the one picked.
-IDE_FACE = f'{VSC_ICON}{IJ_ICON} in <span class="ide-word">VS Code</span>'
+#: GitHub's mark, in the link's own colour: a card's way to its PR comment.
+GH_ICON = ('<svg class="gh-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">'
+           '<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07'
+           '.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82'
+           '-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52'
+           '.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08'
+           '-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82'
+           ' 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29'
+           '.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8'
+           'c0-4.42-3.58-8-8-8z"/></svg>')
+
+#: The face of a link that opens a file in the reader's IDE: both marks, of which the page
+#: shows the picked IDE's, and its name for a screen reader only (`.sr`), which editor.js
+#: rewrites (`.ide-word`) to the one picked. No words on screen (Victor, 20 Oct 2026): the
+#: card's header row ends in two icons, GitHub's and the IDE's, each with its tooltip.
+IDE_FACE = f'{VSC_ICON}{IJ_ICON}<span class="ide-word sr">VS Code</span>'
+
+#: The masthead's two IDE chips, the same two marks in the chip's colour (commands.css):
+#: green for the IDE a click on code opens in, red for the other. One at most is connected;
+#: a press on red connects it, on green disconnects it (editor.js, `paintChips`). Online
+#: they are greyed and inert, like every control that needs a local copy (`data-local`).
+IDE_CHIPS = ''.join(
+    f'<button type="button" class="chip chip-ide" id="hr-ide-{app}" data-ide="{app}" '
+    f'aria-label="{name}" aria-pressed="false" '
+    f'data-local="Opens code in your IDE on a local copy — see Serve">{icon}</button>'
+    for app, name, icon in (("vscode", "VS Code", VSC_ICON), ("idea", "IntelliJ", IJ_ICON)))
 
 
 def vscode_pr_uri(url: str | None) -> str | None:
@@ -3744,7 +3768,7 @@ def gh_comment_link(f) -> str:
     # A line the PR's diff does not show cannot carry a review comment; the push quotes it
     # in the review's summary instead, with a permalink to the lines, and the link says so.
     tip = ("In the review's summary on GitHub — this line is not in the PR's diff"
-           if f.get("_ghInSummary") else "PR comment")
+           if f.get("_ghInSummary") else "Open the PR comment on GitHub")
     # An inline thread says where it sits, so editor.js can ask VS Code to bring it up —
     # expanded and focused — when the reader opens the card's lines (`comment=1`). A
     # summary-only item has no thread in the file, so it says nothing.
@@ -3753,7 +3777,8 @@ def gh_comment_link(f) -> str:
              f' data-pr-line="{int(t["line"])}" data-pr-start="{int(t["start"])}"'
              if t.get("path") and t.get("line") else "")
     return (f' <a class="f-gh" href="{html.escape(url, quote=True)}" target="_blank" '
-            f'rel="noopener" data-tip="{html.escape(tip, quote=True)}"{where}>on GitHub ↗</a>'
+            f'rel="noopener" aria-label="On GitHub" data-tip="{html.escape(tip, quote=True)}"'
+            f'{where}>{GH_ICON}</a>'
             + vscode_file_link(f.get("_ghFile"), f.get("_ghWhere") or "the file"))
 
 
@@ -3798,6 +3823,7 @@ PR_PUSH_JS = """<script>(function () {
 var HR_VSC_PR = '""" + VSCODE_PR_URI + """';
 var HR_VSC_ICON = '""" + VSC_ICON + """';
 var HR_IDE_FACE = '""" + IDE_FACE.replace("'", "\\'") + """';
+var HR_GH_ICON = '""" + GH_ICON + """';
 function hrVscPr(url) {
   var m = /^(https:\\/\\/github\\.com\\/[^\\/#?]+\\/[^\\/#?]+\\/pull\\/\\d+)/.exec(url || '');
   return m ? HR_VSC_PR + encodeURIComponent(m[1]) : null;
@@ -3858,15 +3884,19 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.f-title').forEach(function (t) {
       var c = by[slug(t.textContent)];
       if (!c || !c.html_url) return;
-      var a = t.nextElementSibling;
-      if (!a || !a.classList.contains('f-gh')) {
-        a = el('a', 'f-gh', 'on GitHub \\u2197'); a.target = '_blank'; a.rel = 'noopener';
-        t.after(document.createTextNode(' '), a);
+      // At the head of the card, floated to the right end of its header row (review.css):
+      // GitHub's mark, then the IDE's, icons only.
+      var li = t.closest('li');
+      var a = li && li.querySelector(':scope > a.f-gh');
+      if (!a) {
+        a = el('a', 'f-gh'); a.innerHTML = HR_GH_ICON; a.target = '_blank'; a.rel = 'noopener';
+        a.setAttribute('aria-label', 'On GitHub');
+        (li || t.parentNode).insertBefore(a, (li || t.parentNode).firstChild);
       }
       a.href = c.html_url;
       a.dataset.tip = c.mode === 'body'
         ? 'In the review\\u2019s summary on GitHub \\u2014 this line is not in the PR\\u2019s diff'
-        : 'PR comment';
+        : 'Open the PR comment on GitHub';
       if (c.mode !== 'body' && c.path && c.line) {
         a.dataset.prPath = c.path; a.dataset.prLine = c.line;
         a.dataset.prStart = c.start_line || c.line; }

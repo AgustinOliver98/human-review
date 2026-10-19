@@ -167,7 +167,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'A quorum of adversarial AI reviewers criticised the code.',
             'These the coder refused or left open.',
             'You decide, top first: <b>must look</b> › <b>worth a look</b> › <b>nit</b>.',
-            '<b>in VS Code</b> opens the line in the IDE picked top right: VS Code or IntelliJ.',
+            '<b>in VS Code</b> opens the line in the IDE whose logo is green, top right.',
         ],
     },
     'review.fixed': {
@@ -314,7 +314,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'HTTP calls, SQL with parameters, calls across services and modules.',
             'Diff: green/red = a call this PR added/removed; its tx box and activation bar tinted.',
             'Click <b>⊕</b> for the SQL or JSON; <b>values</b> fills in each <b>?</b>.',
-            'An IDE logo on a call opens that method in the IDE picked top right.',
+            'An IDE logo on a call opens that method in the IDE whose logo is green, top right.',
             'The dot before the file name is the DB fixture the test starts from: grey = Default.',
         ],
         "code": (

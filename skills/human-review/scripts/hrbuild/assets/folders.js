@@ -37,6 +37,11 @@
       function reveal(ev) {
         ev.preventDefault();
         ev.stopPropagation();
+        // Both logos in the masthead red: no IDE is connected, so none is raised.
+        if (window.HR.ideOff && window.HR.ideOff()) {
+          flash('No IDE connected \u2014 click a logo at the top to connect one');
+          return;
+        }
         fetch('/__reveal_folder__', {
           method: 'POST', cache: 'no-store',
           headers: {'Content-Type': 'application/json',
