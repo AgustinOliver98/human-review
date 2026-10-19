@@ -1281,11 +1281,6 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
     if index:
         parts.append('<script type="application/json" id="hr-genseq">'
                      + json.dumps(index).replace("</", "<\\/") + "</script>")
-    # The two IDE logos every `in VS Code` wears, once, for `GENSEQ_JS` to put where the
-    # generator ended a method's label with `↗`. Inert until cloned: a <template>.
-    if plan:
-        from .review import IJ_ICON, VSC_ICON
-        parts.append(f'<template id="seq-ide-marks">{VSC_ICON}{IJ_ICON}</template>')
     # Weight counts every exhibit; changes count only the manifest's rows — an unchanged
     # pair is context, exactly as a `puml` block is, unless the suites were not re-traced:
     # a run that drew nothing cannot know the branch left the sequences alone. The count

@@ -160,14 +160,13 @@ def test_a_jvm_verdict_keyed_on_the_annotation_still_reaches_the_method_the_diag
     assert "fx-dot" not in third
 
 
-# ── the IDE logo instead of `↗` ──────────────────────────────────────────────────────
+# ── the `↗` goes, and no IDE logo replaces it ─────────────────────────────────────────
 
-def test_the_tab_hands_genseq_js_the_two_ide_logos_once(tmp_path):
+def test_the_tab_hands_genseq_js_no_ide_logos(tmp_path):
+    """Victor, 20 Oct 2026: "no IntelliJ icon there, just a hyperlink is enough"."""
     review = _repo(tmp_path)
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
-    assert out.count('<template id="seq-ide-marks">') == 1
-    tpl = out[out.index('<template id="seq-ide-marks">'):]
-    assert build.VSC_ICON in tpl and build.IJ_ICON in tpl
+    assert "seq-ide-marks" not in out
 
 
 PAGE = """<!doctype html><html><head><style>{css}</style></head><body>
@@ -195,37 +194,19 @@ def browser():
         b.close()
 
 
-def test_the_arrow_ends_in_the_picked_ides_logo_where_it_used_to_end_in_an_arrow(
-        browser, tmp_path):
+def test_the_arrow_label_loses_its_arrow_glyph_and_gets_no_logo(browser, tmp_path):
     page_file = tmp_path / "p.html"
-    page_file.write_text(PAGE.format(
-        css=GENSEQ_CSS, js=GENSEQ_JS,
-        tpl=f'<template id="seq-ide-marks">{build.VSC_ICON}{build.IJ_ICON}</template>'),
-        encoding="utf-8")
+    page_file.write_text(PAGE.format(css=GENSEQ_CSS, js=GENSEQ_JS, tpl=""), encoding="utf-8")
     page = browser.new_page()
     try:
         page.goto(page_file.as_uri())
-        got = page.evaluate("""() => {
-          const texts = [...document.querySelectorAll('svg text')];
-          const label = texts[0].getBBox();
-          const marks = [...document.querySelectorAll('.seq-ide svg')];
-          const shown = () => marks.filter(m => getComputedStyle(m).display !== 'none')
-                                   .map(m => m.getAttribute('class'));
-          const off = shown();
-          document.documentElement.classList.add('ide-idea');
-          const idea = shown();
-          return {texts: texts.map(t => t.textContent), groups: document.querySelectorAll('.seq-ide').length,
-                  inLink: !!document.querySelector('a[href^="vscode:"] .seq-ide'),
-                  after: marks.every(m => +m.getAttribute('x') >= label.x + label.width),
-                  off, idea, noide: document.documentElement.classList.contains('seq-noide')};
-        }""")
+        got = page.evaluate("""() => ({
+          texts: [...document.querySelectorAll('svg text')].map(t => t.textContent),
+          logos: document.querySelectorAll('.diagram svg a svg').length})""")
     finally:
         page.close()
     assert got["texts"] == ["OwnerRepository.save", "elsewhere"], "no ↗ left anywhere"
-    assert got["groups"] == 1 and got["inLink"], "a logo only on a link into a file"
-    assert got["after"], "after the label's end"
-    assert got["off"] == ["vsc-ico"] and got["idea"] == ["ij-ico"]
-    assert not got["noide"], "top level, off disk: the click reaches the IDE"
+    assert got["logos"] == 0, "the label is the link; nothing is drawn after it"
 
 
 def test_one_diagram_of_several_scenarios_on_one_start_still_gets_its_dot(tmp_path):
