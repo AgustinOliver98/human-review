@@ -58,7 +58,8 @@
     panel.hidden = true;
     panel.innerHTML =
       '<div class="genseq-head"><span class="genseq-title"></span>' +
-      '<button type="button" class="genseq-toggle" hidden></button>' +
+      // `genseq-value`: the badge wears the marks' colours, since it names what they show.
+      '<button type="button" class="genseq-toggle genseq-value" hidden></button>' +
       '<span class="genseq-grow"></span><span class="genseq-step"></span>' +
       '<button type="button" class="genseq-close" data-tip="close (Esc)" aria-label="close">&times;</button></div>' +
       '<div class="genseq-handler" hidden></div>' +
@@ -118,7 +119,15 @@
     var width = panel.offsetWidth;
     var left = Math.min(box.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - width - 12);
     panel.style.left = Math.max(window.scrollX + 8, left) + 'px';
-    panel.style.top = (box.bottom + window.scrollY + 8) + 'px';
+    // Below the arrow when it fits, else above it; when neither does, below, and the page
+    // scrolls just enough to show it whole. Opened near the window's foot, it used to hang
+    // off the bottom, its scrollbar and the end of a long statement with it.
+    var height = panel.offsetHeight, view = document.documentElement.clientHeight;
+    var top = box.bottom + 8;
+    if (top + height > view && box.top - 8 - height >= 0) top = box.top - 8 - height;
+    panel.style.top = (top + window.scrollY) + 'px';
+    var over = top + height + 8 - view;
+    if (over > 0) window.scrollBy(0, Math.min(over, Math.max(0, box.top - 60)));
   }
 
   // Where each bound value sits in the statement with its values put back, found by laying
@@ -316,6 +325,87 @@
     // at the moment the reader is looking at it. A sentence above the diagram says the
     // same thing to everyone, including the reader who has already clicked one.
   });
+
+  // The generator ends a label that opens a method in the editor with `↗` (`OwnerRepository
+  // .save ↗`). The arrow said "somewhere else" without saying where; the logo of the IDE the
+  // click opens says both (Victor, 19 Oct 2026). Both logos go in, and the IDE editor.js
+  // picked shows its own through `html.ide-idea` (genseq.css), so a pick made later needs
+  // nothing from here. The logos are the ones beside every `in VS Code` (review.py),
+  // handed over once in `#seq-ide-marks`.
+  //
+  // Placed after the label's measured end: PlantUML's `textLength` is stripped (svg.py), so
+  // where the text ends is known only here, in the reader's font. A label measured inside a
+  // hidden pane is zero wide and is placed on the next fold or pane switch.
+  var IDE_GLYPH = /\s*↗\s*$/;
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var tpl = document.getElementById('seq-ide-marks');
+  var logos = tpl && tpl.content ? tpl.content.querySelectorAll('svg') : [];
+  var unplaced = [];
+
+  // The last text node of `text`, so a label split into tspans keeps its other runs.
+  function stripGlyph(text) {
+    var node = text;
+    while (node && node.nodeType !== 3) node = node.lastChild;
+    if (!node) return false;
+    if (!IDE_GLYPH.test(node.nodeValue)) return false;
+    node.nodeValue = node.nodeValue.replace(IDE_GLYPH, '');
+    if (!text.textContent.trim()) text.remove();
+    return true;
+  }
+
+  function placeLogos(link) {
+    var texts = link.querySelectorAll('text');
+    var label = texts.length ? texts[texts.length - 1] : null;
+    var box;
+    try { box = label && label.getBBox(); } catch (e) { box = null; }
+    if (!box || !box.width) return false;
+    var size = Math.round(Math.min(Math.max(box.height * 0.85, 10), 14));
+    var g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'seq-ide');
+    Array.prototype.forEach.call(logos, function (logo) {
+      var mark = logo.cloneNode(true);
+      mark.setAttribute('x', box.x + box.width + 4);
+      mark.setAttribute('y', box.y + (box.height - size) / 2);
+      mark.setAttribute('width', size);
+      mark.setAttribute('height', size);
+      g.appendChild(mark);
+    });
+    link.appendChild(g);
+    return true;
+  }
+
+  document.querySelectorAll('.diagram svg a').forEach(function (link) {
+    var texts = link.querySelectorAll('text');
+    var stripped = false;
+    for (var i = texts.length - 1; i >= 0 && !stripped; i--) stripped = stripGlyph(texts[i]);
+    if (!stripped) return;
+    // Only a reference to a file in this checkout opens in an IDE (svg.py resolves the
+    // generator's `src://` to `vscode://file/…`); anything else loses the glyph and gets none.
+    if (!logos.length || !/^vscode:\/\/file\//.test(link.getAttribute('href') || '')) return;
+    if (!placeLogos(link)) unplaced.push(link);
+  });
+
+  function placeLater() {
+    if (!unplaced.length) return;
+    requestAnimationFrame(function () {
+      unplaced = unplaced.filter(function (link) { return !placeLogos(link); });
+    });
+  }
+  document.addEventListener('toggle', placeLater, true);
+  document.addEventListener('click', placeLater);
+
+  // A logo only where a click reaches an IDE: served, or off disk at top level (editor.js's
+  // first two cases). Embedded off disk the reference is copied, and online (GitHub Pages)
+  // there is no editor to hand it to, so no logo. Hidden on an http(s) page until the probe
+  // says it is served, so an online copy never flashes one.
+  var root = document.documentElement;
+  var offDisk = location.protocol === 'file:';
+  root.classList.toggle('seq-noide', !offDisk);
+  if (window.HR && window.HR.onready) {
+    window.HR.onready(function (caps) {
+      root.classList.toggle('seq-noide', !caps && (!offDisk || window.self !== window.top));
+    });
+  }
 
   // The panel is placed in page coordinates, so a diagram scrolled sideways under it
   // would leave it pointing at the wrong arrow.

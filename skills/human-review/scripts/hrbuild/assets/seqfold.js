@@ -62,6 +62,33 @@
     requestAnimationFrame(function () { if (fold.open !== was) fold.open = was; });
   }, true);
 
+  // The DB fixture dot after a test's name opens that fixture's data, as the same dot does
+  // on the Tests tab — where the Demo tab's dataset view is on the page to open it. It sits
+  // in the summary, so the press is taken before the row folds under it. Without the view
+  // the dot stays a mark, and its tip promises no click.
+  if (typeof window.hrOpenDataset === 'function') {
+    document.querySelectorAll('details.testpair > summary .fx-dot').forEach(function (dot) {
+      dot.setAttribute('role', 'button');
+      dot.setAttribute('tabindex', '0');
+      var tip = dot.getAttribute('data-tip') + (dot.classList.contains('fx-empty')
+        ? ' · click to view the rest' : ' · click to view the data');
+      dot.setAttribute('data-tip', tip);
+      dot.setAttribute('aria-label', tip);
+    });
+    var onDot = function (ev) {
+      var dot = ev.target.closest && ev.target.closest('details.testpair > summary .fx-dot');
+      if (!dot) return;
+      if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+      // preventDefault alone keeps the row from folding; the event still travels on, as
+      // every click inside a pair must (see the file link below).
+      ev.preventDefault();
+      var name = dot.getAttribute('data-fixture') || 'seed';
+      window.hrOpenDataset(name === 'seed' ? '' : name);
+    };
+    document.addEventListener('click', onDot, true);
+    document.addEventListener('keydown', onDot, true);
+  }
+
   // The caption over the trace shot links to the pair of the test that trace belongs to,
   // and that pair is shut: a link to a shut fold scrolls to its one-line summary and stops,
   // which leaves the reader one click short of the diagram they were told to compare. Opened

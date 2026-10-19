@@ -14,8 +14,24 @@
 .genseq-hit { fill:transparent; }
 .genseq-hot:hover .genseq-hit { fill:#1a4fa0; fill-opacity:.07; }
 .genseq-hot.genseq-open .genseq-hit { fill:#1a4fa0; fill-opacity:.12; }
-.genseq-hot.genseq-open a[href^="genseq:"] text { font-weight:700; }
-#genseq-panel { position:absolute; z-index:40; max-width:min(38rem,92vw); min-width:16rem;
+/* The arrow whose panel is open: in the diagram's strongest ink (near-white on the dark
+   page, black on the light one), not bold — bold reflowed the label (Victor, 19 Oct 2026). */
+.genseq-hot.genseq-open a[href^="genseq:"] text { fill:var(--dgm-fg); font-weight:400; }
+/* The IDE a click on an arrow's label opens it in, where the generator wrote `↗`: genseq.js
+   swaps the glyph for both marks, and the IDE picked in the masthead shows its own
+   (editor.js puts `ide-idea` on <html>), as the `in VS Code` links do (review.css).
+   `seq-noide`: a page no click can open an editor from (embedded off disk, online): none. */
+.diagram svg .seq-ide .ij-ico { display:none; }
+html.ide-idea .diagram svg .seq-ide .ij-ico { display:inline; }
+html.ide-idea .diagram svg .seq-ide .vsc-ico, html.seq-noide .diagram svg .seq-ide { display:none; }
+/* On the Diff pane an added or removed call's arrow is green or red, and its label was still
+   link blue, so the change showed only in a thin line. The label takes the arrow's colour;
+   the ⊕ and the IDE logo still say it is a link. The open one keeps its own ink, above. */
+.diagram svg g.message:not(.genseq-open):has(> polygon[fill="var(--dgm-diff-add)"]) a text
+  { fill:var(--dgm-diff-add); }
+.diagram svg g.message:not(.genseq-open):has(> polygon[fill="var(--dgm-diff-del)"]) a text
+  { fill:var(--dgm-diff-del); }
+#genseq-panel { position:absolute; z-index:40; max-width:min(52rem,94vw); min-width:16rem;
                 background:var(--card); color:var(--fg); border:1px solid var(--line);
                 border-left:3px solid var(--link); border-radius:8px;
                 box-shadow:0 8px 28px rgba(0,0,0,.22); padding:.55rem .7rem .7rem; }
@@ -45,10 +61,11 @@
                                 font-size:.8rem; margin:.15rem 0 .4rem; }
 #genseq-panel .genseq-handler[hidden] { display:none; }
 #genseq-panel .genseq-handler .genseq-key { color:var(--muted); }
-#genseq-panel .genseq-toggle { border:1px solid var(--line); background:var(--code-bg);
-                        color:var(--muted); cursor:pointer; border-radius:999px;
+/* The `?` / `values` badge wears `.genseq-value`, the marks' own colours (below): it names
+   what those marks will show, so it looks like them. Only its shape is its own. */
+#genseq-panel .genseq-toggle { border:0; cursor:pointer; border-radius:999px;
                         font:600 .7rem/1.6 inherit; padding:0 .55rem; white-space:nowrap; }
-#genseq-panel .genseq-toggle:hover { color:var(--fg); border-color:var(--link); }
+#genseq-panel .genseq-toggle:hover { filter:brightness(1.15); }
 #genseq-panel .genseq-toggle[hidden] { display:none; }
 /* pre, not pre-wrap: a wrapped JSON string came back at the left margin, under the keys,
    and broke the indentation that is the whole shape of a payload (Victor, 16 Oct 2026).
@@ -66,5 +83,5 @@
    against the dark code background. Not a yellow marker or the accent: red on this page
    means "removed", and these are neither a warning nor a change — only the holes in the
    statement, and what filled them. */
-#genseq-panel pre .genseq-value { background:var(--link); color:var(--card); font-weight:700;
-                                  border-radius:3px; padding:0 .2em; }
+#genseq-panel .genseq-value { background:var(--link); color:var(--card); font-weight:700; }
+#genseq-panel pre .genseq-value { border-radius:3px; padding:0 .2em; }

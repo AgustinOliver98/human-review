@@ -31,6 +31,13 @@ details.testpair[open] { padding-bottom:.8rem; }
 @keyframes seq-flash { from { border-color:var(--link); } to { border-color:var(--line); } }
 .testpair.seq-hit { animation:seq-flash 2s ease-out 1; }
 .testlead { margin:.7rem 0 0; }
+/* The DB fixture the test starts from, right after its name: the Tests tab's dot
+   (fixtures.css). A way into that fixture's data where the page has it (seqfold.js). */
+details.testpair > summary .fx-dot { align-self:center; margin-left:.1rem; cursor:inherit; }
+details.testpair > summary .fx-dot[role=button] { cursor:pointer; }
+details.testpair > summary .fx-dot[role=button]:hover,
+details.testpair > summary .fx-dot[role=button]:focus-visible { outline:2px solid var(--fx);
+  outline-offset:1px; }
 /* The fold's own summary: the names of the scenarios drawn inside it. It used to be the
    file name, set quiet and monospace because it was a control beside a picture that was
    already on screen. Folded shut, it is the only thing on screen — the tab's table of

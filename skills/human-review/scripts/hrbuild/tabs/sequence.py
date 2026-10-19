@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 
 from ..shared.diagrams import _context_svg, _source_link, render_diagrams, select_rows
+from ..shared.fixtures import fixture_colors, fixtures_by_test, fixtures_emptied, fixtures_free
 from ..shared.genseq import (GENSEQ_HANDLE, genseq_by_test, genseq_details, genseq_file,
                              pair_anchor, test_of_genseq)
 from ..shared.snippets import SNIPPET_BASE, snippet_html
@@ -376,7 +377,7 @@ def _folded_pair(puml_rel: str, test_rel: str, pieces: list[str],
                  scenarios: list[tuple[int, str]] = (),
                  cat: str | None = None, why: str | None = None,
                  also: str | None = None, via: tuple[str, ...] = (),
-                 root: Path | None = None) -> str:
+                 root: Path | None = None, fixture: str = "") -> str:
     """The test and the sequence its run recorded, folded closed together under one row
     that names the test and links to it.
 
@@ -406,6 +407,9 @@ def _folded_pair(puml_rel: str, test_rel: str, pieces: list[str],
     which is where the chip reads it from anyway. Leading, not trailing: the chips line up
     into a column the eye can run down, and a kind that arrives after the sentence arrives
     after it was needed.
+
+    `fixture` is the DB fixture dot the test starts from, right after its name — the Tests
+    tab's own dot (see `render_testpairs`).
     """
     titles = [t for _, t in scenarios if t]
     name = (" · ".join(html.escape(t) for t in titles) if titles
@@ -416,7 +420,8 @@ def _folded_pair(puml_rel: str, test_rel: str, pieces: list[str],
     return (f'<details class="testpair" open id="{pair_anchor(puml_rel)}"'
             f' data-test="{html.escape(test_rel)}">'
             f'<summary data-tip="{html.escape(test_rel)}">'
-            f'{_cat_chip(cat, test_rel)}{_why_chip(why, also, via)}{name}{label}</summary>'
+            f'{_cat_chip(cat, test_rel)}{_why_chip(why, also, via)}{name}{fixture}{label}'
+            '</summary>'
             + "\n".join(x.strip("\n") for x in pieces)
             + "</details>")
 
@@ -961,6 +966,72 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
             index.append({"test": f"{test_of_genseq(puml_rel, root)}:{line}",
                           "pair": pair_anchor(puml_rel), "title": title})
 
+    # The DB fixture each test starts from: the Tests tab's dot, from the same verdicts
+    # (`shared/fixtures.py`), with its words — filled for a fixture or the seed it leans on,
+    # a ring for the seed it does not rely on, dashed for tables a hook empties. Read once,
+    # on the first pair. An id is `<test>:<line>`; the diagram's handle names the line it was
+    # drawn from, which for a JUnit test may sit below the annotation the verdict is keyed
+    # on, so a key only annotations or blank lines away still counts. Nothing is guessed
+    # past that: a test the verdicts do not name gets no dot.
+    fx: dict = {}
+
+    def fixture_dot(test_rel: str, scenarios) -> str:
+        if not fx:
+            colours = fixture_colors(root)
+            fx["colour"] = lambda n: (colours["seed"] if n == "seed"
+                                      else colours["colors"].get(n, colours["seed"]))
+            marks: dict[str, dict[int, tuple[str, str]]] = {}
+            for key in fixtures_free(root):
+                f, _, ln = key.rpartition(":")
+                marks.setdefault(f, {})[int(ln)] = ("free", "seed")
+            for key, name in fixtures_by_test(root).items():
+                f, _, ln = key.rpartition(":")
+                marks.setdefault(f, {})[int(ln)] = ("", name)
+            fx["empty"] = fixtures_emptied(root)
+            for key in fx["empty"]:
+                f, _, ln = key.rpartition(":")
+                marks.setdefault(f, {})[int(ln)] = ("empty", "seed")
+            fx["marks"] = marks
+        known = fx["marks"].get(test_rel) or {}
+        if not known:
+            return ""
+        try:
+            src = (root / test_rel).read_text(encoding="utf-8").splitlines()
+        except OSError:
+            src = []
+
+        def mark_at(line):
+            if line in known:
+                return known[line], line
+            for at in sorted(known, key=lambda k: abs(k - line)):
+                lo, hi = sorted((at, line))
+                if hi - lo > 8 or hi > len(src):
+                    break
+                if all(not s.strip() or s.strip().startswith("@") for s in src[lo:hi - 1]):
+                    return known[at], at
+            return None, None
+
+        hits = [mark_at(ln) for ln, _ in scenarios] or [(None, None)]
+        if len({got for got, _ in hits}) != 1:
+            return ""                   # two scenarios, two starts: not one dot's to say
+        got, at = hits[0]
+        if got is None:
+            return ""
+        kind, name = got
+        if kind == "free":
+            tip = "DB Fixture: Default · doesn’t rely on its rows"
+        elif kind == "empty":
+            e = fx["empty"].get(f"{test_rel}:{at}") or {}
+            tip = (f"Starts empty (truncated): {e.get('hook') or 'a hook'} empties "
+                   f"{', '.join(e.get('tables') or [])} before each scenario")
+        else:
+            tip = "DB Fixture: " + ("Default" if name == "seed" else name)
+        return (f'<span class="fx-dot{" fx-" + kind if kind else ""}" role="img"'
+                f' aria-label="{html.escape(tip, quote=True)}"'
+                f' data-tip="{html.escape(tip, quote=True)}"'
+                f' data-fixture="{html.escape(name, quote=True)}"'
+                f' style="--fx:{html.escape(fx["colour"](name), quote=True)}"></span>')
+
     # Every diagram on this tab, in page order, grouped by the test it was drawn from —
     # because the excerpts are quoted per test file and have to be shared out among that
     # file's pictures. A changed one is a manifest row; an unchanged one is a `.puml` on
@@ -1044,7 +1115,7 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
             parts.append(_folded_pair(puml_rel, test_rel, pieces, quoted, scenarios,
                                       _pair_cat(puml_rel, root,
                                                 authored_cat.get(test_rel)), why, also, via,
-                                      root=root))
+                                      root=root, fixture=fixture_dot(test_rel, scenarios)))
             register(puml_rel, scenarios)
 
     orphaned = [x for x in snippets if id(x) not in used] + undrawn
@@ -1085,6 +1156,11 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
     if index:
         parts.append('<script type="application/json" id="hr-genseq">'
                      + json.dumps(index).replace("</", "<\\/") + "</script>")
+    # The two IDE logos every `in VS Code` wears, once, for `GENSEQ_JS` to put where the
+    # generator ended a method's label with `↗`. Inert until cloned: a <template>.
+    if plan:
+        from .review import IJ_ICON, VSC_ICON
+        parts.append(f'<template id="seq-ide-marks">{VSC_ICON}{IJ_ICON}</template>')
     # Weight counts every exhibit; changes count only the manifest's rows — an unchanged
     # pair is context, exactly as a `puml` block is, unless the suites were not re-traced:
     # a run that drew nothing cannot know the branch left the sequences alone. The count
