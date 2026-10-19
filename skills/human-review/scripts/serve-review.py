@@ -983,10 +983,10 @@ def open_diff(rel, base, served_root, line=None, app="vscode"):
     return None
 
 
-def probe(port):
+def probe(port, timeout=1.0):
     """What is on this port — our server for which directory, or something else."""
     try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}{MARKER}", timeout=1) as r:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}{MARKER}", timeout=timeout) as r:
             return json.load(r)
     except Exception:
         return None
@@ -1002,6 +1002,13 @@ IDENTITY_FILE = ".server.json"
 #: refreshes of one report once walked 7655 → 7656 → 7657, one new server each time,
 #: because only the preferred port was asked and the rest were merely tested for "free".
 PORT_SPAN = 20
+
+#: How long the port the identity file names is given to answer. The scan's one second is
+#: right for ports that are a guess; this one is the report's own server by its own account,
+#: and a server that is merely slow — a busy Mac, or one a Background launchd job started at
+#: priority 4 — took 5-15 s. Asked for a second, it read as "none", a new server started on
+#: the next port, and one report ended up with three (19 Oct 2026).
+RECORDED_PATIENCE = 8.0
 
 
 def read_identity(directory: Path) -> dict:
@@ -1044,7 +1051,7 @@ def find_server(directory: Path, preferred: int, span: int = PORT_SPAN):
         ports.append(rec_port)
     ports += [p for p in range(preferred, min(preferred + span, 65536)) if p not in ports]
     for port in ports:
-        info = probe(port)
+        info = probe(port, timeout=RECORDED_PATIENCE) if port == rec_port else probe(port)
         if isinstance(info, dict) and info.get(MARKER_KEY) and info.get("served") == want:
             return port, info
     return None
@@ -1074,6 +1081,14 @@ def free(port):
 # read as "the report changed".
 WATCH_SKIP = {".git", "__pycache__", "node_modules", ".pytest_cache"}
 
+# And the review directory's own scratch, at its top level only: what the producers work
+# *from*, never what the page shows. `coverage/` is the one that bit: a coverage run writes
+# one `.exec` per test, a second or two apart, every gap is a quiet period, and a reader's
+# tab reloaded about once a second for as long as the tests ran (19 Oct 2026). The page
+# changes when the build writes it, and that is the write worth reloading for. The identity
+# file too: a second server for the same report writing it is not a new report.
+WATCH_SKIP_TOP = {"coverage", "logs", ".city-build", ".model-prev", ".tools", ".server.json"}
+
 # A ceiling rather than a promise. The served directory is a report, not a source tree,
 # and the biggest one so far is a few hundred files; a walk that finds twenty thousand
 # is being pointed at something this was never meant to watch, and stopping is better
@@ -1092,8 +1107,12 @@ def fingerprint(root: Path) -> str:
     h = hashlib.blake2b(digest_size=12)
     seen = 0
     for base, dirs, files in os.walk(root):
-        dirs[:] = sorted(d for d in dirs if d not in WATCH_SKIP)
+        top = base == os.fspath(root)       # os.walk yields the root first, spelt as given
+        dirs[:] = sorted(d for d in dirs if d not in WATCH_SKIP
+                         and not (top and d in WATCH_SKIP_TOP))
         for name in sorted(files):
+            if top and name in WATCH_SKIP_TOP:
+                continue
             path = os.path.join(base, name)
             try:
                 st = os.stat(path)

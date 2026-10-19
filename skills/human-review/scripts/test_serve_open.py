@@ -117,7 +117,7 @@ def test_a_server_already_running_opens_nothing(monkeypatch, tmp_path, capsys):
     """A rebuild reaches the open tab by itself; opening again piles up one tab per run."""
     opened = []
     monkeypatch.setattr(sr, "open_page", lambda url, root=None: opened.append(url))
-    monkeypatch.setattr(sr, "probe", lambda port: {sr.MARKER_KEY: 1, "pid": 1,
+    monkeypatch.setattr(sr, "probe", lambda port, **kw: {sr.MARKER_KEY: 1, "pid": 1,
                                                     "served": str(tmp_path.resolve())})
     monkeypatch.setattr(sys, "argv", ["serve-review.py", str(tmp_path)])
     assert sr.main() == 0
@@ -133,7 +133,7 @@ def test_a_server_already_running_opens_nothing(monkeypatch, tmp_path, capsys):
 def _world(monkeypatch, tmp_path, ports: dict, argv=()):
     """`ports` maps port → what its marker says. Records spawns, opens and kills."""
     seen = {"spawned": [], "opened": [], "killed": []}
-    monkeypatch.setattr(sr, "probe", lambda port: ports.get(port))
+    monkeypatch.setattr(sr, "probe", lambda port, **kw: ports.get(port))
     monkeypatch.setattr(sr, "free", lambda port: port not in ports)
     monkeypatch.setattr(sr, "open_page", lambda url, root=None: seen["opened"].append(url))
     monkeypatch.setattr(sr.subprocess, "Popen", lambda cmd, **kw: seen["spawned"].append(cmd))
@@ -172,7 +172,7 @@ def test_a_stale_identity_file_is_a_hint_not_a_proof(monkeypatch, tmp_path, caps
     decides, so a new server starts on the next free port instead."""
     (tmp_path / sr.IDENTITY_FILE).write_text(json.dumps({"port": 18999, "pid": 42}))
     seen = _world(monkeypatch, tmp_path, {17654: _theirs(), 18999: _theirs(9)})
-    monkeypatch.setattr(sr, "probe", lambda port, _p={17654: _theirs(), 18999: _theirs(9)}:
+    monkeypatch.setattr(sr, "probe", lambda port, _p={17654: _theirs(), 18999: _theirs(9)}, **kw:
                         _p.get(port) or (_ours(tmp_path) if seen["spawned"] else None))
     assert sr.main() == 0
     assert capsys.readouterr().out.strip() == "http://127.0.0.1:17655/review.html"
@@ -182,7 +182,7 @@ def test_a_stale_identity_file_is_a_hint_not_a_proof(monkeypatch, tmp_path, caps
 def test_a_marker_without_the_key_is_somebody_elses_server(monkeypatch, tmp_path, capsys):
     impostor = {"pid": 5, "served": str(tmp_path.resolve())}       # no humanReview key
     seen = _world(monkeypatch, tmp_path, {17654: impostor})
-    monkeypatch.setattr(sr, "probe", lambda port: impostor if port == 17654 else
+    monkeypatch.setattr(sr, "probe", lambda port, **kw: impostor if port == 17654 else
                         (_ours(tmp_path) if seen["spawned"] else None))
     assert sr.main() == 0
     assert capsys.readouterr().out.strip() == "http://127.0.0.1:17655/review.html"

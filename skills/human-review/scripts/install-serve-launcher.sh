@@ -20,6 +20,10 @@ PORT=7653
 LOG="$HOME/Library/Logs/human-review-serve-launcher.log"
 
 if [[ "${1:-}" == "--check" ]]; then
+  if grep -q '<string>Background</string>' "$PLIST" 2>/dev/null; then
+    echo "installed as a Background job: every server it starts is throttled — run this script with no arguments"
+    exit 1
+  fi
   if curl -fsS --max-time 2 "http://127.0.0.1:$PORT/ping"; then echo; exit 0; fi
   echo "not answering on :$PORT — run this script with no arguments"; exit 1
 fi
@@ -67,7 +71,12 @@ cat >"$PLIST" <<PLIST
   <key>KeepAlive</key><true/>
   <!-- The review servers it starts detach (setsid) and must outlive a restart of this. -->
   <key>AbandonProcessGroup</key><true/>
-  <key>ProcessType</key><string>Background</string>
+  <!-- Interactive, never Background: launchd's class is inherited by every server this
+       starts, setsid or not. As Background they ran at priority 4 with throttled I/O, so
+       on a busy Mac one probe took 5-15 s, the launcher gave up after 30 s on every click,
+       and each retry left one more server behind (three on one report, 19 Oct 2026).
+       Unset is "Standard", which launchd still throttles. -->
+  <key>ProcessType</key><string>Interactive</string>
   <key>StandardOutPath</key><string>$(esc "$LOG")</string>
   <key>StandardErrorPath</key><string>$(esc "$LOG")</string>
 </dict>

@@ -35,6 +35,7 @@ import os
 import socketserver
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -68,6 +69,22 @@ def check_page(raw: str) -> tuple[Path | None, str]:
     return page, ""
 
 
+def already_serving(page: Path, timeout: float = 5.0) -> str:
+    """The URL of the server that serves this page's directory, by the identity file it
+    writes beside the report (`.server.json`) and the marker on that port; "" if none."""
+    try:
+        port = int(json.loads((page.parent / ".server.json").read_text(encoding="utf-8"))["port"])
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/__human_review__",
+                                    timeout=timeout) as r:
+            info = json.load(r)
+    except Exception:  # noqa: BLE001 — no file, no server, not ours: all the same "no"
+        return ""
+    if isinstance(info, dict) and info.get("humanReview") \
+            and info.get("served") == os.path.realpath(page.parent):
+        return f"http://127.0.0.1:{port}/{page.name}"
+    return ""
+
+
 def serve(page: Path) -> tuple[int, dict]:
     """Run serve-review.py on the page's directory; (status, body). It prints the URL it
     serves on last — a new server's, or the one already serving that directory. `--no-open`:
@@ -77,6 +94,12 @@ def serve(page: Path) -> tuple[int, dict]:
         r = subprocess.run(cmd, cwd=str(page.parent), capture_output=True, text=True,
                            timeout=30, stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
+        # Killing serve-review.py does not kill the server it may already have detached:
+        # look before saying it failed, or the reader is told "no" about a server that is
+        # up, and the next click starts a second one beside it.
+        url = already_serving(page)
+        if url:
+            return 200, {"url": url}
         return 504, {"error": "serve-review.py did not answer within 30 s"}
     lines = (r.stdout or "").strip().splitlines()
     url = lines[-1].strip() if lines else ""
