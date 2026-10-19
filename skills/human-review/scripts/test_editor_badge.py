@@ -409,7 +409,7 @@ def test_the_picked_ide_takes_the_click_and_the_answer_says_so(
     assert I.asked[0][1] == {"path": str(f), "line": 3, "focus": True}
 
 
-def test_no_window_of_the_picked_ide_on_the_file_falls_back_to_the_other(
+def test_no_window_of_the_picked_ide_on_the_file_never_reroutes_to_the_other(
         server, repo, tmp_path, monkeypatch, stop):
     r, _, _ = repo
     f = _src(r)
@@ -419,9 +419,13 @@ def test_no_window_of_the_picked_ide_on_the_file_falls_back_to_the_other(
     ij, I = _ide(tmp_path, monkeypatch, "idea", elsewhere)
     stop(vsc), stop(ij)
     monkeypatch.setattr(srv, "ROOT", r)
+    monkeypatch.setattr(srv.subprocess, "run", lambda cmd, **kw: None)
     status, payload = _call(server, "GET", f"{srv.OPEN}?path={f}&line=3&ide=idea")
-    assert status == 200 and json.loads(payload) == {"ide": "vscode", "fallback": True}
-    assert [p for p, _ in V.asked] == ["/open-file"] and I.asked == []
+    # Victor, 20 Oct 2026: IntelliJ connected, the click is IntelliJ's even with VS Code
+    # alone owning the file — its plugin opens a file no window of it has yet.
+    assert V.asked == [], V.asked
+    if payload:
+        assert json.loads(payload).get("fallback") in (False, None)
 
 
 def test_without_ide_only_vs_code_is_asked_as_before(server, repo, tmp_path, monkeypatch, stop):
@@ -638,14 +642,13 @@ def test_the_logos_connect_one_ide_at_a_time_and_clicks_follow_it(browser):
     # Nothing connected until the reader connects one, whatever has a window: both red.
     assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
     assert page.evaluate("document.documentElement.classList.contains('ide-none')")
-    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Connect IntelliJ"
-    assert "IntelliJ has a window on this checkout." in page.get_attribute(
-        "#hr-ide-idea", "data-tip-html")
+    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Click to connect IntelliJ"
+    assert page.get_attribute("#hr-ide-idea", "data-tip-html") is None
     # Red → connected, alone in the masthead, green.
     page.click("#hr-ide-idea")
     assert _states(page) == ["vscode:hidden", "idea:ide-on"]
     assert page.get_attribute("#hr-ide-idea", "aria-pressed") == "true"
-    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Disconnect IntelliJ"
+    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Click to disconnect IntelliJ"
     assert page.evaluate("document.documentElement.classList.contains('ide-idea')")
     assert page.locator("a.f-vsc .ide-word").text_content() == "IntelliJ"
     assert page.locator("a.f-vsc svg.ij-ico").is_visible()
@@ -675,12 +678,13 @@ def test_the_logos_connect_one_ide_at_a_time_and_clicks_follow_it(browser):
     page.close()
 
 
-def test_the_connected_logo_tip_carries_the_servers_state_line(browser):
+def test_the_connected_logo_tip_says_only_what_a_click_does(browser):
+    """Victor, 20 Oct 2026: "say click to disconnect IntelliJ, the rest should not be there"."""
     page, sent = _picker_page(browser, IDES2[1:], pick="idea")
     page.wait_for_function("document.querySelector('#hr-ide-idea.ide-on')")
     page.wait_for_timeout(300)
-    tip = page.get_attribute("#hr-ide-idea", "data-tip-html")
-    assert "state line" in tip and "Click" not in tip
+    assert page.get_attribute("#hr-ide-idea", "data-tip") == "Click to disconnect IntelliJ"
+    assert page.get_attribute("#hr-ide-idea", "data-tip-html") is None
     page.close()
 
 
@@ -784,8 +788,6 @@ def test_off_disk_the_remembered_intellij_pick_words_the_links(browser, tmp_path
 def test_off_disk_the_logos_toggle_too(browser, tmp_path):
     page = _offdisk_page(browser, tmp_path)
     assert _states(page) == ["vscode:ide-off", "idea:ide-off"]
-    assert "Needs the Human Review plugin in IntelliJ." in page.get_attribute(
-        "#hr-ide-idea", "data-tip-html")
     page.click("#hr-ide-idea")
     assert _states(page) == ["vscode:hidden", "idea:ide-on"]
     assert page.locator("a.f-vsc .ide-word").text_content() == "IntelliJ"

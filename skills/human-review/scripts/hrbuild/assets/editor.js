@@ -165,9 +165,6 @@
   // them like every `data-local` control and server.js answers a press.
   var chips = [].slice.call(document.querySelectorAll('.chip-ide[data-ide]'));
   var said = null;                         // the last badge poll's answer, about `ide()`
-  function esc(t) {
-    return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
   function paintChips() {
     var on = ide(), local = reachable();
     chips.forEach(function (chip) {
@@ -178,22 +175,11 @@
       chip.classList.toggle('ide-off', local && !mine);
       chip.hidden = local && !!on && !mine;
       chip.setAttribute('aria-pressed', mine ? 'true' : 'false');
-      // Two lines: what a press does, then the state behind the colour (tip.js's `.tipfoot`).
-      var head = mine ? 'Disconnect ' + name : 'Connect ' + name;
-      var foot = mine ? 'Code opens in ' + name + '.' : 'No IDE connected: code clicks copy the path.';
-      if (SERVED && mine && said && said.tip) {
-        // The server's state line about this IDE: its first line was about the old press.
-        foot += '\n' + String(said.tip).split('\n').slice(1).join('\n');
-      } else if (SERVED && !mine) {
-        var has = connected.some(function (i) { return i.app === app; });
-        foot += '\n' + (has ? name + ' has a window on this checkout.'
-                            : 'Connecting opens ' + name + ' on this checkout.');
-      } else if (!SERVED && app === 'idea') {
-        foot += '\nNeeds the Human Review plugin in IntelliJ.';
-      }
+      // One line, what a press does (Victor, 20 Oct 2026: "say click to disconnect IntelliJ,
+      // the rest should not be there"). The colour already tells the state.
+      var head = (mine ? 'Click to disconnect ' : 'Click to connect ') + name;
       chip.setAttribute('data-tip', head);
-      chip.setAttribute('data-tip-html', esc(head) + '<p class="tipfoot">'
-        + foot.split('\n').filter(Boolean).map(esc).join('<br>') + '</p>');
+      chip.removeAttribute('data-tip-html');
     });
   }
   chips.forEach(function (chip) {
