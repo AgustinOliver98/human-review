@@ -352,6 +352,9 @@
   // covering this"). Follows `data-sel` on the list, which reqmap.js sets on a pick and
   // takes off on every way out of one.
   function hitMarks() {
+    var FAN = '<svg class="rm-fan" viewBox="0 0 12 14" aria-hidden="true">'
+      + '<path d="M7 7H11.2"/><path d="M7 7H1.2"/><path d="M7 7C4.6 7 4.6 1.7 1.2 1.7"/>'
+      + '<path d="M7 7C4.6 7 4.6 12.3 1.2 12.3"/></svg>';
     var on = list.dataset.sel === 'yes';
     CH.forEach(function (c) {
       var sec = chapters[c[0]], mark = sec.querySelector('.rm-chhit');
@@ -360,7 +363,8 @@
       var K = LABEL[c[0]] || c[0].toUpperCase();
       sec.dataset.hits = String(n);
       mark.hidden = false;
-      mark.textContent = n ? '\u2713 ' + n : 'none';
+      // The rows' own link icon, not a tick (Victor, 20 Oct 2026: "the same fork icon").
+      mark.innerHTML = n ? FAN + n : 'none';
       mark.setAttribute('data-tip', n
         ? n + ' ' + K + ' test' + (n === 1 ? ' covers' : 's cover') + ' the picked sentence'
         : 'No ' + K + ' test covers the picked sentence');

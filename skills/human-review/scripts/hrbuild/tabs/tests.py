@@ -1395,6 +1395,8 @@ REQMAP_CSS = """
 .reqmap .rm-chhit{flex:0 0 auto;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
   color:var(--rm-g-edge);white-space:nowrap;cursor:help}
 .reqmap .rm-chhit[hidden]{display:none}
+.reqmap .rm-chhit{display:inline-flex;align-items:center;gap:3px}
+.reqmap .rm-chhit .rm-fan{display:inline-block;width:10px;height:12px}
 .reqmap .rm-ch[data-hits="0"] .rm-chhit{color:var(--rm-r-edge)}
 .reqmap .rm-ch[data-hits="0"] > .rm-chh .rm-chsub{opacity:.55}
 .reqmap .rm-chh .rm-cat{display:inline-flex;justify-content:center;min-width:4.5em}

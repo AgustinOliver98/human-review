@@ -209,7 +209,7 @@ def test_a_picked_sentence_counts_its_tests_on_every_chapter_heading():
     list's `data-sel`, which every way out of a pick takes off."""
     js, css = T.REQMAP_CHAPTERS_JS, T.REQMAP_CSS
     assert "observe(list, {attributes: true, attributeFilter: ['data-sel']})" in js
-    assert "mark.textContent = n ? '\\u2713 ' + n : 'none';" in js
+    assert "mark.innerHTML = n ? FAN + n : 'none';" in js
     assert '.reqmap .rm-ch[data-hits="0"] .rm-chhit{color:var(--rm-r-edge)}' in css
 
 
