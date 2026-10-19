@@ -2793,7 +2793,11 @@ def main(argv=None) -> int:
     # against an empty git context would leave every later refresh a guaranteed miss, which
     # is how a cache turns into a permanent tax.
     incremental = not args.dry_run
-    cache = load_step_cache() if (incremental and not args.force) else {}
+    # What is written back is every step's entry, not only this run's: a `--force --only
+    # testcov` that started from an empty dict saved one key and erased the rest, and the
+    # next cheap refresh re-ran the whole e2e suite (`traces`) for nothing (20 Oct 2026).
+    cache = load_step_cache() if incremental else {}
+    lookup = {} if args.force else cache
     head = _git_out(["rev-parse", "HEAD"]).strip() if incremental else ""
     mb = merge_base(ctx) if incremental else ""
     dirty = dirty_paths() if incremental else []
@@ -2812,14 +2816,14 @@ def main(argv=None) -> int:
         _n, tabs, label, prereq, fn = spec[name]
         key = _step_key(name, ctx, mb, head, dirty) if incremental else None
         if jobs == 1:
-            return run_step(name, tabs, label, prereq, fn, ctx, key, cache.get(name))
+            return run_step(name, tabs, label, prereq, fn, ctx, key, lookup.get(name))
         # On stderr: stdout is the status table, and with --json it must parse.
         print(f"  > {name}: started at +{time.monotonic() - t_wall:.0f} s "
               f"(log: {logs / (name + '.log')})", file=sys.stderr, flush=True)
         with open(logs / f"{name}.log", "w", encoding="utf-8") as log:
             _LOCAL.log = log
             try:
-                r = run_step(name, tabs, label, prereq, fn, ctx, key, cache.get(name))
+                r = run_step(name, tabs, label, prereq, fn, ctx, key, lookup.get(name))
             finally:
                 _LOCAL.log = None
         print(f"  < {name}: {r['status']} in {r.get('seconds', 0):.1f} s, "
@@ -2830,7 +2834,7 @@ def main(argv=None) -> int:
     # The audit's merge-base stack is worth starting early only for an audit that runs.
     if "dsaudit" in spec and "basestack" in spec:
         dkey = _step_key("dsaudit", ctx, mb, head, dirty) if incremental else None
-        dhit = (dkey and cache.get("dsaudit", {}).get("key") == dkey
+        dhit = (dkey and lookup.get("dsaudit", {}).get("key") == dkey
                 and _outputs_present(STEP_CACHE.parent, STEP_INPUTS["dsaudit"]["outputs"]))
         ctx.prewarm_base = not dhit and not args.dry_run
     t_wall = time.monotonic()

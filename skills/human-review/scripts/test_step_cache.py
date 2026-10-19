@@ -426,3 +426,13 @@ def test_a_red_suite_records_no_key_so_its_note_is_said_again(repo, monkeypatch)
     second = _traces_once()
     assert not second.get("cached") and calls == [1, 1]
     assert any("did not pass" in n for n in second["notes"])
+
+
+def test_a_forced_run_of_one_step_keeps_every_other_steps_key(repo):
+    """`--force --only tests` used to start from an empty cache and save it: every other
+    step's key was erased, and the next cheap refresh re-ran the e2e suite for nothing."""
+    _main(repo, "--only", "tests,owners")
+    owners = rs.load_step_cache()["owners"]["key"]
+    _main(repo, "--only", "tests", "--force")
+    assert rs.load_step_cache().get("owners", {}).get("key") == owners
+    assert _main(repo, "--only", "owners")[0].get("cached") is True
