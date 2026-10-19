@@ -167,7 +167,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'A quorum of adversarial AI reviewers criticised the code.',
             'These the coder refused or left open.',
             'You decide, top first: <b>must look</b> › <b>worth a look</b> › <b>nit</b>.',
-            '<b>in VS Code</b> opens the line in the IDE whose logo is green, top right.',
+            'The GitHub icon opens the PR comment; the title or IDE icon opens the line in your IDE.',
         ],
     },
     'review.fixed': {
