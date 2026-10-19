@@ -193,6 +193,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Any other fixture is a dataset of its own, built on an empty DB when you press its <b>Seed</b>.',
             'Each <b>Seed</b> empties every table and reloads that dataset, wiping what you typed.',
             'Open a fixture to see its tables.',
+            'The file name on the right opens the SQL that holds the fixture\'s rows.',
         ],
     },
     'api': {

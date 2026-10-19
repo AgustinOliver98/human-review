@@ -256,3 +256,60 @@ def test_a_fixture_opens_onto_its_own_rows_only(browser, repo):
     assert page.evaluate("window.hrOpenDataset('nope')") is False
     assert page.evaluate("window.hrOpenDataset('unknown')") is False
     page.close()
+
+
+# ── the source files, on each header ───────────────────────────────────────────────────
+
+def test_each_header_ends_on_the_files_its_rows_come_from_linked_to_the_editor(repo):
+    """Victor, 19 Oct 2026: the file that holds a fixture's data, at the header's right end,
+    one click from the editor — the seed's R__ files for Default, `<name>.sql` for a fixture."""
+    seed2 = repo / "backend/src/main/resources/db/seed/R__seed_more.sql"
+    seed2.write_text("INSERT INTO types (name) VALUES ('hamster');\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+    assert dv.fixture_files(repo) == {
+        "": ["backend/src/main/resources/db/seed/R__seed.sql",
+             "backend/src/main/resources/db/seed/R__seed_more.sql"],
+        "green": ["backend/src/main/resources/db/fixtures/green.sql"]}
+    card = dv.fixtures_panel_html([("", "#888"), ("green", "#2fa84f"), ("unknown", "#3b82f6")],
+                                  True, root=repo)
+    rows = {fx: card[card.index(f'<div class="appenv-fx" data-fixture="{fx}">'):]
+            for fx in ("", "green", "unknown")}
+    for fx, row in rows.items():
+        rows[fx] = row[:row.index('class="dbfx-body"')]
+    green = rows["green"]
+    href = f'vscode://file/{(repo / "backend/src/main/resources/db/fixtures/green.sql").resolve()}:1:1'
+    assert (f'<a class="srcref dbfx-file" href="{href}" '
+            'data-tip="backend/src/main/resources/db/fixtures/green.sql">green.sql</a>') in green
+    # After the caret's button and the summary — a sibling of the toggle, never inside it.
+    assert green.index("</button>") < green.index('class="dbfx-sum"') < green.index("dbfx-src")
+    assert rows[""].count('class="srcref dbfx-file"') == 2
+    assert ">R__seed.sql</a>" in rows[""] and ">R__seed_more.sql</a>" in rows[""]
+    assert "dbfx-src" not in rows["unknown"], "no file, no link"
+    assert "dbfx-src" not in dv.fixtures_panel_html([("green", "#2fa84f")], True)
+
+
+def test_a_click_on_the_file_opens_no_tables_and_it_stays_right_aligned(browser, repo):
+    page = browser.new_page()
+    card = dv.fixtures_panel_html([("", "#888"), ("green", "#2fa84f")], True, root=repo)
+    js = (dv._ASSETS / "dataset-view.js").read_text(encoding="utf-8")
+    css = "".join((dv._ASSETS / "css" / f).read_text(encoding="utf-8")
+                  for f in ("core.css", "snippets.css", "demo.css"))
+    blob = json.dumps(dv.build(repo)).replace("</", "<\\/")
+    page.set_content(f'<style>{css}</style><div id="behaviour">{card}'
+                     f'<script type="application/json" id="dsv-data">{blob}</script>'
+                     f'<script>{js}</script></div>'
+                     # the editor's own handler, standing in: no navigation to vscode:
+                     '<script>document.addEventListener("click", e => {'
+                     ' if (e.target.closest("a[href^=\'vscode:\']")) e.preventDefault(); });'
+                     '</script>')
+    link = page.locator('.appenv-fx[data-fixture="green"] .dbfx-file')
+    link.click()
+    assert page.locator('.dbfx-tog[data-fixture="green"]').get_attribute("aria-expanded") == "false"
+    assert not page.locator("#dbfx-body-green").is_visible()
+    for width in (1000, 360):
+        page.set_viewport_size({"width": width, "height": 700})
+        row = page.locator('.appenv-fx[data-fixture="green"] .dbfx-row').bounding_box()
+        box = link.bounding_box()
+        assert abs((row["x"] + row["width"]) - (box["x"] + box["width"])) < 12, width
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    page.close()

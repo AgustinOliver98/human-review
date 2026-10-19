@@ -199,6 +199,17 @@ def sources(root: Path) -> dict:
     return {"schema": versioned, "seed": repeatable, "fixtures": fixtures}
 
 
+def fixture_files(root: Path) -> dict[str, list[str]]:
+    """`{"": the seed's files, name: [that fixture's file], …}`, repo-relative: the SQL
+    each DB Fixture header is made of, the same files `build` executes for it."""
+    root = Path(root)
+    src = sources(root)
+    out = {"": [str(p.relative_to(root)) for p in src["seed"]]} if src["seed"] else {}
+    for p in src["fixtures"]:
+        out.setdefault(p.stem, []).append(str(p.relative_to(root)))
+    return out
+
+
 def _load(src: dict, fixture: Path | None, root: Path, fks: dict, skipped: list):
     """The schema, then the seed — or, for a fixture, the fixture alone on the empty tables."""
     db = sqlite3.connect(":memory:")
@@ -274,7 +285,8 @@ def _cap(rows: list) -> list:
             for r in rows[:MAX_ROWS]]
 
 
-def fixtures_panel_html(fixtures: list | None, can_reset: bool, info: str = "") -> str:
+def fixtures_panel_html(fixtures: list | None, can_reset: bool, info: str = "",
+                        root: Path | None = None) -> str:
     """The Demo tab's "DB Fixture" panel: its own card under the Running app one (Victor,
     9 Oct 2026 — the fixtures used to be a second row inside that band), one fixture per
     line, one under the other, so two seeds can be compared top to bottom.
@@ -292,10 +304,24 @@ def fixtures_panel_html(fixtures: list | None, can_reset: bool, info: str = "") 
     `.appenv-fx`, `.appenv-reset`), and the ones `fixtures_row_html` drew before: the Seed
     contract did not change, only where it sits. `info` is the section's (i), or "".
 
-    `fixtures` is `[(name, colour), …]` with the seed as `""`; None is "the seed only"."""
+    `fixtures` is `[(name, colour), …]` with the seed as `""`; None is "the seed only".
+
+    With `root`, each header ends, right-aligned, on the file(s) that hold its data
+    (`fixture_files`) — the name, its path in the tip — so the source is one click away
+    (Victor, 19 Oct 2026). A plain `vscode://file/…` reference like every other on the page:
+    editor.js opens it in the IDE the header picks, server.js turns it into a GitHub link
+    online. A sibling of the caret, never inside it, so a click on it opens no tables."""
     from hrbuild.shared.commands import SEED_OFFLINE_TIP
     from hrbuild.shared.fixtures import FIXTURE_SEED
     items = list(fixtures) if fixtures else [("", FIXTURE_SEED)]
+    files = fixture_files(root) if root is not None else {}
+
+    def src(name: str) -> str:
+        links = [f'<a class="srcref dbfx-file" href="vscode://file/'
+                 f'{html.escape(str((Path(root) / rel).resolve()))}:1:1"'
+                 f' data-tip="{html.escape(rel)}">{html.escape(Path(rel).name)}</a>'
+                 for rel in files.get(name, [])]
+        return f'<span class="dbfx-src">{"".join(links)}</span>' if links else ""
 
     def item(name: str, colour: str) -> str:
         label = name or "Default"
@@ -310,7 +336,7 @@ def fixtures_panel_html(fixtures: list | None, can_reset: bool, info: str = "") 
                 '<span class="disclose" aria-hidden="true"></span>'
                 f'<span class="fx-dot" aria-hidden="true" style="--fx:{html.escape(colour)}">'
                 f'</span><span class="appenv-fx-name">{html.escape(label)}</span></button>'
-                f'{seed}<span class="dbfx-sum"></span></div>'
+                f'{seed}<span class="dbfx-sum"></span>{src(name)}</div>'
                 f'<div class="dbfx-body" id="{body}" hidden></div></div>')
 
     head = ('<div class="dbfx-head adopthead"><span class="dbfx-title appenv-fixtures-to" '

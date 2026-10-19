@@ -369,7 +369,8 @@ def video_html(s, out_dir: Path) -> str:
             head += fixtures_panel_html(fixtures, can_reset,
                                         # the pill and its (i), as on every card: an (i)
                                         # alone explained a button that was not there
-                                        adopt_html("behaviour.seed", how="in"))
+                                        adopt_html("behaviour.seed", how="in"),
+                                        root=root)
             head += data
     # The film's title heads the transcript column, not a row of its own above the player:
     # a row across the page held two words and left the rest of it empty (Victor, 7 Oct
