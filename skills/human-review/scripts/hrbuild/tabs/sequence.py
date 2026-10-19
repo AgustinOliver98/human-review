@@ -10,9 +10,10 @@ import subprocess
 from pathlib import Path
 
 from ..shared.diagrams import _context_svg, _source_link, render_diagrams, select_rows
+from ..shared.layout import _squash
 from ..shared.fixtures import fixture_colors, fixtures_by_test, fixtures_emptied, fixtures_free
-from ..shared.genseq import (GENSEQ_HANDLE, genseq_by_test, genseq_details, genseq_file,
-                             pair_anchor, test_of_genseq)
+from ..shared.genseq import (GENSEQ_HANDLE, GENSEQ_OVERLAY, genseq_by_test, genseq_details,
+                             genseq_file, pair_anchor, test_of_genseq)
 from ..shared.snippets import SNIPPET_BASE, snippet_html
 from ..shared.svg import inline_svg
 
@@ -399,12 +400,57 @@ def _scenarios_drawn(puml_rel: str, test_rel: str, root: Path) -> list[tuple[int
         text = genseq_file(puml_rel, root).read_text(encoding="utf-8")
     except OSError:
         return []
+    try:
+        src = (root / test_rel).read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        src = []
     found = {}
     for line in text.splitlines():
         m = GENSEQ_HANDLE.match(line.strip())
         if m and m["path"] == test_rel:
-            found.setdefault(int(m["line"]), (m["title"] or "").strip())
+            title = (m["title"] or "").strip()
+            found.setdefault(_current_decl(src, _test_kind(test_rel), int(m["line"]), title),
+                             title)
     return sorted(found.items())
+
+
+def _decl_names(lines: list[str], decl: int, kind: str) -> set[str]:
+    """The names (squashed) of the scenario declared on 1-based line `decl`, if one is:
+    the Gherkin title, the Playwright title, the Java method and its `@DisplayName`."""
+    i = decl - 1
+    if not 0 <= i < len(lines):
+        return set()
+    if kind == "feature":
+        m = _FEATURE_DECL.match(lines[i])
+        return {_squash(lines[i][m.end():])} if m else set()
+    if kind == "ts":
+        m = _TS_DECL.match(lines[i]) and _STRINGS.search(" ".join(lines[i:i + 3]))
+        return {_squash(m.group(0)[1:-1])} if m else set()
+    if kind == "java" and _JAVA_DECL.match(lines[i]) and not re.match(
+            r"\s*(?:return|new|throw|else)\b", lines[i]):
+        names = {_squash(m[1]) for m in re.finditer(r"(\w+)\s*\(", lines[i])}
+        for j in range(max(0, i - 6), i):
+            d = re.search(r'@DisplayName\(\s*"((?:\\.|[^"\\])*)"', lines[j])
+            if d:
+                names.add(_squash(d[1]))
+        return names
+    return set()
+
+
+def _current_decl(lines: list[str], kind: str, line: int, title: str) -> int:
+    """Where the scenario a diagram recorded at `line` is declared now.
+
+    The diagram keeps the line the test had when it was traced. Six imports added above
+    `add-visit.spec.ts`'s one tagged test (19 Oct 2026) moved it from 31 to 37, and the tab
+    then showed that test twice: drawn, by its picture's 31, and "no diagram came back", by
+    its tag's 37. So the line is checked against the title the diagram also recorded, and
+    moved to the declaration that carries that title. A title that matches nothing — the
+    scenario was renamed or deleted — keeps the recorded line: never dropped."""
+    want = {_squash(title), _squash(title.split(": ", 1)[-1])} - {""}
+    if not want or not lines or _decl_names(lines, line, kind) & want:
+        return line
+    hits = [n for n in range(1, len(lines) + 1) if _decl_names(lines, n, kind) & want]
+    return min(hits, key=lambda n: abs(n - line)) if hits else line
 
 
 def _folded_pair(puml_rel: str, test_rel: str, pieces: list[str],
@@ -746,8 +792,9 @@ def derived_snippets(root: Path) -> tuple[list[dict], list[dict]]:
 
     `drawn` quotes every scenario a diagram on disk names, in the file the diagram says drew
     it; `undrawn` every scenario tagged for tracing that no diagram names — the group the
-    tab heads "Tagged for tracing, and no diagram came back". One reference per file, of as
-    many spans as it has scenarios, which is the shape `_share_excerpts` hands out."""
+    tab heads "Tagged for tracing, but no diagram yet", each file captioned with why, as far
+    as the checkout can tell (`undrawn_reason`). One reference per file, of as many spans as
+    it has scenarios, which is the shape `_share_excerpts` hands out."""
     drawn: dict[str, set[int]] = {}
     for test_rel, pumls in genseq_by_test(root).items():
         if not (root / test_rel).is_file():
@@ -759,9 +806,49 @@ def derived_snippets(root: Path) -> tuple[list[dict], list[dict]]:
                for rel, decls in tagged_scenarios(root).items()}
     pool = [x for x in (_ref(rel, sorted(lines), root)
                         for rel, lines in sorted(drawn.items()) if lines) if x]
-    rest = [x for x in (_ref(rel, lines, root)
-                        for rel, lines in sorted(undrawn.items()) if lines) if x]
+    rest = [dict(x, caption=html.escape(undrawn_reason(rel, root)))
+            for rel, lines in sorted(undrawn.items()) if lines
+            for x in [_ref(rel, lines, root)] if x]
     return pool, rest
+
+
+def undrawn_reason(test_rel: str, root: Path) -> str:
+    """One line on why a tagged scenario has no diagram, as far as the checkout can tell.
+
+    When the tests were last traced: the Sequence step's own copy of its run (`.head`,
+    written when it ran), else the last commit of a generated diagram. When the test file
+    last changed: now, if it has uncommitted edits, else its last commit."""
+    import datetime as dt
+
+    def _git_time(*args: str) -> float | None:
+        got = subprocess.run(["git", "-C", str(root), "log", "-1", "--format=%ct", *args],
+                             capture_output=True, text=True)
+        out = got.stdout.strip()
+        return float(out) if got.returncode == 0 and out.isdigit() else None
+
+    try:
+        traced = (root / GENSEQ_OVERLAY / ".head").stat().st_mtime
+    except OSError:
+        traced = _git_time("--", ":(glob)**/*.genseq.puml")
+    dirty = subprocess.run(["git", "-C", str(root), "status", "--porcelain", "--", test_rel],
+                           capture_output=True, text=True).stdout.strip()
+    try:
+        changed = (root / test_rel).stat().st_mtime if dirty \
+            else _git_time("--", test_rel)
+    except OSError:
+        changed = None
+    if traced is None:
+        return "Never traced in this checkout."
+
+    def day(t: float, exact: bool) -> str:
+        d = dt.datetime.fromtimestamp(t)
+        return f"{d.day} {d:%b}" + (f" {d:%H:%M}" if exact else "")
+
+    if changed is not None and changed > traced:
+        same = day(changed, False) == day(traced, False)
+        return (f"Changed on {day(changed, same)}, after the last traced run "
+                f"({day(traced, same)}).")
+    return f"The last traced run ({day(traced, False)}) drew no diagram for it."
 
 
 #: What the layout puts in a Sequence block's `snippets`: derive them (`derived_snippets`).

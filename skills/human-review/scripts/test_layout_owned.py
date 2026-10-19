@@ -130,8 +130,11 @@ def test_the_sequence_block_quotes_derived_tests_under_the_skills_own_heading(tm
     block = spec["tabs"][0]["blocks"][0]
     assert block["snippets"] == {"auto": "genseq"}
     assert "title" not in block, "absent, so the renderer prints its default heading"
-    assert block["unpaired"] == {"id": "tests-nosequence",
-                                 "title": "Tagged for tracing, and no diagram came back"}
+    import importlib
+    owned = importlib.import_module("hrbuild.shared.layout").LAYOUT_TESTPAIRS["unpaired"]
+    assert block["unpaired"] == owned
+    assert owned["title"] == "Tagged for tracing, but no diagram yet"
+    assert block["unpaired"]["body"] != "pipeline prose"
     assert any("snippets" in w and "title" in w for w in warnings)
 
 

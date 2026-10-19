@@ -117,10 +117,14 @@ LAYOUT_ALWAYS = "behaviour"
 #: derived (`hrbuild/tabs/sequence.py` `derived_snippets`): eval run 5 typed them in by hand
 #: and copied another branch's line ranges. Its heading and its leftover group are the
 #: skill's words too — run 5 also wrote `"title": ""`, and the tab lost the heading the
-#: reference opens on.
+#: reference opens on. "…and no diagram came back" (until 20 Oct 2026) said neither what
+#: was missing nor what to do; each file under it now says why (`undrawn_reason`), and the
+#: body says how to draw them.
 LAYOUT_TESTPAIRS = {"snippets": {"auto": "genseq"},
                     "unpaired": {"id": "tests-nosequence",
-                                 "title": "Tagged for tracing, and no diagram came back"}}
+                                 "title": "Tagged for tracing, but no diagram yet",
+                                 "body": "Draw them with ↻ on this tab, or "
+                                         "<code>refresh-report.py --steps sequence</code>."}}
 
 
 def _squash(name: str) -> str:

@@ -263,7 +263,7 @@ from hrbuild.tabs.sequence import (
     sequence_verdict_alarm, sequence_verdict_html, lost_note_html, _lost,
     AUTO_SNIPPETS, derived_snippets, GENSEQ_TAG, scenario_span, tagged_scenarios, _counted,
     _drew_nothing, _FEATURE_DECL, _FEATURE_STOP, _JAVA_DECL, _ref, _SKIP_LINE, _STRINGS,
-    _tagged_decl, _test_kind, _TS_DECL,
+    _tagged_decl, _test_kind, _TS_DECL, _decl_names, _current_decl, undrawn_reason,
     SEQ_SELECTION, SEQ_WHY, sequence_selection, _slug, picked_for, _why_chip,
     SEQ_ALSO, ledger_status,
     SEQ_TOUCHED, touched_via, _branch_changed, _direct_imports, _TS_IMPORT, _JAVA_IMPORT,
