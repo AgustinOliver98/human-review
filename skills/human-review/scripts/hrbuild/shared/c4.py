@@ -24,8 +24,8 @@ import re
 import subprocess
 from pathlib import Path
 
-from .diagrams import (UNCHANGED, UNCHANGED_BADGE, _source_link, dgm_views_html,
-                       read_manifest, shorten_dgm_src)
+from .diagrams import (CHANGED_BADGE, UNCHANGED, UNCHANGED_BADGE, _source_link,
+                       dgm_views_html, prov_badge, read_manifest, shorten_dgm_src)
 
 #: Where `structurizr-views.py` writes, relative to the review directory.
 C4_DIR = "assets/c4"
@@ -37,8 +37,11 @@ C4_VIEWBOX = re.compile(r'viewBox="\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*
 #: size is the size the type reads at on a page; a narrower card shrinks it further.
 C4_SCALE = 0.5
 
-#: …but never below this: a wide view (petclinic's C2 is 3020 units across) fitted to a
-#: 1078px card set its labels at 8px. Past this the card scrolls sideways instead.
+#: The floor a wide view once kept (petclinic's C2, 3020 units across, at 8px labels), the
+#: card scrolling sideways past it. No longer applied: a sideways scroll hid the right third
+#: of the view — the database, the SMS gateway — behind a scrollbar macOS does not draw, so
+#: it read as clipped (Structure audit, 19 Oct 2026). A view now fits its card; the titles
+#: still read, and the small print is one zoom away. Kept for the names that import it.
 C4_MIN_SCALE = 0.45
 
 
@@ -46,7 +49,7 @@ def _c4_img(path: Path, cls: str, alt: str) -> str:
     svg = path.read_text(encoding="utf-8")
     m = C4_VIEWBOX.search(svg)
     size = (f' width="{round(float(m[1]) * C4_SCALE)}" height="{round(float(m[2]) * C4_SCALE)}"'
-            f' style="min-width:{round(float(m[1]) * C4_MIN_SCALE)}px"' if m else "")
+            if m else "")
     data = base64.b64encode(svg.encode("utf-8")).decode("ascii")
     return (f'<img class="{cls}" src="data:image/svg+xml;base64,{data}"{size} '
             f'alt="{html.escape(alt, quote=True)}" decoding="async">')
@@ -77,9 +80,9 @@ def _c4_body(row: dict, assets: Path) -> tuple[str, bool]:
         # there. The New/Old button alone is the whole control.
         views = re.sub(r'<button type="button" class="dgm-diff"[^>]*>Diff</button>', "",
                        views, count=1)
-        views = views.replace('data-tip="The diagram without diff. Click again to swap."',
-                              'data-tip="Structurizr\'s render on this branch, and at the '
-                              'merge-base. Click to swap."', 1)
+        views = views.replace('data-tip="The diagram without the diff: click New or Old."',
+                              'data-tip="Structurizr\'s render on this branch (New) and at the '
+                              'merge-base (Old)."', 1)
         return views, True
     return (new or old
             or '<p class="sub">not rendered — re-run the <code>c4</code> step</p>'), False
@@ -91,7 +94,7 @@ def _c4_badge(status: str) -> str:
     if status == "added":
         return '<span class="badge sev-high">new</span>'
     if status == "modified":
-        return ""
+        return CHANGED_BADGE
     return f'<span class="badge sev-low">{html.escape(status)}</span>'
 
 
@@ -173,7 +176,7 @@ def _checked_label(note: str, root: Path) -> tuple[str, str]:
     m = _CHECKED_NOTE.match(note or "")
     if not m:
         return "", note
-    links, archunit = [], True
+    href, archunit = "", True
     for name in (n.strip() for n in m["names"].split(",")):
         path = _test_file(root, name)
         text = ""
@@ -182,13 +185,13 @@ def _checked_label(note: str, root: Path) -> tuple[str, str]:
                 text = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 pass
+            href = href or f"vscode://file/{path.resolve()}:1:1"
         archunit &= "com.tngtech.archunit" in text
-        face = html.escape(Path(name).stem)
-        links.append(f'<a href="{html.escape(f"vscode://file/{path.resolve()}:1:1", quote=True)}">'
-                     f'{face}</a>' if path else face)
     first = note[:len(note) - len(m["rest"])].strip()
-    label = (f'<span class="c4-check" data-tip="{html.escape(first, quote=True)}">'
-             f'{"ArchUnit-checked" if archunit else "Checked"} by {", ".join(links)}</span>')
+    # The Structure tab's one credential badge (`diagrams.prov_badge`), after the status:
+    # it used to be *ArchUnit-checked by C3ArchTest* before it, in words of its own. The
+    # sentence is the hover and the test is where a click goes.
+    label = prov_badge("ArchUnit-tested vs code" if archunit else "Tested vs code", first, href)
     return label, m["rest"].strip()
 
 
@@ -234,8 +237,8 @@ def render_c4(block: dict, root: Path, out_dir: Path) -> tuple[str, int, int]:
             f'id="c4-{html.escape(re.sub(r"[^A-Za-z0-9_-]+", "-", Path(r["source"]).stem + "-" + r["name"]), quote=True)}">'
             # "Structurizr view" right after the title: the projected card above is called
             # C2-Containers too, and the two may well disagree — they are two claims.
-            f'<div class="head"><b>{html.escape(r["name"])}</b>' + kind + check
-            + _c4_badge(status)
+            f'<div class="head"><b>{html.escape(r["name"])}</b>' + kind
+            + _c4_badge(status) + check
             + _dsl_link(root, r["source"], r["name"]) + '</div>'
             + body
             + (f'<p class="sub dgm-stale">{html.escape(note)}</p>' if note else "")

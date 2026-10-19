@@ -28,6 +28,14 @@ def test_markdown_is_escaped_and_linked():
     assert "<pre><code>if (a &lt; b) {}</code></pre>" in out
 
 
+def test_a_commit_number_is_not_an_issue_link():
+    out = review.pr_body_html("Commit #1 is the code, commits #2 the fixes; closes #3.",
+                              "https://github.com/acme/shop")
+    assert "issues/1" not in out and "issues/2" not in out
+    assert "Commit #1" in out and "commits #2" in out
+    assert '<a href="https://github.com/acme/shop/issues/3"' in out
+
+
 def test_the_agent_attribution_line_is_left_out():
     spec = {"_prBody": {"url": URL, "body": "Closes #25.\n\n🤖 Generated with "
                                              "[Claude Code](https://claude.com/claude-code)"}}

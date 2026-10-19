@@ -92,9 +92,22 @@ from hrbuild.shared.fixtures import (
     _fx_step_defs,
     _fx_strip_comments,
     _fx_verdict,
+    _FX_JVM_DB,
+    _FX_JVM_DECL,
+    _FX_JVM_TEST,
+    _FX_PROP_FILES,
+    _fx_annotations_above,
+    _fx_brace_end,
+    _fx_inline_props,
+    _fx_jvm_tests,
+    _fx_module_props,
+    _fx_on_seed,
+    _fx_props,
+    _fx_sql_names,
     demo_fixtures,
     fixture_colors,
     fixture_dirs,
+    fixture_hue,
     fixture_registry,
     fixtures_by_test,
     fixtures_emptied,
@@ -102,7 +115,8 @@ from hrbuild.shared.fixtures import (
     render_fixture_registry
 )
 from hrbuild.shared.commands import (
-    CMD_COPY, CMD_PLAY, CMD_RUN, CMD_STOP, command_html, COPY_TIP,
+    CMD_COPY, CMD_PLAY, CMD_RUN, CMD_STOP, command_html, COPY_TIP, LOCAL_HINT, SKILL_REPO,
+    serve_online_tip,
     drawio_open_html,
     regenerate_html, RERUN_AI_CHIP, RERUN_AI_CONFIRM, RERUN_CHIP, RERUN_DONE, RERUN_FAIL,
     PROGRESS_BUILD_SECONDS, PROGRESS_STEP_DEFAULT, rerun_progress_html, step_expectations,
@@ -143,12 +157,15 @@ from hrbuild.shared.folders import (
 from hrbuild.shared.changes import changed_files, file_link, files_pop, _numbers
 from hrbuild.shared.diagrams import (
     CARD_NAME, card_rerun_html, card_rerun_id, REFRESH_CARD,
+    CHANGED_BADGE, UNCHANGED_CONTEXT_TIP, diagram_provenance, prov_badge, _row_provenance,
+    _PROV_CODE, _PROV_SOURCES, _WRITES, _TEST_PATH, _prov_source, _mentions,
     CM_LEGEND_NEW, CM_LEGEND_TODO, DEFAULT_FOCUS, DGM_SRC_ANCHOR, dgm_views_html, DRAWIO_TOKEN,
     drawio_unchanged, drawio_unchanged_at, drawio_widget_html, expand_drawio,
     find_diagram_source, read_manifest, render_diagrams, render_puml, schema_unseen_note,
     select_rows, shorten_dgm_src, unchanged_row, UNCHANGED, UNCHANGED_BADGE, VIEW_WORDS,
     _context_svg, _diagram_views, _drawio_unchanged_card, _focus_views, _provenance,
-    _source_link, _sql_shape, _SQL_COLLATE, _SQL_COLUMN, _SQL_INDEX, _SQL_TABLE,
+    _source_link, _sql_shape, _SQL_ALTER, _SQL_COLLATE, _SQL_COLUMN, _SQL_CONSTRAINT, _SQL_FK,
+    _SQL_INDEX, _SQL_TABLE, _undrawn,
     _unchanged_body, _why_not_drawn, trace_legend
 )
 from hrbuild.shared.c4 import C4_DIR, C4_MIN_SCALE, C4_SCALE, C4_VIEWBOX, render_c4, _c4_badge, _c4_body, \
@@ -173,7 +190,7 @@ from hrbuild.shared.masthead import (
 from hrbuild.shared.adopt import (
     DIAGRAM_CARD, DIAGRAM_KINDS, EXPLAIN, PETCLINIC, PIECES, PLACES, ROBOT, _CAPTION, _TAG,
     _close, _last_caption, adopt_html, adopt_prompt, explain_button, explain_data, explain_key,
-    place_prompts
+    place_prompts, IMPACT_LEGEND
 )
 from hrbuild.shared.footer import (
     DEMO_DOCKER_URL, DEMO_PAGES_URL, DEMO_ZIP_URL, FOOTER_BOILERPLATE, HOME_URL, INVITATION,
@@ -196,7 +213,7 @@ from hrbuild.shared.layout import (
 from hrbuild.tabs.review import (
     AFTERMATH_FILES, aftermath_html, aftermath_reads_takeover, AFTERMATH_JSON, commits_after_review, CONFIDENCE_TIP,
     opening_lede, PASS_DOCS,
-    PILE_BLOCKS, pile_numbers, is_refuted, refuted_number, PILELEDE_SPY_JS, points_empty_html, POINTS_MISSING_BAND, points_note_band,
+    PILE_BLOCKS, pile_numbers, UNSURE_BELOW, is_unsure, unsure_number, is_refuted, refuted_number, PILELEDE_SPY_JS, points_empty_html, POINTS_MISSING_BAND, points_note_band,
     POINTS_PILES, render_assumptions, render_autofixes, render_findings, render_pile_block,
     review_tab_badge, ASSUMPTION_BADGE, _decided_by, own_review_tab, pile_intro, PILE_TITLES,
     REVIEW_TAB_TIP,
@@ -747,7 +764,8 @@ def _main(argv=None) -> int:
                 # refuted, 6 fixed` — was the chip that wrapped the scope bar to a second
                 # row. The counts stay; the agent names moved to the hover's first sentence
                 # (`review_chip_key`), still off the same `pile_numbers`.
-                "face": review_chip_face(open_n, fixed, assumed),
+                # `unsure`, by the lede's own rule (`unsure_number`), not every assumption.
+                "face": review_chip_face(open_n, fixed, unsure_number(spec)),
                 # The total, which the face no longer carries, split by the pass that
                 # raised each item. `by /code-review and /simplify` named the two passes
                 # and left the reader to guess the split — which is the only thing the
@@ -765,7 +783,7 @@ def _main(argv=None) -> int:
                 # and "N assumptions the coding agent recorded while implementing" went:
                 # the face counts them, the Review tab lists them, and neither changes
                 # what a reviewer does next. Who reviewed is the one fact left.
-                "tip": review_chip_key(open_n, fixed, assumed)
+                "tip": review_chip_key(open_n, fixed, unsure_number(spec))
                 + (f" {reviewed}." if reviewed else ""),
             }
             c = {**computed, **{k: v for k, v in c.items() if k != "auto"}}
@@ -1370,11 +1388,18 @@ def _main(argv=None) -> int:
         # `Serve` is the thing to do about it, and it is the one that explains why.
         # VSC first, hidden: only the served page can ask the editor bridges whether a
         # window is on the reviewed commit, so editor.js raises it there and colours it.
+        # The repository and branch this page reviews, for the published copy's Serve tip.
+        pr = spec.get("pr") or {}
+        pr_repo = pr.get("repo") or github_blob_base(root) or ""
+        pr_branch = pr.get("branch") or subprocess.run(
+            ["git", "-C", str(root), "branch", "--show-current"],
+            capture_output=True, text=True).stdout.strip()
         mode_html = (
             '<button type="button" class="chip chip-vsc" id="hr-vsc" hidden>VSC</button>'
             '<span class="chip chip-mode" id="hr-mode">Static</span>'
             '<button type="button" class="chip chip-serve copycmd" id="hr-serve" '
             f'data-copy="{html.escape(serve_cmd, quote=True)}" '
+            f'data-tip-online="{html.escape(serve_online_tip(pr_repo, pr_branch), quote=True)}" '
             # Victor's words, verbatim: what the click does, then why anyone wants it.
             'data-tip="Copy terminal command to start this webpage via a backend so you '
             'click buttons for actions, not copy terminal commands.">'
@@ -1470,7 +1495,7 @@ def _main(argv=None) -> int:
     fixtures_html = render_fixture_registry(root)
     fixtures_html = fixtures_html + "\n" + FIXTURES_JS if fixtures_html else ""
     doc = f"""<!doctype html>
-<html lang="en"{commit_stamp(root)}><head><meta charset="utf-8">
+<html lang="en"{commit_stamp(root, out_dir)}><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(spec.get('title', 'Review guide'))}</title>
 <link rel="icon" type="image/svg+xml" href="{FAVICON}">

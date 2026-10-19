@@ -170,6 +170,11 @@
   // something answers.
   var resets = bar.querySelector('.appenv-fixtures') || document.querySelector('.appenv-fixtures');
   var SEED_OFF = 'Start the app first';
+  // Seed resets a database on this machine and \u25b8 drives a browser on it: online there
+  // is neither, so both are `data-local` — greyed by server.js, pointing at Serve.
+  [].forEach.call(document.querySelectorAll('.appenv-reset, .cue-drive'), function (el) {
+    el.setAttribute('data-local', '');
+  });
   // One command at a time. `docker compose up` is minutes, the row stays readable
   // throughout, and a second press in the middle of it is a reader who could not tell the
   // first one had started — a Stop sent into a half-built stack is the worst of them.

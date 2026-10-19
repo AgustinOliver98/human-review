@@ -217,7 +217,7 @@ def test_a_drawio_swap_slides_shared_boxes_matches_a_renamed_one_by_label_and_se
     with sync.sync_playwright() as p:
         browser, page, errors = _open_drawio(p, tmp_path)
         try:
-            page.click('.dgmbar button[data-go="newold"]')        # New -> Old
+            page.click('.dgmbar button[data-go="newold"] u[data-view="old"]')   # New -> Old
             page.wait_for_timeout(40)
             mid = page.evaluate("""() => ({
               state: document.querySelector('.dgmviews').dataset.state,
@@ -230,7 +230,7 @@ def test_a_drawio_swap_slides_shared_boxes_matches_a_renamed_one_by_label_and_se
                        .filter(g => g.style.visibility === 'visible').map(g => g.dataset.cellId) })""")
             page.wait_for_timeout(1900)
             morphed, left = page.evaluate(CELLS), page.evaluate(DRAWIO_LEFTOVERS)
-            page.click('.dgmbar button[data-go="newold"]')        # Old -> New: the edge waits
+            page.click('.dgmbar button[data-go="newold"] u[data-view="new"]')   # Old -> New: the edge waits
             page.wait_for_timeout(40)
             back = page.evaluate("""() => ({
               arriving: [...document.querySelectorAll('.dgm-m-new')].map(g => g.dataset.cellId),
@@ -250,7 +250,7 @@ def test_a_drawio_swap_slides_shared_boxes_matches_a_renamed_one_by_label_and_se
     with sync.sync_playwright() as p:
         browser, page, _ = _open_drawio(p, tmp_path, plain=True)
         try:
-            page.click('.dgmbar button[data-go="newold"]')
+            page.click('.dgmbar button[data-go="newold"] u[data-view="old"]')
             plain = page.evaluate(CELLS)
         finally:
             browser.close()
@@ -277,7 +277,7 @@ def test_reduced_motion_on_a_drawio_swap_glows_but_does_not_slide(tmp_path):
     with sync.sync_playwright() as p:
         browser, page, errors = _open_drawio(p, tmp_path, reduced_motion="reduce")
         try:
-            page.click('.dgmbar button[data-go="newold"]')
+            page.click('.dgmbar button[data-go="newold"] u[data-view="old"]')
             page.wait_for_timeout(30)
             moving = page.evaluate("() => [...document.querySelectorAll('g[data-cell-id]')].filter(g => g.style.transform).length")
             glowing = page.evaluate("() => [...document.querySelectorAll('.dgm-m-glow')].map(g => g.dataset.cellId)")

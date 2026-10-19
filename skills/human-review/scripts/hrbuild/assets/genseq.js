@@ -338,7 +338,10 @@
   // hidden pane is zero wide and is placed on the next fold or pane switch.
   var IDE_GLYPH = /\s*↗\s*$/;
   var SVG_NS = 'http://www.w3.org/2000/svg';
-  var tpl = document.getElementById('seq-ide-marks');
+  // The one template on the page (sequence.py emits it once), not a diagram's own content —
+  // read by tag and id together so no per-diagram handle ever resolves through an id
+  // lookup, which finds only the first of three duplicated panes.
+  var tpl = document.querySelector('template[id="seq-ide-marks"]');
   var logos = tpl && tpl.content ? tpl.content.querySelectorAll('svg') : [];
   var unplaced = [];
 

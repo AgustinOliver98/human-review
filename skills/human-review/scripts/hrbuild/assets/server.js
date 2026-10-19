@@ -23,15 +23,33 @@
 window.HR = (function () {
   var caps = null, settled = false, waiting = [];
 
-  // `file:` and nothing else. The *general* protocol check is the bug this whole probe
-  // replaced — the demo on GitHub Pages is https, so `location.protocol === 'http:'` said
+  // Three copies of this page, not two: off disk (`file:`), served by `serve-review.py`,
+  // and **online** — GitHub Pages, or any server that is not ours. Online nothing on this
+  // Mac can be reached: no review server to run a command, no editor to open a file in,
+  // and a command copied from here names folders on the machine that built the page. Such
+  // a control stays on screen, greyed, and says how to get the copy where it works.
+  //
+  // Decided here, before anything paints, and in the degraded direction like everything
+  // else in this file: every page that is not `file:` starts `hr-online`, and the class
+  // comes off when the probe answers. The probe itself is asked only of a loopback host,
+  // which is the only place `serve-review.py` ever listens: on github.io it was one red
+  // 404 line in the console of every reader, for an answer known in advance.
+  var ROOT = document.documentElement;
+  var FILE = location.protocol === 'file:';
+  var LOOPBACK = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if (!FILE) ROOT.classList.add('hr-online');
+
+  // Skipped on `file:` and off loopback — a host, never a protocol. The *general* protocol
+  // check is the bug this whole probe replaced — the demo on GitHub Pages is https, so `location.protocol === 'http:'` said
   // "not served" about a page that was, and `=== 'https:'` would say "served" about one
   // that is not. `file:` is different in kind: a page read off disk cannot have been
   // served by us under any circumstances, and fetching a relative URL from it is not a
   // failed probe, it is a request the browser refuses and logs as an error in the console
   // of every reader who opens the guide off disk. Skipping it is the difference between a
-  // clean console and one red line that means nothing.
-  var ready = (location.protocol === 'file:' ? Promise.resolve(null)
+  // clean console and one red line that means nothing. Off loopback is the same in kind:
+  // `serve-review.py` binds 127.0.0.1 and nothing else, so on github.io the answer is
+  // known before the question and asking it was a 404 in every reader's console.
+  var ready = (FILE || !LOOPBACK ? Promise.resolve(null)
     : fetch('/__human_review__', {cache: 'no-store'})
     .then(function (r) { return r.ok ? r.json() : null; })
     // `humanReview` present, or this is somebody else's JSON on somebody else's port.
@@ -42,6 +60,7 @@ window.HR = (function () {
     .catch(function () { return null; }))
     .then(function (j) {
       caps = j; settled = true;
+      if (j) ROOT.classList.remove('hr-online');
       waiting.splice(0).forEach(function (fn) { try { fn(j); } catch (e) {} });
       return j;
     });
@@ -415,11 +434,90 @@ window.HR = (function () {
     });
   }
 
+  // ---- Online: what cannot work here is greyed, and says so ----------------------------
+  //
+  // One mechanism for every such control: the attribute `data-local` (its value, when
+  // given, replaces the hint), plus the two kinds of link that name this Mac by their
+  // scheme. Online they are greyed by core.css, inert to a click, which explains instead,
+  // and their tooltip is the hint (tip.js asks `HR.localOnly`). Adding a control to the set
+  // is adding the attribute where it is drawn. Served and off disk nothing changes: the
+  // class is not on <html> there.
+  var LOCAL = '[data-local], a[href^="drawio:"], a[href^="vscode:"]';
+  var LOCAL_HINT = 'Works on a local copy — see Serve';
+  function localOnly(el) {
+    if (!ROOT.classList.contains('hr-online') || !el || !el.closest) return null;
+    return el.closest(LOCAL);
+  }
+  function localHint(el) { return (el && el.getAttribute('data-local')) || LOCAL_HINT; }
+
+  // Capture, on the document: the first listener to see the click, so no script's own
+  // handler — copy, run, open in the editor — ever sees it.
+  document.addEventListener('click', function (ev) {
+    var el = localOnly(ev.target);
+    if (!el) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    if (window.HR.flash) window.HR.flash(localHint(el));
+  }, true);
+
+  // A source reference is the one local-only control with a twin online: the same file on
+  // GitHub, at the commit this page quotes (`data-hr-blob`, stamped by the build). Only a
+  // file inside the checkout and outside the review's own folder, which is not committed;
+  // anything else keeps its `vscode:` href and is greyed with the rest.
+  var XLINK = 'http://www.w3.org/1999/xlink';
+  function githubLinks(root) {
+    var st = ROOT.dataset, blob = st.hrBlob, home = (st.hrRoot || '').replace(/\/+$/, '');
+    var own = st.hrDir ? st.hrDir + '/' : null;
+    [].forEach.call(root.querySelectorAll('a[href^="vscode:"]'), function (a) {
+      var m = /^vscode:\/\/file\/*(\/[^:]*?)(?::(\d+))?(?::\d+)?$/
+        .exec(decodeURIComponent(a.getAttribute('href')));
+      var rel = m && home && m[1].indexOf(home + '/') === 0 ? m[1].slice(home.length + 1) : '';
+      // "in VS Code" on its face: a link about the editor, not about the file — its "on
+      // GitHub" twin is already beside it.
+      if (!blob || !rel || rel.indexOf('.human-review/') === 0 || (own && rel.indexOf(own) === 0)
+          || a.querySelector('.ide-word')) return;
+      var line = m[2] || '1';
+      var end = window.HR.endOf ? window.HR.endOf(a, line) : null;
+      var url = blob + '/' + rel.split('/').map(encodeURIComponent).join('/')
+        + (line !== '1' || end ? '#L' + line + (end ? '-L' + end : '') : '');
+      a.setAttribute('href', url);
+      if (a.hasAttributeNS(XLINK, 'href')) a.setAttributeNS(XLINK, 'xlink:href', url);
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener');
+      ['data-tip', 'aria-label'].forEach(function (k) {
+        var t = a.getAttribute(k);
+        if (!t) return;
+        a.setAttribute(k, /^Click to open in (the )?editor$/.test(t) ? 'Open on GitHub'
+          : t.replace(/ in (VS Code|the editor)\b/, ' on GitHub'));
+      });
+    });
+  }
+
+  onready(function (j) {
+    if (j || FILE) return;
+    function settle() {
+      githubLinks(document);
+      [].forEach.call(document.querySelectorAll(LOCAL), function (el) {
+        el.setAttribute('aria-disabled', 'true');
+      });
+      // The footer's "Browse it online", read on that very page: a link to itself.
+      [].forEach.call(document.querySelectorAll('.takeaway-online a[href]'), function (a) {
+        var to = new URL(a.href, location.href);
+        if (to.host === location.host && to.pathname === location.pathname) {
+          a.closest('.takeaway-online').hidden = true;
+        }
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', settle);
+    else settle();
+  });
+
   // `follow`: the poller, for a page that loads while a run is already going -- it has
   // the run's id from `status()` and needs the same tail, at the same cadence, to
   // the same end.
   return {ready: ready, can: can, onready: onready, run: run, rerun: rerun, follow: poll,
           rerunAi: rerunAi, tail: tail, copy: copy, keepPlace: keepPlace,
           status: status, caps: function () { return caps; },
-          adoptStamp: adoptStamp, quiet: quiet};
+          adoptStamp: adoptStamp, quiet: quiet,
+          localOnly: localOnly, localHint: localHint};
 })();

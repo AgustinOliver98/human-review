@@ -85,7 +85,9 @@ ISSUES_URL = f"{HOME_URL}/issues/new/choose"
 TAKEAWAY = (
     '<span class="takeaway">'
     f'Built by <a href="{HOME_URL}" target="_blank" rel="noopener">{HOME_URL}</a>. '
-    f'Browse it <a href="{DEMO_PAGES_URL}" target="_blank" rel="noopener">online</a>. '
+    # Its own span: server.js hides the sentence on the page it links to.
+    f'<span class="takeaway-online">Browse it <a href="{DEMO_PAGES_URL}" target="_blank" '
+    'rel="noopener">online</a>. </span>'
     'Adopt what you like. Bug or idea → '
     f'<a href="{ISSUES_URL}" target="_blank" rel="noopener">Open an issue</a>.'
     '</span>'

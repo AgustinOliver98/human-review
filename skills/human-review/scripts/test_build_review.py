@@ -2060,11 +2060,12 @@ def test_the_ledger_is_one_line_of_counts_and_nothing_to_unfold():
     # Signs and counts only (Victor, 5 Oct 2026); the word each stands for is its hover.
     # Three slots in a `.tmoves` grid, so the chapters' counts stand under them in columns
     # (Victor, 14 Oct 2026); no dot between "stopped" and the counts, which sit apart.
+    # `+` last and a blank fourth, where a chapter puts its total behind its `+N` (19 Oct).
     assert ('>1 stopped running</span><span class="tmoves">'
-            '<span class="added" data-tip="1 new test">+1</span>'
             '<span class="removed" data-tip="2 tests gone: VisitTest.java: parked, obsolete">'
             '\u22122</span>'
-            f'<span class="changed" data-tip="1 test edited">{build.PENCIL}1</span></span></p>') in out
+            f'<span class="changed" data-tip="1 test edited">{build.PENCIL}1</span>'
+            '<span class="added" data-tip="1 new test">+1</span><span></span></span></p>') in out
     # The untouched rest is a hover on the counts, not a sentence under them.
     assert 'data-tip="1 more test in the files this change set touched' in out
     css = (HERE / "hrbuild" / "assets" / "css" / "tests.css").read_text(encoding="utf-8")
@@ -5074,11 +5075,13 @@ def test_the_scope_chip_says_the_same_thing_as_the_counts_line(tmp_path):
     declined` beside `6 open, 3 fixed` used to ask the reader which of them to
     believe; both now read `pile_numbers`, so a mismatch cannot recur."""
     src = (HERE / "build-review-html.py").read_text(encoding="utf-8")
-    assert '"face": review_chip_face(open_n, fixed, assumed)' in src
+    assert '"face": review_chip_face(open_n, fixed, unsure_number(spec))' in src
     assert "open_n, fixed, assumed = pile_numbers(spec)" in src
+    # `unsure` is the lede's "under 70% sure": 70% itself is green on its card, not unsure.
     spec = {"findings": [{"title": f"f{i}"} for i in range(6)],
             "autofixes": [{"title": f"a{i}"} for i in range(3)],
-            "assumptions": [{"title": f"s{i}"} for i in range(7)]}
+            "assumptions": [{"title": f"s{i}", "confidence": .6} for i in range(7)]
+            + [{"title": "sure", "confidence": .7}, {"title": "unmeasured"}]}
     # PR #49's own numbers, which the old width cut used to drop the third of. The
     # assumptions are not an extra on the review's sentence any more — they are a second
     # sentence, by the agent that wrote the code, and it is never traded away for room.
@@ -5086,7 +5089,7 @@ def test_the_scope_chip_says_the_same_thing_as_the_counts_line(tmp_path):
         ('\U0001f916Code: <b>7 unsure</b>; '
          '\U0001f916Review: <b>6 open</b>, <b>3 fixed</b>')
     small = {"findings": [{"title": "f"}], "autofixes": [{"title": "a"}],
-             "assumptions": [{"title": "s"}]}
+             "assumptions": [{"title": "s", "confidence": .4}]}
     assert build.scope_chip_face(small, "Opus 5") == \
         ('\U0001f916Code: <b>1 unsure</b>; '
          '\U0001f916Review: <b>1 open</b>, <b>1 fixed</b>')
@@ -5143,20 +5146,22 @@ def test_the_chip_carries_the_coders_assumptions_as_its_own_sentence(tmp_path):
         # masthead is built, and the chip has to count what survived, not what was
         # written. A number on the masthead that the tab cannot show is a hand-typed
         # number by another route.
-        assumptions=[_assumption(title=f"s{i}") for i in range(7)]
-        + [_assumption(title="floating", refs=[])]),
+        # Seven unsure and one sure: the chip counts the lede's "under 70% sure" only.
+        assumptions=[_assumption(title=f"s{i}", confidence=.6) for i in range(7)]
+        + [_assumption(title="sure", confidence=.75)]
+        + [_assumption(title="floating", refs=[], confidence=.5)]),
         env=_sessionless_env())
     # Eval run 10: one robot, the counts only; the two agents are named in the hover.
     assert ('\U0001f916 <b>7 unsure</b> / <img class="angry-bot" alt="" aria-hidden="true" '
             'src="data:image/png;base64,') in page and '<b>6 open</b> · <b>3 fixed</b>' in page, \
         "every count bold with its noun, the coder's first"
-    assert "Coding agent: 7 unsure. Review: 6 open · 3 fixed." in page, \
+    assert "Coding agent: 7 assumptions under 70% sure. Review: 6 open · 3 fixed." in page, \
         "the hover's first sentence spells out what the face abbreviates"
     assert "recorded while implementing" not in page, \
         "copy pass: the face counts them and the Review tab lists them"
     # Singular, so the chip reads as a sentence rather than as a field with a value in it.
     assert build.scope_chip_face({"findings": [], "autofixes": [],
-                                  "assumptions": [{"title": "s"}]}) == \
+                                  "assumptions": [{"title": "s", "confidence": .5}]}) == \
         ('\U0001f916Code: <b>1 unsure</b>; '
          '\U0001f916Review: <b>0 open</b>, <b>0 fixed</b>')
     # And gone entirely at zero — no `; 🤖coder: 0 assumptions`.
@@ -6128,7 +6133,7 @@ def test_the_review_chip_face_is_counts_only_so_the_scope_bar_keeps_one_row():
     assert "unsure" not in face and face.endswith('<b>1 open</b> · <b>0 fixed</b>'), \
         "no assumptions: that count is absent, not zeroed"
     assert build.review_chip_key(10, 6, 6) == \
-        "Coding agent: 6 unsure. Review: 10 open · 6 fixed."
+        "Coding agent: 6 assumptions under 70% sure. Review: 10 open · 6 fixed."
 
 
 def test_without_a_pull_request_the_page_says_so_on_hover_only(tmp_path):

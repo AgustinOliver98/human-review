@@ -206,7 +206,10 @@ def test_the_header_names_a_view_and_its_archunit_test_and_opens_the_dsl_at_it(t
     head = out.split('<div class="head">')[1].split("</div>")[0]
     assert "<b>C3-Repository</b>" in head and ">Structurizr view</span>" in head
     assert "nearest neighbours</span>" not in head, "the description is a tooltip now"
-    assert "ArchUnit-checked by <a " in head and ">C3ArchTest</a>" in head
+    # The credential badge after the status: the test is where a click goes, its sentence
+    # the hover.
+    assert '>ArchUnit-tested vs code</a>' in head and 'C3ArchTest.java:1:1"' in head
+    assert head.index("unchanged</span>") < head.index('class="dgm-prov"')
     assert f'w.dsl:6:1"' in head, "the file link opens the DSL at the view's line"
     assert ">w.dsl</a>" in head and ":6" not in re.sub(r'"[^"]*"', '""', head), \
         "the line is in the link, never on the page"
@@ -221,4 +224,4 @@ def test_a_hand_maintained_note_stays_under_the_card(tmp_path):
     label, rest = _checked_label(sv.tested_note("Component", [
         {"path": "T.java", "levels": ["Component"], "arrows": False}]) + " Not compared.",
         tmp_path)
-    assert "Checked by T" in label and rest == "Not compared."
+    assert ">Tested vs code</span>" in label and rest == "Not compared."

@@ -239,7 +239,7 @@ def diff_uri_handler() -> str | None:
     return None
 
 
-def commit_stamp(root: Path) -> str:
+def commit_stamp(root: Path, out_dir: Path | None = None) -> str:
     """The attributes `<html>` carries so a click can ask for the version of a file this
     page quotes: the checkout it was built in, its HEAD, its branch, and the extension that
     can check a window against them (the same one, and the same override, as the diff).
@@ -257,6 +257,23 @@ def commit_stamp(root: Path) -> str:
     attrs = {"data-hr-root": str(root), "data-hr-head": head,
              "data-hr-branch": git("branch", "--show-current"),
              "data-hr-open-uri": diff_uri_handler() or ""}
+    # What the copy published online needs instead of an editor: every `vscode://file/…`
+    # reference becomes the same file on GitHub (server.js). The commit when a remote
+    # branch holds it — a URL that does not move — else the branch, as `github_file_url`
+    # in codeowners-check.py picks; and the review's own folder, which is not committed,
+    # so a reference into it is greyed rather than sent to a 404.
+    base = github_blob_base(root)
+    if base:
+        ref = head if git("branch", "-r", "--contains", head) else (
+            git("rev-parse", "--abbrev-ref", "HEAD").replace("HEAD", "") or head)
+        attrs["data-hr-blob"] = f"{base}/blob/{ref}"
+    if out_dir is not None:
+        try:
+            rel = Path(out_dir).resolve().relative_to(Path(root).resolve()).as_posix()
+        except ValueError:
+            rel = ""
+        if rel and rel != ".":
+            attrs["data-hr-dir"] = rel
     return "".join(f' {k}="{html.escape(v)}"' for k, v in attrs.items() if v)
 
 

@@ -409,8 +409,11 @@ def drawio_open_html(app_url: str, web_url: str = "") -> str:
     if app_url:
         out.append(btn(app_url, "Edit on desktop", "Open in the draw.io desktop app"))
     if web_url:
+        # `data-local`: online it would open a copy whose saves reach nothing a reader can
+        # use (Victor, 19 Oct 2026: "edit on desktop / web / revert … does not make sense
+        # in the online demo"), so it greys with the other two.
         out.append(btn(web_url, "Edit on web", "Open in draw.io on the web",
-                       ' target="_blank" rel="noopener"'))
+                       ' target="_blank" rel="noopener" data-local'))
     return "".join(out)
 
 
@@ -459,6 +462,27 @@ def reveal_html(reveal: dict | None, name: str, capital: bool = False) -> str:
 #: The copy glyph's hover. Says what the click does and then the line it will put on the
 #: clipboard, which is the only place a command appears on this page in full.
 COPY_TIP = "Copy command to paste in terminal"
+
+#: What a control that only works on a local copy says online (GitHub Pages, any server
+#: that is not ours): server.js greys it and tip.js shows this. The same words as there.
+LOCAL_HINT = "Works on a local copy \u2014 see Serve"
+
+#: Where the skill comes from, for a reader of the published copy who wants it working.
+SKILL_REPO = "victorrentea/human-review"
+
+
+def serve_online_tip(repo_url: str, branch: str) -> str:
+    """The Serve chip's tip online: the fewest steps to this page with its buttons working.
+
+    `.human-review/` is not committed, so a clone of the project alone has no page: the
+    reader generates it, then serves it. The project and branch are the page's own."""
+    m = re.match(r"https?://github\.com/([^/]+/[^/#?]+?)(?:\.git)?/?$", repo_url or "")
+    proj = m[1] if m else ""
+    name = proj.split("/")[-1] if proj else "the project"
+    clone = (f"clone {SKILL_REPO} and {proj}" + (f" (branch {branch})" if branch else "")
+             if proj else f"clone {SKILL_REPO} and the project")
+    return (f"To see it work: {clone}, run /human-review in {name}, "
+            "open the page it writes, click Serve.")
 
 
 def command_html(cmd: str, action_id: str | None = None, *, tip: str = "",
@@ -556,9 +580,11 @@ def command_html(cmd: str, action_id: str | None = None, *, tip: str = "",
     # stands for and compare it with the register the server runs out of, which is the only
     # way the two surfaces can be held equal after the fact rather than by inspection.
     out = [f'<span class="cmd">'
+           # `data-local`: the line names this checkout's folders, so online (server.js)
+           # the button is greyed and points at Serve instead of copying it.
            f'<button type="button" class="copycmd cmd-copy{wordy}" data-copy="{quoted}" '
            f'data-cmd="{quoted}" '
-           f'data-tip="{copy_tip}" aria-label="{html.escape(copy_aria, quote=True)}">'
+           f'data-tip="{copy_tip}" data-local aria-label="{html.escape(copy_aria, quote=True)}">'
            f'{face(CMD_COPY)}</button>']
     if action_id:
         # `runhere` because the page's existing handler runs a `runhere` with a

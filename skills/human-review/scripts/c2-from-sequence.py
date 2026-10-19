@@ -1152,10 +1152,12 @@ def main(argv=None) -> int:
         coverage_note(rels, old_rels) if old.edges else "") if x)
     manifest.write_text(
         "name\tsource\tkind\tstatus\tdiff_puml\tsvg\tfocus\tnew_svg\told_svg\t"
-        "old_details\tnew_details\tnote\n"
+        "old_details\tnew_details\tnote\tgenerated\n"
+        # `generated`: what this picture is drawn from, for the card's badge
+        # ("Generated from traces") — the gallery cannot tell a projection from a drawing.
         + "\t".join([name, src_rel, "structural", status,
                      f"{name}.diff.puml", diff_svg, "", new_svg, old_svg,
-                     old_json, new_json, note])
+                     old_json, new_json, note, "traces"])
         + "\n", encoding="utf-8")
 
     print(f"[c2] {len(new.nodes)} container(s), {len(new.edges)} call(s), projected from "

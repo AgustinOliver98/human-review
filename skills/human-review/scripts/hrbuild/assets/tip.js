@@ -95,12 +95,13 @@
     bubble.style.top = top + 'px';
   }
 
-  function show(el) {
+  function show(el, said) {
     // `data-tip-html` is for a tip that has to SHOW a component rather than name it -- a
     // coverage badge, say, where "UI x2" in prose makes the reader translate back to the
     // badge they are looking at. The markup is the page's own; nothing user-supplied
     // reaches here. Plain `data-tip` stays the default and stays escaped.
-    var html = el.getAttribute('data-tip-html'), text = el.getAttribute('data-tip');
+    var html = said ? null : el.getAttribute('data-tip-html');
+    var text = said || el.getAttribute('data-tip');
     if (!html && !text) return;              // data-tip="" shows nothing, by design
     // "Open in VS Code" says IntelliJ when that is the IDE the reader picked (editor.js):
     // reworded here, as it is shown, so a tip any script sets at any time follows the pick.
@@ -125,10 +126,13 @@
   }
 
   function trigger(ev) {
-    var el = ev.target.closest && ev.target.closest('[data-tip],[data-tip-html]');
+    // Online, a control that only works on a local copy says that, whatever its own tip
+    // says about what it would do (server.js, `data-local`).
+    var off = window.HR && window.HR.localOnly && window.HR.localOnly(ev.target);
+    var el = off || (ev.target.closest && ev.target.closest('[data-tip],[data-tip-html]'));
     if (!el || el === current) return;
     hide();
-    show(el);
+    show(el, off ? window.HR.localHint(off) : null);
   }
 
   // ---- `data-tip-pop`: a tip you can walk into ------------------------------------------

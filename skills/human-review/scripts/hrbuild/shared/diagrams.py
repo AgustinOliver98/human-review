@@ -12,7 +12,8 @@ from pathlib import Path
 from .actions import declare_action
 from .commands import RERUN_MARK_SCRIPT, TAB_RERUN_TIP, rerun_face, rerun_html
 from .folders import link_folders
-from .genseq import genseq_details_at_base, genseq_details_at_render, test_of_genseq
+from .genseq import (genseq_details_at_base, genseq_details_at_render, genseq_file,
+                     test_of_genseq)
 from .svg import inline_svg
 from .util import _pretty
 
@@ -72,7 +73,7 @@ def dgm_views_html(panes, initial: str = "diff") -> str:
         buttons.append(
             '<button type="button" class="dgm-newold" data-go="newold" '
             f'aria-pressed="{str(initial != "diff").lower()}" '
-            'data-tip="The diagram without diff. Click again to swap.">'
+            'data-tip="The diagram without the diff: click New or Old.">'
             + "/".join(f'<u data-view="{v}"{' class="on"' if v == initial else ""}>'
                        f'{VIEW_WORDS[v]}</u>' for v in pair)
             + "</button>")
@@ -244,7 +245,7 @@ def _drawio_unchanged_card(name: str, verdict: dict, assets: Path, root: Path) -
     # for the page to swap it in place; the ring after the title is the card's own.
     return (f'<div class="diagram" data-drawio="{html.escape(name, quote=True)}">'
             f'<div class="head"><b>{html.escape(title)}</b>'
-            + card_rerun_html(name, assets, root) + UNCHANGED_BADGE
+            + card_rerun_html(name, assets, root) + UNCHANGED_BADGE + diagram_provenance(rel, root)
             + (_source_link(rel, root) if rel else "") + '</div>'
             f'<div class="svgbox">{inline_svg(svg, root)}</div>'
             + trace_legend(verdict) + '</div>')
@@ -310,7 +311,7 @@ def drawio_widget_html(name: str, assets: Path, root: Path, rebuild: str = "") -
                              verdict.get("tested_against_path") or "")
     return (f'<div class="diagram dgm-toggles" data-drawio="{html.escape(name, quote=True)}">'
             f'<div class="head"><b>{html.escape(title)}</b>'
-            + card_rerun_html(name, assets, root) + acts
+            + card_rerun_html(name, assets, root) + diagram_provenance(rel, root) + acts
             + (_source_link(rel, root) if rel else "") + '</div>'
             + under
             + dgm_views_html(panes, initial="new" if red else "diff")
@@ -366,7 +367,10 @@ def _source_link(rel: str, root: Path, out_dir: Path | None = None,
     test's name again plus `.genseq.puml`, so its card says `.puml` and keeps the path on
     the hover (Victor, 4 Oct 2026). A traced diagram that is not committed lives in the
     review's own copy (`assets/genseq/`), and links there."""
-    target = root / rel
+    # A traced diagram opens the copy the picture was drawn from — this run's, when the
+    # traced run drew one, else the committed file — the rule the Sequence tab reads by
+    # (`genseq_file`). It opened the committed file for some rows and the run's for others.
+    target = genseq_file(rel, root) if rel.endswith(".genseq.puml") else root / rel
     if not target.is_file() and out_dir is not None:
         target = Path(out_dir) / "assets" / "genseq" / rel
     if target.is_file():
@@ -378,6 +382,115 @@ def _source_link(rel: str, root: Path, out_dir: Path | None = None,
     if face:
         return f'<span class="dgm-src" data-tip="{html.escape(rel, quote=True)}">{html.escape(face)}</span>'
     return f'<span>{html.escape(rel)}</span>'
+
+
+# ── Where a diagram's truth comes from: tested against something, or generated ─────────
+#
+# A card's credential, after its status badge: a ✓ on a green dot and the fewest words —
+# *ArchUnit-tested vs code* when a test reads the diagram file and checks it, *Generated
+# from …* when the file is a generator's output. Read off the repository, never assumed:
+# a diagram nothing tests and nothing generates gets no badge, which is a fact too.
+
+#: Source files that may test or generate a diagram. Docs, configs and the diagram formats
+#: themselves only mention it.
+_PROV_CODE = (".java", ".kt", ".kts", ".groovy", ".scala", ".py", ".sh", ".js", ".mjs",
+              ".ts", ".rb", ".go", ".gradle")
+
+#: What a generator (or a test) reads, by the first thing its source names that says so.
+#: Ordered: a script that dumps the schema out of a container also names Maven, and one
+#: that walks the classes also names `.puml`.
+_PROV_SOURCES = (
+    (re.compile(r"pom\.xml|<modules?>", re.I), "pom.xml"),
+    (re.compile(r"genseq|opentelemetry|\btraces?\b", re.I), "traces"),
+    (re.compile(r"openapi", re.I), "OpenAPI"),
+    (re.compile(r"information_schema|DatabaseMetaData|pg_dump|\bDB\.sql\b|schema\.sql",
+                re.I), "DB schema"),
+    (re.compile(r"com\.tngtech\.archunit|ClassFileImporter|src/main/java|getDeclaredFields"),
+     "code"),
+)
+_WRITES = re.compile(r"\bwrite\w*\s*\(|newBufferedWriter|FileWriter|FileOutputStream"
+                     r"|open\([^)]*['\"]w|>\s*\"?\$")
+_TEST_PATH = re.compile(r"(^|/)(src/test|tests?|__tests__|spec)/|(Test|Tests|Spec|_test|\.spec)"
+                        r"\.\w+$|(^|/)test_\w+\.py$")
+
+
+def _prov_source(text: str) -> str:
+    for rx, said in _PROV_SOURCES:
+        if rx.search(text):
+            return said
+    return ""
+
+
+def prov_badge(text: str, tip: str, href: str = "") -> str:
+    """The credential itself: a link to the test or generator when there is one."""
+    face = f'<i aria-hidden="true">\u2713</i>{html.escape(text)}'
+    tip = html.escape(tip, quote=True)
+    if href:
+        return (f'<a class="dgm-prov" href="{html.escape(href, quote=True)}" '
+                f'data-tip="{tip}">{face}</a>')
+    return f'<span class="dgm-prov" data-tip="{tip}">{face}</span>'
+
+
+def _mentions(root: Path, rel: str) -> list[tuple[str, str]]:
+    """`(path, text)` of every source file in the checkout that names the diagram file."""
+    name = Path(rel).name
+    try:
+        out = subprocess.run(["git", "-C", str(root), "grep", "-l", "-F", "-e", name],
+                             capture_output=True, text=True, timeout=15).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    found = []
+    for p in sorted(out.splitlines()):
+        if p == rel or not p.endswith(_PROV_CODE) or p.startswith(".human-review/"):
+            continue
+        try:
+            found.append((p, (Path(root) / p).read_text(encoding="utf-8", errors="replace")))
+        except OSError:
+            continue
+    return found
+
+
+def diagram_provenance(rel: str, root: Path, against: str = "") -> str:
+    """The badge for the diagram at `rel` (repository-relative), or "".
+
+    **Generated** when the file sits under a `generated/` folder: the generator is the
+    source file that names it and writes something, its own header saying it generates
+    preferred; what it reads is named (`_PROV_SOURCES`), else the generator is.
+    **Tested** otherwise, when a test names the file in a string literal — it opens it:
+    *ArchUnit-tested vs code* when that test is ArchUnit's, *Tested vs <what>* when not,
+    `against` (a producer's own word for it) first."""
+    if not rel:
+        return ""
+    name = Path(rel).name
+    mentions = _mentions(root, rel)
+    if "generated" in Path(rel).parts[:-1]:
+        writers = [(p, t) for p, t in mentions if _WRITES.search(t)]
+        # The one that writes it on the line that names it, then the one whose header says
+        # it generates, then a script before a test.
+        same_line = re.compile(r"^.*" + re.escape(name) + r".*$", re.M)
+        writers.sort(key=lambda pt: (
+            not any(_WRITES.search(m.group(0)) for m in same_line.finditer(pt[1])),
+            not re.search(r"generat", pt[1][:3000], re.I),
+            bool(_TEST_PATH.search(pt[0]))))
+        if not writers:
+            return ""
+        path, _ = writers[0]
+        source = next((s for s in (_prov_source(t) for _, t in writers) if s), "")
+        href = f"vscode://file/{(Path(root) / path).resolve()}:1:1"
+        return prov_badge(f"Generated from {source}" if source
+                          else f"Generated by {Path(path).name}",
+                          f"Written by {Path(path).name}", href)
+    literal = re.compile(r'"[^"\n]*' + re.escape(name) + '"')
+    tests = [(p, t) for p, t in mentions if _TEST_PATH.search(p) and literal.search(t)]
+    if not tests:
+        return ""
+    archunit = [(p, t) for p, t in tests if "com.tngtech.archunit" in t]
+    path, text = (archunit or tests)[0]
+    href = f"vscode://file/{(Path(root) / path).resolve()}:1:1"
+    if archunit:
+        return prov_badge("ArchUnit-tested vs code", f"Checked by {Path(path).name}", href)
+    what = against or _prov_source(text) or "code"
+    return prov_badge(f"Tested vs {what}", f"Checked by {Path(path).name}", href)
 
 
 def _provenance(rel: str, root: Path) -> str:
@@ -505,6 +618,16 @@ UNCHANGED = "unchanged"
 #: New-Old frame — two looks for one fact on the same tab.
 UNCHANGED_BADGE = f'<span class="badge sev-info">{UNCHANGED}</span>'
 
+#: …and its opposite, on a structural card the branch did change. It used to say nothing
+#: ("modified" is what a delta gallery always shows), and the C2 card was then the one card
+#: on the Structure tab with no state at all — just a red frame that read as an error.
+CHANGED_BADGE = ('<span class="badge sev-med" data-tip="This branch changed the diagram">'
+                 'changed</span>')
+
+#: The packages and modules cards shade a box green by the share of its code the branch
+#: changed, beside a badge saying `unchanged`: the badge is about the drawing, said so.
+UNCHANGED_CONTEXT_TIP = "Diagram unchanged; green = code changed inside"
+
 def _unchanged_body(row, assets: Path, root: Path, out_dir: Path) -> str:
     """An unchanged diagram is the whole current picture and nothing else.
 
@@ -554,12 +677,28 @@ _SQL_COLUMN = re.compile(r"^\s+(?P<c>\w+) (?P<d>.+?),?$")
 _SQL_INDEX = re.compile(r"^CREATE (?P<u>UNIQUE )?INDEX (?P<n>\w+) ON (?:ONLY )?(?:\w+\.)?"
                         r"(?P<t>\w+)(?: USING \w+)? (?P<cols>\(.*\));?$")
 _SQL_COLLATE = re.compile(r"\s+COLLATE\s+\S+")
+# pg_dump writes every constraint it did not inline as two lines:
+#   ALTER TABLE ONLY public.visits
+#       ADD CONSTRAINT visits_vet_id_fkey FOREIGN KEY (vet_id) REFERENCES public.vets(id) ON DELETE SET NULL;
+_SQL_ALTER = re.compile(r"^ALTER TABLE (?:ONLY )?(?:\w+\.)?(?P<t>\w+)$")
+_SQL_CONSTRAINT = re.compile(r"^\s+ADD CONSTRAINT (?P<n>\w+) (?P<body>.+?);?$")
+_SQL_FK = re.compile(r"^FOREIGN KEY (?P<cols>\(.*?\)) REFERENCES (?:\w+\.)?(?P<ref>\w+)"
+                     r"\(.*?\)(?P<rule>(?: ON (?:DELETE|UPDATE) [A-Z ]+?)*)\s*$")
 
 
 def _sql_shape(text: str):
-    """`{table.column: definition}` and `{index: "table (columns)"}` out of a pg_dump."""
-    cols, idx, table = {}, {}, None
+    """`{table.column: definition}`, `{index: "table (columns)"}` and
+    `{constraint: (table, definition)}` out of a pg_dump."""
+    cols, idx, cons, table, altered = {}, {}, {}, None, None
     for line in text.splitlines():
+        m = _SQL_ALTER.match(line)
+        if m:
+            altered = m["t"]
+            continue
+        m = _SQL_CONSTRAINT.match(line) if altered else None
+        if m:
+            cons[m["n"]] = (altered, m["body"])
+        altered = None
         m = _SQL_TABLE.match(line)
         if m:
             table = m["t"]
@@ -575,7 +714,22 @@ def _sql_shape(text: str):
         m = _SQL_INDEX.match(line)
         if m:
             idx[m["n"]] = f'{"unique " if m["u"] else ""}{m["t"]} {m["cols"]}'
-    return cols, idx
+    return cols, idx, cons
+
+
+def _undrawn(table: str, body: str) -> str | None:
+    """What the ERD cannot show of one constraint, in words — or None when it shows it all.
+
+    A primary key and a plain foreign key are drawn: `<<PK>>`, `<<FK>>` and the edge. What
+    a foreign key does when its target row goes (`ON DELETE SET NULL`) is not, nor is a
+    UNIQUE or CHECK constraint, and those decide what the data can become."""
+    fk = _SQL_FK.match(body)
+    if fk:
+        rule = " ".join(fk["rule"].split())
+        return f'{table} {fk["cols"]} → {fk["ref"]} {rule}' if rule else None
+    if body.startswith(("UNIQUE", "CHECK", "EXCLUDE")):
+        return f"{table} {body}"
+    return None
 
 
 def schema_unseen_note(rel: str, root: Path, merge_base: str | None,
@@ -597,8 +751,8 @@ def schema_unseen_note(rel: str, root: Path, merge_base: str | None,
                           capture_output=True, text=True)
     if base.returncode != 0:
         return ""
-    old_cols, old_idx = _sql_shape(base.stdout)
-    new_cols, new_idx = _sql_shape((root / sql).read_text(encoding="utf-8"))
+    old_cols, old_idx, old_cons = _sql_shape(base.stdout)
+    new_cols, new_idx, new_cons = _sql_shape((root / sql).read_text(encoding="utf-8"))
     said = []
     added = [new_idx[n] for n in sorted(new_idx) if n not in old_idx]
     gone = [old_idx[n] for n in sorted(old_idx) if n not in new_idx]
@@ -606,6 +760,16 @@ def schema_unseen_note(rel: str, root: Path, merge_base: str | None,
         said.append("indexes added on " + ", ".join(added))
     if gone:
         said.append("indexes dropped on " + ", ".join(gone))
+    # Constraints regardless of `columns`: a changed diagram draws a new FK's edge, never
+    # its delete rule — the half of the constraint that decides what a delete does.
+    cons_added = [w for n in sorted(new_cons) if old_cons.get(n) != new_cons[n]
+                  for w in [_undrawn(*new_cons[n])] if w]
+    cons_gone = [w for n in sorted(old_cons) if n not in new_cons
+                 for w in [_undrawn(*old_cons[n])] if w]
+    if cons_added:
+        said.append("constraints added on " + ", ".join(cons_added))
+    if cons_gone:
+        said.append("constraints dropped on " + ", ".join(cons_gone))
     if columns:
         moved = [c for c in new_cols if c in old_cols and new_cols[c] != old_cols[c]]
         collation = [c for c in moved
@@ -674,7 +838,9 @@ def render_diagrams(spec, root: Path, out_dir: Path, rows=None, bare: str = "") 
                "" if r["status"] == "added" and bare else
                '<span class="badge sev-high">new</span>' if r["status"] == "added" else
                f'<span class="badge sev-low">{html.escape(r["status"])}</span>'
-               if r["status"] != "modified" else "")
+               if r["status"] != "modified" else
+               "" if bare or r.get("kind") == "sequence" else CHANGED_BADGE)
+            + ("" if bare or r.get("kind") == "sequence" else _row_provenance(r, root))
             + _source_link(r["source"], root, out_dir,
                            ".puml" if r.get("kind") == "sequence" else None) + '</div>'
             + (f"<p>{note}</p>" if note else "")
@@ -694,6 +860,15 @@ def render_diagrams(spec, root: Path, out_dir: Path, rows=None, bare: str = "") 
     return "\n".join(parts)
 
 
+def _row_provenance(r: dict, root: Path) -> str:
+    """A manifest row's credential: the producer's own word when it drew the picture itself
+    (`generated`, the C2 projection's `traces`), else what the repository says."""
+    made = (r.get("generated") or "").strip()
+    if made:
+        return prov_badge(f"Generated from {made}", f"Drawn by this review from the {made}")
+    return diagram_provenance(r.get("source") or "", root)
+
+
 def render_puml(block, root: Path, out_dir: Path) -> str:
     """A diagram this branch did *not* change, drawn as context rather than as a delta.
 
@@ -707,7 +882,11 @@ def render_puml(block, root: Path, out_dir: Path) -> str:
     return (
         '<div class="diagram">'
         f'<div class="head"><b>{html.escape(block.get("name", src.stem))}</b>'
-        f'<span class="badge sev-info">{html.escape(block.get("status", "unchanged"))}</span>'
+        f'<span class="badge sev-info"'
+        + (f' data-tip="{UNCHANGED_CONTEXT_TIP}"' if block.get("status", UNCHANGED) == UNCHANGED
+           else "")
+        + f'>{html.escape(block.get("status", "unchanged"))}</span>'
+        + diagram_provenance(block["src"], root)
         + _source_link(block["src"], root) + '</div>'
         + (f'<p>{block["note"]}</p>' if block.get("note") else "")
         + _provenance(block["src"], root)

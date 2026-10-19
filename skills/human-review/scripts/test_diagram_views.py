@@ -1394,7 +1394,9 @@ def _unchanged_cards(tmp_path, monkeypatch):
 def test_an_unchanged_diagram_is_the_plain_card_whichever_renderer_draws_it(
         tmp_path, monkeypatch):
     for who, out in _unchanged_cards(tmp_path, monkeypatch).items():
-        assert '<span class="badge sev-info">unchanged</span>' in out, who
+        # The packages/modules card's badge carries a tip (green there is code, not drawing).
+        assert re.search(r'<span class="badge sev-info"(?: data-tip="[^"]*")?>unchanged</span>',
+                         out), who
         assert out.count('class="svgbox"') == 1, f"{who}: one picture, the whole one"
         assert "whole current picture" in out, who
         for control in ('class="dgmviews"', "dgm-diff", "dgm-newold", 'class="focus"',
@@ -1676,3 +1678,18 @@ def test_a_traced_diagram_with_undrawn_calls_is_not_the_unchanged_card(tmp_path)
         assert word in out
     assert "Load changes" not in out
     assert "drawio-redraw:conceptual" in build.ACTIONS
+
+
+def test_a_foreign_keys_delete_rule_the_erd_cannot_draw_is_named_under_it(tmp_path):
+    """PR #49 added `visits.vet_id` with `ON DELETE SET NULL`. The ERD draws the edge and
+    not what a deleted vet does to the visits, so that half is named under the card —
+    even on a diagram that changed (`columns=False`), since no delta draws a rule."""
+    base = _schema_repo(tmp_path)
+    fk = ("\nALTER TABLE ONLY public.pets\n"
+          "    ADD CONSTRAINT pets_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.owners(id);\n")
+    rule = ("\nALTER TABLE ONLY public.visits\n    ADD CONSTRAINT visits_vet_id_fkey FOREIGN KEY "
+            "(vet_id) REFERENCES public.vets(id) ON DELETE SET NULL;\n")
+    (tmp_path / "docs" / "DB.sql").write_text(BASE_SQL + fk + rule)
+    note = build.schema_unseen_note("docs/DB.puml", tmp_path, base, columns=False)
+    assert "visits (vet_id) → vets ON DELETE SET NULL" in note, note
+    assert "pets_owner" not in note and "pets (owner_id)" not in note   # drawn whole

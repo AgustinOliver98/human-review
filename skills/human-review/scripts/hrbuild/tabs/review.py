@@ -653,6 +653,25 @@ def pile_numbers(spec) -> tuple[int, int, int]:
             len(spec.get("assumptions", [])))
 
 
+#: Below this confidence an assumption is "unsure": red or amber on its card, counted in
+#: the lede's "N under 70% sure". At or above it, green. One line, read by both.
+UNSURE_BELOW = 0.7
+
+
+def is_unsure(a) -> bool:
+    """An assumption whose coder declared a confidence under `UNSURE_BELOW`. One with no
+    confidence is unmeasured, not unsure."""
+    c = a.get("confidence") if isinstance(a, dict) else None
+    return isinstance(c, (int, float)) and c < UNSURE_BELOW
+
+
+def unsure_number(spec) -> int:
+    """How many assumptions are `is_unsure`: the lede's "N under 70% sure" and the
+    masthead chip's `N unsure`, one count."""
+    pile = spec.get("assumptions")
+    return sum(1 for a in pile if is_unsure(a)) if isinstance(pile, list) else 0
+
+
 def is_refuted(item) -> bool:
     """`review-points.py:is_refuted` — the parser's own reading, so the page and the
     parser's warnings can never disagree about which item is a refuted claim."""
@@ -718,10 +737,11 @@ def scope_chip_face(spec, reviewer: str | None = None) -> str:
     With no assumptions the coder's clause is absent rather than zeroed. The reviewer's
     model is not on the face (`reviewer` is accepted and ignored here): the pill names
     the role, the hover names the model."""
-    open_n, fixed_n, assumed_n = pile_numbers(spec)
+    open_n, fixed_n, _ = pile_numbers(spec)
+    unsure_n = unsure_number(spec)
     face = f"\U0001f916Review: <b>{open_n} open</b>, <b>{fixed_n} fixed</b>"
-    if assumed_n:
-        face = f"\U0001f916Code: <b>{assumed_n} unsure</b>; " + face
+    if unsure_n:
+        face = f"\U0001f916Code: <b>{unsure_n} unsure</b>; " + face
     return face
 
 
@@ -1285,8 +1305,7 @@ def _pile_signals(spec) -> list[dict]:
     assumed = [a for a in spec.get("assumptions") or [] if isinstance(a, dict)] \
         if isinstance(spec.get("assumptions"), list) else []
     if assumed:
-        unsure = sum(1 for a in assumed
-                     if isinstance(a.get("confidence"), (int, float)) and a["confidence"] < .7)
+        unsure = unsure_number(spec)
         n = len(assumed)
         out.append(_signal(
             "assumptions",
@@ -1621,9 +1640,10 @@ def _md_inline(text: str, repo_url: str) -> str:
         f'<a href="{html.escape(m.group(1), quote=True)}" target="_blank" rel="noopener">'
         f'{html.escape(m.group(1))}</a>'), t)
     if repo_url:
-        t = re.sub(r"(?<![\w&/])#(\d+)\b", lambda m: stash(
+        # `commit #1` counts commits, it is not issue #1.
+        t = re.sub(r"(?<![\w&/])(?<!commit )(?<!commits )#(\d+)\b", lambda m: stash(
             f'<a href="{html.escape(repo_url)}/issues/{m.group(1)}" target="_blank" '
-            f'rel="noopener">#{m.group(1)}</a>'), t)
+            f'rel="noopener">#{m.group(1)}</a>'), t, flags=re.I)
     t = html.escape(t, quote=False)
     t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
     return re.sub(r"\x00(\d+)\x00", lambda m: keep[int(m.group(1))], t)
@@ -1942,8 +1962,9 @@ def _confidence_chip(f) -> str:
     declares none, because a scale a model was never asked to fill in is not the same fact
     as a model that filled it in at the middle. Coloured by band, in the page's own
     severity hues (Victor, 7 Oct 2026: "super important"): red under 50%, amber up to the
-    lede's own "under 70% sure" line, green from 70% — so the chips and the lede count
-    the same unsure items. Shown as a percentage (`0.45` → `45%`), the stored value stays
+    lede's own "under 70% sure" line, green from 70% — both off `is_unsure`, so the
+    chips, the lede and the masthead chip (`unsure_number`) count the same unsure
+    items. Shown as a percentage (`0.45` → `45%`), the stored value stays
     a rate."""
     c = f.get("confidence")
     if c is None:
@@ -1951,7 +1972,7 @@ def _confidence_chip(f) -> str:
     # A percentage, not a rate: `45%` is read at a glance, `0.45` is read as arithmetic.
     # The lede already says "3 under 70% sure"; the chips now speak the same unit.
     shown = f"{round(c * 100)}% confident"
-    band = "sev-high" if c < 0.5 else "sev-med" if c < 0.7 else "sev-info"
+    band = "sev-high" if c < 0.5 else "sev-med" if is_unsure(f) else "sev-info"
     cls = f"f-confidence {band}"
     # No tooltip (Victor, 7 Oct 2026): the number says it; the old range hint only added noise.
     return f'<span class="{cls}">{shown}</span>'

@@ -38,8 +38,14 @@
     if (button) {
       var views = button.closest('.dgmviews')
         || (button.closest('.diagram') || document).querySelector('.dgmviews');
+      // Three states, three targets: Diff, and each word of New/Old picks its own pane.
+      // The words used to swap whatever was on, so a click on the lit "Old" went to New.
+      var word = ev.target.closest('u[data-view]');
       if (button.getAttribute('data-go') === 'diff') show(views, 'diff');
-      else flip(views);
+      else if (word && views && views.querySelector(':scope > .dgmpane[data-view="'
+                                                  + word.getAttribute('data-view') + '"]')) {
+        show(views, word.getAttribute('data-view'));
+      } else flip(views);
       return;
     }
     // The header, but never a link or a button inside it: the source path opens an

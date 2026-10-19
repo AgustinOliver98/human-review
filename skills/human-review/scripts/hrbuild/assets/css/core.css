@@ -279,3 +279,12 @@ details.dsa-screen > summary .disclose { margin-right:.3rem; }
 .disclose { display:inline-block; flex:none; width:1.1rem; text-align:center; }
 details > summary .disclose::before { content:"\25B6\FE0E"; }
 details[open] > summary .disclose::before { content:"\25BC\FE0E"; }
+
+/* Online (server.js puts `hr-online` on <html>: not off disk, not served by us): a control
+   that only works on a local copy is greyed, and a click on it explains instead. A
+   picture's own links are only made inert: dimming them would dim the diagram. */
+html.hr-online :is([data-local], a[href^="drawio:"], a[href^="vscode:"]) {
+  opacity:.45; cursor:not-allowed; }
+html.hr-online svg :is([data-local], a[href^="drawio:"], a[href^="vscode:"]) { opacity:1; }
+/* The path of the page on the machine that built it, and its 📋: nothing to do online. */
+html.hr-online .diskline { display:none; }

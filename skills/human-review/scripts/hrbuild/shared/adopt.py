@@ -213,6 +213,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'The entities, generated from the Java classes, not drawn by AI.',
             'Green = added by this PR.',
             'Check each new link: wanted, and <code>1─*</code> the right way round?',
+            '<b>✓ Generated from …</b>: the source it is redrawn from; click for the generator.',
+            '<b>changed</b> / <b>unchanged</b>: whether this branch moved the drawing.',
         ],
         "ex": 'e.g. <code>Owner 1─* Pet 1─* Visit</code>',
     },
@@ -222,6 +224,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Green = added by this PR.',
             "Indexes and constraints it can't draw are listed under the title.",
             'Look for a new FK without an index, or NOT NULL on a table that has rows.',
+            '<b>✓ Generated from …</b> beside <b>changed</b>: its source; click for the generator.',
         ],
     },
     'diagram.drawio': {
@@ -229,6 +232,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'The same concepts, laid out by hand in draw.io, so they stay where you remember them.',
             'A unit test checks the boxes and lines against the code.',
             'A new line is a new dependency: is it wanted?',
+            '<b>✓ Tested vs …</b> after the title: what that test checks it against; click to open it.',
         ],
         "ex": 'e.g. a red line: the test wants it, so the author draws it.',
     },
@@ -236,6 +240,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             'What runs where, drawn by hand in draw.io.',
             'A test fails on any call the e2e tests made that the drawing lacks.',
+            '<b>✓ Tested vs traces</b> after the title names that test; click to open it.',
         ],
         "ex": 'e.g. red dashed: called in the tests, missing from the drawing.',
     },
@@ -247,6 +252,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'A new arrow is new coupling: ask why.',
             '<b>Green bar</b> in a box = its share of the lines this PR added here.',
             'Hover a box for its changed files; click one for its diff.',
+            '<b>✓ ArchUnit-tested vs code</b> after the title: click it to open that test.',
         ],
         "ex": 'e.g. <code>..domain</code> → <code>..rest</code>: not drawn, so a test fails.',
     },
@@ -266,6 +272,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'A new arrow or a cycle between modules: ask why.',
             '<b>Green bar</b> in a box = its share of the lines this PR added here.',
             'Hover a box for its changed files; click one for its diff.',
+            '<b>✓ Generated from …</b>: the source it is redrawn from; click for the generator.',
         ],
     },
     'diagram.c2': {
@@ -273,6 +280,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'C4 level 2: the apps and databases, and who calls whom.',
             'Drawn by a script from the e2e test traces, not by AI: every arrow really happened.',
             'A new arrow = a new runtime dependency.',
+            '<b>changed</b>: this branch moved its picture; <b>Diff</b> shows how.',
         ],
         "ex": 'e.g. Browser → Backend: <code>GET /api/owners</code>.',
     },
@@ -280,36 +288,40 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             "A C4 view, drawn from the repo's Structurizr <code>.dsl</code>.",
             'C1 = users and systems, C2 = apps and DBs, C3 = parts of one app.',
-            'The line under the title: tested against the code, or hand-kept and maybe stale.',
+            '<b>✓ ArchUnit-tested vs code</b>: a test checks it; else the line under it says hand-kept.',
         ],
     },
     'diagram': {
         "li": [
             'A PlantUML diagram kept in the repo.',
             'The badge says whether this PR changed it.',
+            '<b>✓</b> after it: a test checks it, or a script generates it; click to open that.',
         ],
     },
     'requirements': {
         "li": [
-            'Left: the ticket.',
-            'Right: every test that ran a line this PR changed.',
+            'Left: the ticket; right: every test that ran a line this PR changed (blue shield).',
             'AI matched them by meaning, so it can be wrong.',
             '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test, so ask for one.',
             'E2E and API tests weigh most: they prove the feature, not one method.',
-            '<b>+ − ✍️</b>: new, deleted, edited tests; <b>Show all tests</b> adds the rest.',
+            '<b>− ✍️ +</b> before a total: deleted, edited, new tests; <b>Show all tests</b> adds the rest.',
+            'Dot: the DB data a test starts on; grey = Default, hollow = uses none of its rows.',
         ],
     },
     'sequence': {
         "move": 'details.seqhow',
         "li": [
-            'One per e2e test that ran a changed line.',
+            'One per test with the tracing tag, or that this branch wrote or edited.',
             'HTTP calls, SQL with parameters, calls across services and modules.',
-            'Open one and spot the N+1.',
+            'Diff: green/red = a call this PR added/removed; its tx box and activation bar tinted.',
+            'Click <b>⊕</b> for the SQL or JSON; <b>values</b> fills in each <b>?</b>.',
+            'An IDE logo on a call opens that method in the IDE picked top right.',
+            'The dot after a test is the DB fixture it starts from: grey = Default.',
         ],
         "code": (
-            'GET /api/owners?page=0\n'
-            '  → SELECT … FROM owners LIMIT 10\n'
-            '  → SELECT … FROM pets WHERE owner_id=?   <span class="p">×10 ← N+1</span>'
+            'GET /api/owners\n'
+            '  → OwnerRepository.findByLastNameStartingWith\n'
+            '  → select pets, select visits   <span class="p">per owner ← N+1</span>'
         ),
     },
     'city': {
@@ -324,6 +336,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Every screen, main vs this branch on the same data: a pixel-level visual diff.',
             "A script flags controls that aren't from the app's own components.",
             'Open the changed screens: is each change wanted?',
+            '✅ judged fine · ⚠️ a gap · ⚪ changed, but no control to judge.',
         ],
         "ex": 'e.g. a home-made combo box, or an inline <code>style=</code>.',
     },
@@ -332,7 +345,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             'Cognitive complexity per endpoint: its whole call graph, walked and summed.',
             'Nesting is what costs: each level adds one.',
-            'Green = added by this PR.',
+            'Green = added by this PR; hover a number for what it counts.',
             'Watch the + per endpoint, not the total.',
         ],
         "code": (
@@ -362,11 +375,11 @@ EXPLAIN: dict[str, dict[str, object]] = {
     },
     'cost': {
         "li": [
-            'What this PR cost in tokens, per stage: coding, AI review, fixes, this report.',
+            'What this PR cost in tokens, per stage: implementation, review, auto-fixes, this guide.',
             '$ at API list price, not your subscription.',
             'Time = model thinking + tools (builds, tests).',
         ],
-        "ex": 'e.g. on one PR: coding $15 · review $5 · auto-fixes $9 · this report $0.30.',
+        "ex": 'e.g. on one PR: implementation $15 · review $5 · auto-fixes $9 · this guide $0.30.',
     },
 }
 

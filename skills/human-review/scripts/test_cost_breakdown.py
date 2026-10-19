@@ -134,8 +134,9 @@ def test_measured_zero_tabs_collapse_into_one_honest_row():
          _tab("api", "API"), _tab("owners", "CODEOWNERS")],
     )
     assert "3 tabs with no model spend" in html
-    for name in ("Data", "API", "CODEOWNERS"):
+    for name in ("Data", "API", "Codeowners"):
         assert name in html, f"the zero row must still name {name}"
+    assert "CODEOWNERS" not in html, "a tab is named as the strip names it"
     assert "$0.00" in html, "a measured zero prints as $0.00, never as <$0.01"
     # Counted inside the tab section alone: the groups above it have rows of their own,
     # and what this test is about is the folding of the zeros.
@@ -165,7 +166,7 @@ def test_unmeasured_tabs_never_render_as_a_measured_zero():
     )
     assert "1 tab not measured" in html
     assert "no step ledger" in html
-    assert "Logging" in html
+    assert "Logs" in html, "named as the strip names it"
     # The em-dash placeholder, not a number: nothing was counted, so nothing is claimed.
     assert "<td>—</td><td>—</td>" in html
 
@@ -629,9 +630,9 @@ def test_the_residual_renders_as_named_rows_when_the_report_names_them():
         ),
         [_tab("a", "A")],
     )
-    assert "assembling the guide itself" in html
-    assert "subagent work" in html
-    assert "orchestrating conversation" in html
+    assert "Guide text" in html
+    assert "Subagents" in html
+    assert "Orchestration" in html
     assert "not one tab&#x27;s" not in html and "not one tab's" not in html, (
         "the undifferentiated row must give way to the named ones, not sit beside them")
     assert "$6.00" in html and "$3.00" in html and "$1.00" in html
@@ -648,9 +649,9 @@ def test_a_part_with_no_turns_in_it_is_not_rendered_at_all():
         ),
         [_tab("a", "A")],
     )
-    assert "assembling the guide itself" in html
-    assert "subagent work" not in html
-    assert "orchestrating conversation" not in html
+    assert "Guide text" in html
+    assert "Subagents" not in html
+    assert "Orchestration" not in html
 
 
 def test_the_guide_row_comes_first_because_it_is_the_one_with_a_real_name():
@@ -662,7 +663,7 @@ def test_the_guide_row_comes_first_because_it_is_the_one_with_a_real_name():
         ),
         [_tab("a", "A")],
     )
-    assert html.index("assembling the guide itself") < html.index("orchestrating conversation")
+    assert html.index("Guide text") < html.index("Orchestration")
 
 
 def test_a_report_without_parts_still_renders_the_single_residual_row():

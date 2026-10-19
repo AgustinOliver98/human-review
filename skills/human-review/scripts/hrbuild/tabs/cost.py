@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ..shared import layout
 from ..shared.util import HERE
 
 def cost_session(out_dir: Path | None) -> str:
@@ -208,12 +209,12 @@ def cost_ledger_report(root: Path, tab_ids: list[str], base: str,
 # `tab_costs`; a part with no turns in it is not rendered at all.
 # Plain words: eval run 6's reader met "Step 9 writes every tab's prose" and "outside every
 # step's window" — the skill's own vocabulary, which nobody reading the page has learned.
+# A short name like the tab rows above them, and what it covers under it (Oct 2026: the
+# bare sentence sat in a column of tab names).
 RESIDUAL_ROWS = [
-    ("guide", "assembling the guide itself — writing every tab&rsquo;s text, in one pass "
-              "at the end"),
-    ("subagent", "subagent work done while no single tab was being produced"),
-    ("conversation", "the orchestrating conversation — reading results, deciding, "
-                     "recovering from failures"),
+    ("guide", "Guide text", "every tab&rsquo;s text, written in one pass at the end"),
+    ("subagent", "Subagents", "while no single tab was being produced"),
+    ("conversation", "Orchestration", "reading results, deciding, recovering from failures"),
 ]
 
 
@@ -832,8 +833,9 @@ def _cost_tab_rows(costs: dict, tabs: list[dict], one_col: bool = False) -> str:
     this" must never render identically to a measured zero.
     """
     rows = costs.get("tabs") or {}
-    entries = [(t.get("label") or t.get("id"), rows[t.get("id")])
-               for t in tabs if rows.get(t.get("id"))]
+    # The strip's own names (`City`, not `Code City`), read where the strip reads them.
+    entries = [(layout.SHORT_TAB_LABELS.get(t.get("id"), t.get("label") or t.get("id")),
+                rows[t.get("id")]) for t in tabs if rows.get(t.get("id"))]
     # `one_col`: the "This guide" fold — one cost column, tokens on its hover.
     dash = "<td>—</td>" if one_col else "<td>—</td><td>—</td>"
 
@@ -893,13 +895,13 @@ def _cost_tab_rows(costs: dict, tabs: list[dict], one_col: bool = False) -> str:
     resid = costs.get("residual") or {}
     if resid.get("measured"):
         parts = costs.get("residual_parts") or {}
-        shown = [(label, parts[key]) for key, label in RESIDUAL_ROWS
+        shown = [(label, what, parts[key]) for key, label, what in RESIDUAL_ROWS
                  if (parts.get(key) or {}).get("messages")]
         if shown:
             out += "".join(
-                f'<tr class="costquiet"><td>{label}</td>'
+                f'<tr class="costquiet"><td>{label}<span class="costsub">{what}</span></td>'
                 + nums(part.get("tokens") or 0, part.get("cost") or 0.0) + '</tr>'
-                for label, part in shown)
+                for label, what, part in shown)
         else:
             out += ("<tr class=\"costquiet\"><td>not one tab's</td>"
                     + nums(resid.get("tokens") or 0, resid.get("cost") or 0.0) + '</tr>')

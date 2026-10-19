@@ -24,7 +24,6 @@
   // the same thing it does on a machine with no server at all, and therefore already
   // tested.
   var SERVED = false;
-  window.HR.onready(function (caps) { SERVED = !!caps; paintIde(); });
 
   // One implementation, on HR, because a `file://` page needs the `execCommand` fallback
   // and two copies of that had already drifted apart once.
@@ -144,6 +143,13 @@
     }
     return String(text).replace(/VS Code/g, 'IntelliJ');
   };
+  // Registered only now, below every `var` that `paintIde` reads. Each asset is its own
+  // script element, so off disk (and online, where nothing is probed) the answer has settled
+  // before this file runs and `onready` calls back *synchronously*: registered at the top,
+  // it read `connected` while still undefined, threw, and took every click handler below
+  // with it — no copy button on a file:// page copied anything (19 Oct 2026).
+  window.HR.onready(function (caps) { SERVED = !!caps; paintIde(); });
+
   // Said when the server sent a click to the other IDE: the picked one has no window on it.
   function fellBack(said) {
     return said && said.fallback ? 'Opened in ' + IDE_NAME[said.ide] + ' \u2014 no '
@@ -255,6 +261,9 @@
   // is part of the action and not left to the reader: the alternative is a green tick
   // beside a picture that is still the old one, which is precisely the confusion the
   // "then reload this page" in the copy message exists to prevent.
+  // server.js reads `endOf` too, to give a range its `#L<a>-L<b>` on GitHub. Published
+  // here, past the helpers test_open_comment.py slices out and runs in node (no `window`).
+  window.HR.endOf = endOf;
   document.addEventListener('click', function (ev) {
     var cmd = ev.target.closest &&
       ev.target.closest('button.copycmd, button.runhere');
@@ -284,7 +293,7 @@
     // and wants a reload, but one that starts the server and opens the page from it.
     var serve = cmd.id === 'hr-serve';
     if (serve && location.protocol === 'file:') { serveHere(cmd); return; }
-    if (serve) { flash(SERVE_OFF); return; }
+    if (serve) { flash(cmd.getAttribute('data-tip-online') || SERVE_OFF); return; }
     copyCommand(cmd, serve, runhere);
   });
 
@@ -355,7 +364,9 @@
     if (location.protocol !== 'file:') {
       chip.classList.add('off');
       chip.setAttribute('aria-disabled', 'true');
-      chip.setAttribute('data-tip', SERVE_OFF);
+      // What a reader of the published copy does to see the buttons work, built from the
+      // repositories this page is about (`data-tip-online`).
+      chip.setAttribute('data-tip', chip.getAttribute('data-tip-online') || SERVE_OFF);
       return;
     }
     chip.classList.add('launches');

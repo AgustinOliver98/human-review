@@ -49,6 +49,8 @@
         tv.addEventListener('click', function (ev) { ev.stopPropagation(); });
       } else {
         tv.href = '#';
+        // The command names this Mac's trace file: online it is greyed (server.js).
+        tv.setAttribute('data-local', '');
         tv.setAttribute('aria-label', 'copy the command that opens the recording of this test');
         tv.setAttribute('data-tip', 'Recorded. Copy the command that opens the replay natively'
           + (reg.viewer ? ' \u2014 or serve this page (scripts/serve-review.py) to open it from here' : ''));
