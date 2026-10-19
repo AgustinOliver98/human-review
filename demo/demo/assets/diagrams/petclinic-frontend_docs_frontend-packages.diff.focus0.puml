@@ -1,0 +1,35 @@
+@startuml
+caption <color:#2E7D32>added</color> or <color:#C62828><s>removed</s></color> — the impacted elements only (3 of 12 shown)
+
+title Frontend Logical Architecture - Diff
+footer frontend-packages.puml — All folders and their imports are tested against the code by scripts/packages-arch.test.mjs
+skinparam shadowing false
+' the review page themes this colour for dark mode (--dgm-link)
+skinparam hyperlinkColor #1A4FA0
+skinparam componentStyle rectangle
+skinparam nodesep 20
+' the stereotype is the box's folder, relative to petclinic-frontend/, which the test and the
+' review page read; it is hidden so the folder is not printed under its name.
+' A file belongs to the box with the deepest folder containing it.
+' Only production .ts counts (*.spec.ts is skipped, like ArchUnit's DoNotIncludeTests).
+' testing/ keeps its box: its stubs are non-spec files, imported by specs alone.
+hide stereotype
+skinparam ranksep 30
+<style>
+component {
+  BackGroundColor #ECEFF1
+  LineColor #546E7A
+}
+arrow {
+  LineColor #78909C
+}
+</style>
+[vets] <<src/app/vets>> #back:F2CF8E
+[visits] <<src/app/visits>> #back:F2CF8E
+[design-system] <<src/app/design-system>> #back:F2CF8E
+
+[visits] -[#2E7D32,thickness=2]-> [vets]
+[vets] --> [design-system]
+[visits] -[#2E7D32,thickness=2]-> [design-system]
+
+@enduml

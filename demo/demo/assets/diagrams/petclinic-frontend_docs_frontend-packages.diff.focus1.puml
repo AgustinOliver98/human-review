@@ -1,0 +1,61 @@
+@startuml
+caption <color:#2E7D32>added</color> or <color:#C62828><s>removed</s></color> — <back:#F2CF8E><color:#000000>impacted</color></back> + <back:#F4DCB4><color:#000000>neighbours</color></back>, shaded by distance (9 of 12 shown)
+
+title Frontend Logical Architecture - Diff
+footer frontend-packages.puml — All folders and their imports are tested against the code by scripts/packages-arch.test.mjs
+skinparam shadowing false
+' the review page themes this colour for dark mode (--dgm-link)
+skinparam hyperlinkColor #1A4FA0
+skinparam componentStyle rectangle
+skinparam nodesep 20
+' the stereotype is the box's folder, relative to petclinic-frontend/, which the test and the
+' review page read; it is hidden so the folder is not printed under its name.
+' A file belongs to the box with the deepest folder containing it.
+' Only production .ts counts (*.spec.ts is skipped, like ArchUnit's DoNotIncludeTests).
+' testing/ keeps its box: its stubs are non-spec files, imported by specs alone.
+hide stereotype
+skinparam ranksep 30
+<style>
+component {
+  BackGroundColor #ECEFF1
+  LineColor #546E7A
+}
+arrow {
+  LineColor #78909C
+}
+</style>
+[app] <<src/app>> #back:F4DCB4
+[owners] <<src/app/owners>> #back:F4DCB4
+[vets] <<src/app/vets>> #back:F2CF8E
+[pets] <<src/app/pets>> #back:F4DCB4
+[visits] <<src/app/visits>> #back:F2CF8E
+[pettypes] <<src/app/pettypes>> #back:F4DCB4
+[specialties] <<src/app/specialties>> #back:F4DCB4
+[design-system] <<src/app/design-system>> #back:F2CF8E
+[generated] <<src/app/generated>> #back:F4DCB4
+
+[app] <--> [owners]
+[app] <--> [pets]
+[app] <--> [visits]
+[app] <--> [vets]
+[app] <--> [pettypes]
+[app] <--> [specialties]
+[owners] <--> [pets]
+[pets] <--> [visits]
+[visits] --> [owners]
+[pets] --> [pettypes]
+[visits] --> [pettypes]
+[visits] -[#2E7D32,thickness=2]-> [vets]
+[pettypes] --> [specialties]
+[vets] --> [specialties]
+[pets] --> [design-system]
+[vets] --> [design-system]
+[visits] -[#2E7D32,thickness=2]-> [design-system]
+[owners] --> [generated]
+[pets] --> [generated]
+[visits] --> [generated]
+[pettypes] --> [generated]
+[specialties] --> [generated]
+[vets] --> [generated]
+
+@enduml

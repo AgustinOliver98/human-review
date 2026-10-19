@@ -1734,61 +1734,61 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/mcp/CreateVisitShould.java": [
         {
-          "line": 61,
+          "line": 58,
           "name": "OWNER_ID",
           "type": "int",
           "text": "private static final int OWNER_ID = 7;"
         },
         {
-          "line": 62,
+          "line": 59,
           "name": "PET_ID",
           "type": "int",
           "text": "private static final int PET_ID = 13;"
         },
         {
-          "line": 64,
+          "line": 61,
           "name": "ownerRepository",
           "type": "OwnerRepository",
           "text": "@Mock\n    OwnerRepository ownerRepository;"
         },
         {
-          "line": 66,
+          "line": 63,
           "name": "petRepository",
           "type": "PetRepository",
           "text": "@Mock\n    PetRepository petRepository;"
         },
         {
-          "line": 68,
+          "line": 65,
           "name": "visitRepository",
           "type": "VisitRepository",
           "text": "@Mock\n    VisitRepository visitRepository;"
         },
         {
-          "line": 71,
+          "line": 68,
           "name": "petClinicMcp",
           "type": "PetClinicMcp",
           "text": "PetClinicMcp petClinicMcp;"
         },
         {
-          "line": 74,
+          "line": 71,
           "name": "rex",
           "type": "Pet",
           "text": "Pet rex = aRex();"
         },
         {
-          "line": 75,
+          "line": 72,
           "name": "nextWeek",
           "type": "LocalDate",
           "text": "LocalDate nextWeek = LocalDate.now().plusWeeks(1);"
         },
         {
-          "line": 76,
+          "line": 73,
           "name": "morning",
           "type": "LocalTime",
           "text": "LocalTime morning = LocalTime.of(10, 30);"
         },
         {
-          "line": 150,
+          "line": 147,
           "name": "NEW_VISIT_ID",
           "type": "int",
           "text": "static final int NEW_VISIT_ID = 42;"
@@ -2012,19 +2012,19 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/rest/AddVisitApiTest.java": [
         {
-          "line": 62,
+          "line": 59,
           "name": "VISIT_DATE",
           "type": "String",
           "text": "private static final String VISIT_DATE = \"2026-05-12\";"
         },
         {
-          "line": 64,
+          "line": 61,
           "name": "mockMvc",
           "type": "MockMvc",
           "text": "@Autowired\n    MockMvc mockMvc;"
         },
         {
-          "line": 67,
+          "line": 64,
           "name": "mapper",
           "type": "ObjectMapper",
           "text": "private final ObjectMapper mapper = new ObjectMapper();"
@@ -2398,6 +2398,14 @@
           "name": "passwordEncoder",
           "type": "PasswordEncoder",
           "text": "@Autowired\n    PasswordEncoder passwordEncoder;"
+        }
+      ],
+      "petclinic-backend/src/test/java/victor/training/petclinic/tools/PrettyTestNamesTest.java": [
+        {
+          "line": 15,
+          "name": "info",
+          "type": "TestInfo",
+          "text": "private TestInfo info;"
         }
       ]
     }

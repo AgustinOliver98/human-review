@@ -1,11 +1,1 @@
-  * testcov -> requirements
-    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/testcov.py --base 4ee969ff497fc3b700e82504d7b1e243bcc27d0e --out .human-review/assets/test-coverage.json
-[testcov] $ (cd /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-backend && ./test-on-own-db.sh mvn -o test -Dmaven.test.failure.ignore=true -Dmaven.test.additionalClasspath=/Users/victorrentea/.cache/human-review/testcov/ee53fa9352c96d74/hr-testcov-listener.jar -Dhr.testcov.dir=/Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage/junit-0)  > .human-review/coverage/junit-0.log
-[testcov] $ (cd /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-frontend && npx ng test --watch=false --code-coverage --browsers=ChromeHeadless --karma-config=/Users/victorrentea/workspace/human-review/skills/human-review/scripts/testcov/karma/karma.conf.js)  > .human-review/coverage/karma-0.log
-[testcov] 345 test(s) in 6 suite(s); 117 changed line(s) in 19 file(s) -> .human-review/assets/test-coverage.json
-[testcov]   Backend JUnit          ran       193 test(s)    60.9s  
-[testcov]   Backend Cucumber       ran         9 test(s)    60.9s  
-[testcov]   Backend ArchUnit       ran         1 test(s)    60.9s  
-[testcov]   Frontend Karma         ran       129 test(s)     9.5s  
-[testcov]   E2E Playwright         ran         6 test(s)     0.9s  
-[testcov]   E2E Cucumber           ran         7 test(s)     1.1s  
+  = testcov: unchanged, 57.0 s saved

@@ -2,9 +2,11 @@
   "new": {
     "sources": [
       "petclinic-test/generated/AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.puml",
-      "petclinic-test/generated/VisitTest.java.create-withoutvet.genseq.puml",
-      "petclinic-test/generated/VisitTest.java.create-withvet.genseq.puml",
+      "petclinic-test/generated/VisitTest.java.create-with-vet.genseq.puml",
+      "petclinic-test/generated/VisitTest.java.create-without-vet.genseq.puml",
       "petclinic-test/generated/add-visit.spec.ts.add-a-visit-to-an-existing-pet-from-the-owner-detail-page.genseq.puml",
+      "petclinic-test/generated/add-visit.spec.ts.book-a-visit-attended-by-a-vet-and-see-the-vet-on-the-owner-page-and-on-all-visits.genseq.puml",
+      "petclinic-test/generated/add-visit.spec.ts.book-a-visit-with-nobody-yet-as-its-vet-and-see-it-read-no-vet-everywhere.genseq.puml",
       "petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml"
     ],
     "nodes": {
@@ -50,9 +52,9 @@
         "to": "DB",
         "status": "same",
         "protocol": "SQL",
-        "operations": 12,
+        "operations": 14,
         "operationsDelta": 0,
-        "calls": 215,
+        "calls": 256,
         "detail": [
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
@@ -62,12 +64,22 @@
           {
             "name": "SELECT DISTINCT v FROM Vet v LEFT JOIN FETCH v.specialties",
             "path": "",
-            "calls": 1
+            "calls": 3
           },
           {
             "name": "SELECT v FROM Vet v LEFT JOIN FETCH v.specialties WHERE v.id = :id",
             "path": "",
-            "calls": 1
+            "calls": 2
+          },
+          {
+            "name": "SELECT v FROM Visit v JOIN FETCH v.pet p JOIN FETCH p.owner LEFT JOIN \u2026",
+            "path": "",
+            "calls": 2
+          },
+          {
+            "name": "VisitRepository.findAllWithPetAndOwner",
+            "path": "",
+            "calls": 14
           },
           {
             "name": "VisitRepository.findById",
@@ -97,22 +109,22 @@
           {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 6
+            "calls": 8
           },
           {
             "name": "select owners",
             "path": "",
-            "calls": 7
+            "calls": 13
           },
           {
             "name": "select pets",
             "path": "",
-            "calls": 86
+            "calls": 94
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 102
+            "calls": 108
           }
         ],
         "toKind": "db"
@@ -124,12 +136,12 @@
         "protocol": "HTTP",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 2,
+        "calls": 4,
         "detail": [
           {
             "name": "",
             "path": "POST /api/notifications/visit-booked",
-            "calls": 2
+            "calls": 4
           }
         ],
         "toKind": "container"
@@ -139,9 +151,9 @@
         "to": "Backend",
         "status": "same",
         "protocol": "HTTP",
-        "operations": 5,
+        "operations": 6,
         "operationsDelta": 0,
-        "calls": 8,
+        "calls": 18,
         "detail": [
           {
             "name": "Add a visit for an owner's pet",
@@ -151,7 +163,7 @@
           {
             "name": "Get an owner by ID",
             "path": "GET /api/owners/{ownerId}",
-            "calls": 3
+            "calls": 7
           },
           {
             "name": "List owners",
@@ -161,12 +173,17 @@
           {
             "name": "getPet",
             "path": "GET /api/pets/{petId}",
-            "calls": 1
+            "calls": 3
           },
           {
             "name": "listVets",
             "path": "GET /api/vets",
-            "calls": 1
+            "calls": 3
+          },
+          {
+            "name": "listVisits",
+            "path": "GET /api/visits",
+            "calls": 2
           }
         ],
         "toKind": "container"
@@ -178,12 +195,12 @@
         "protocol": "calls",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 2,
+        "calls": 4,
         "detail": [
           {
             "name": "send-sms",
             "path": "",
-            "calls": 2
+            "calls": 4
           }
         ],
         "toKind": "external"
@@ -388,9 +405,9 @@
         "to": "DB",
         "status": "same",
         "protocol": "SQL",
-        "operations": 12,
+        "operations": 14,
         "operationsDelta": 1,
-        "calls": 215,
+        "calls": 256,
         "detail": [
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
@@ -400,12 +417,22 @@
           {
             "name": "SELECT DISTINCT v FROM Vet v LEFT JOIN FETCH v.specialties",
             "path": "",
-            "calls": 1
+            "calls": 3
           },
           {
             "name": "SELECT v FROM Vet v LEFT JOIN FETCH v.specialties WHERE v.id = :id",
             "path": "",
-            "calls": 1
+            "calls": 2
+          },
+          {
+            "name": "SELECT v FROM Visit v JOIN FETCH v.pet p JOIN FETCH p.owner LEFT JOIN \u2026",
+            "path": "",
+            "calls": 2
+          },
+          {
+            "name": "VisitRepository.findAllWithPetAndOwner",
+            "path": "",
+            "calls": 14
           },
           {
             "name": "VisitRepository.findById",
@@ -435,22 +462,22 @@
           {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 6
+            "calls": 8
           },
           {
             "name": "select owners",
             "path": "",
-            "calls": 7
+            "calls": 13
           },
           {
             "name": "select pets",
             "path": "",
-            "calls": 86
+            "calls": 94
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 102
+            "calls": 108
           }
         ],
         "toKind": "db"
@@ -462,12 +489,12 @@
         "protocol": "HTTP",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 2,
+        "calls": 4,
         "detail": [
           {
             "name": "",
             "path": "POST /api/notifications/visit-booked",
-            "calls": 2
+            "calls": 4
           }
         ],
         "toKind": "container"
@@ -477,9 +504,9 @@
         "to": "Backend",
         "status": "same",
         "protocol": "HTTP",
-        "operations": 5,
+        "operations": 6,
         "operationsDelta": 1,
-        "calls": 8,
+        "calls": 18,
         "detail": [
           {
             "name": "Add a visit for an owner's pet",
@@ -489,7 +516,7 @@
           {
             "name": "Get an owner by ID",
             "path": "GET /api/owners/{ownerId}",
-            "calls": 3
+            "calls": 7
           },
           {
             "name": "List owners",
@@ -499,12 +526,17 @@
           {
             "name": "getPet",
             "path": "GET /api/pets/{petId}",
-            "calls": 1
+            "calls": 3
           },
           {
             "name": "listVets",
             "path": "GET /api/vets",
-            "calls": 1
+            "calls": 3
+          },
+          {
+            "name": "listVisits",
+            "path": "GET /api/visits",
+            "calls": 2
           }
         ],
         "toKind": "container"
@@ -516,12 +548,12 @@
         "protocol": "calls",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 2,
+        "calls": 4,
         "detail": [
           {
             "name": "send-sms",
             "path": "",
-            "calls": 2
+            "calls": 4
           }
         ],
         "toKind": "external"
@@ -534,11 +566,13 @@
         "petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml"
       ],
       "onlyNew": [
-        "petclinic-test/generated/VisitTest.java.create-withoutvet.genseq.puml",
-        "petclinic-test/generated/VisitTest.java.create-withvet.genseq.puml"
+        "petclinic-test/generated/VisitTest.java.create-with-vet.genseq.puml",
+        "petclinic-test/generated/VisitTest.java.create-without-vet.genseq.puml",
+        "petclinic-test/generated/add-visit.spec.ts.book-a-visit-attended-by-a-vet-and-see-the-vet-on-the-owner-page-and-on-all-visits.genseq.puml",
+        "petclinic-test/generated/add-visit.spec.ts.book-a-visit-with-nobody-yet-as-its-vet-and-see-it-read-no-vet-everywhere.genseq.puml"
       ],
       "onlyOld": []
     }
   },
-  "base": "4ee969ff497fc3b700e82504d7b1e243bcc27d0e"
+  "base": "a931962a5a0d238c497be32a00a4688c3af85387"
 }

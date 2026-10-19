@@ -1,7 +1,7 @@
 {
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "review_short": "be762955",
- "head": "b5bf415337633e550d0d6885398cbf353265ce80",
+ "head": "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
  "takeover": null,
  "generated_globs": [
   "**/generated/**",
@@ -1061,17 +1061,213 @@
    "measured": true,
    "taken_over": false,
    "takeover": false
+  },
+  {
+   "sha": "39346ec541cac0bc8b4a1c207e5507fb4f98bd83",
+   "short": "39346ec5",
+   "when": "2026-10-19T23:18:00+02:00",
+   "subject": "E2E: book a visit with a vet, and with nobody yet, and see it on both screens (#37)",
+   "files": [
+    {
+     "path": "petclinic-test/src/add-visit.dsl.ts",
+     "added": 53,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/add-visit.spec.ts",
+     "added": 43,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 96,
+   "deleted": 2,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
+  },
+  {
+   "sha": "566aed82993f08f0f7047348ee7849f5d4ff5a58",
+   "short": "566aed82",
+   "when": "2026-10-20T00:57:42+02:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "files": [
+    {
+     "path": ".claude/skills/java-code-style/SKILL.md",
+     "added": 0,
+     "deleted": 14,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "AGENTS.md",
+     "added": 7,
+     "deleted": 10,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "README.md",
+     "added": 35,
+     "deleted": 41,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/mcp/CreateVisitShould.java",
+     "added": 0,
+     "deleted": 3,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/AddVisitApiTest.java",
+     "added": 0,
+     "deleted": 3,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/tools/PrettyTestNames.java",
+     "added": 2,
+     "deleted": 1,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/tools/PrettyTestNamesTest.java",
+     "added": 26,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/resources/junit-platform.properties",
+     "added": 4,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/genseq/test-location.spec.ts",
+     "added": 1,
+     "deleted": 1,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/genseq/test-location.ts",
+     "added": 1,
+     "deleted": 1,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 76,
+   "deleted": 74,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
+  },
+  {
+   "sha": "3da0997879f1131785e7e2e51c02eee321c11124",
+   "short": "3da09978",
+   "when": "2026-10-20T00:57:59+02:00",
+   "subject": "review-points: base moves to the merge with main (a931962a)",
+   "files": [
+    {
+     "path": "review-points.md",
+     "added": 2,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 2,
+   "deleted": 2,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
+  },
+  {
+   "sha": "6c6c3c3573b91b1fbdcdb81f6d4de6d5479e5dc9",
+   "short": "6c6c3c35",
+   "when": "2026-10-20T01:06:12+02:00",
+   "subject": "E2E: the attending vet is a feature now - visit-vet.feature, two scenarios (#37)",
+   "files": [
+    {
+     "path": "petclinic-test/src/add-visit.dsl.ts",
+     "added": 3,
+     "deleted": 3,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/add-visit.spec.ts",
+     "added": 0,
+     "deleted": 43,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/visit-vet.feature",
+     "added": 29,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/visit-vet.feature.glue.ts",
+     "added": 96,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 128,
+   "deleted": 46,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
+  },
+  {
+   "sha": "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
+   "short": "f39b3425",
+   "when": "2026-10-20T01:12:27+02:00",
+   "subject": "Draw the visits \u2192 vets and visits \u2192 design-system imports the PR needs",
+   "files": [
+    {
+     "path": "petclinic-frontend/docs/frontend-packages.puml",
+     "added": 2,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 2,
+   "deleted": 0,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
   }
  ],
  "totals": {
-  "commits": 28,
-  "files": 68,
-  "added": 1201,
-  "deleted": 402,
+  "commits": 33,
+  "files": 79,
+  "added": 1460,
+  "deleted": 481,
   "code": {
-   "files": 56,
-   "added": 1064,
-   "deleted": 270
+   "files": 67,
+   "added": 1323,
+   "deleted": 349
   },
   "generated": {
    "files": 12,

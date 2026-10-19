@@ -2,12 +2,28 @@
  "max": 6,
  "picked": [
   {
+   "path": "petclinic-test/src/add-visit.spec.ts",
+   "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
+   "line": 56,
+   "status": "added",
+   "why": "written by this branch",
+   "suite": "e2e"
+  },
+  {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "create_withVet",
    "line": 256,
    "status": "added",
    "why": "written by this branch",
    "suite": "java"
+  },
+  {
+   "path": "petclinic-test/src/add-visit.spec.ts",
+   "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
+   "line": 72,
+   "status": "added",
+   "why": "written by this branch",
+   "suite": "e2e"
   },
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
@@ -183,7 +199,24 @@
   }
  ],
  "suites": {
-  "e2e": [],
+  "e2e": [
+   {
+    "path": "petclinic-test/src/add-visit.spec.ts",
+    "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
+    "line": 56,
+    "status": "added",
+    "why": "written by this branch",
+    "suite": "e2e"
+   },
+   {
+    "path": "petclinic-test/src/add-visit.spec.ts",
+    "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
+    "line": 72,
+    "status": "added",
+    "why": "written by this branch",
+    "suite": "e2e"
+   }
+  ],
   "java": [
    {
     "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
@@ -206,20 +239,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 27.5
+   "seconds": 23.7
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 21.8
+   "seconds": 16.1
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 21.1
+   "seconds": 15.2
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 4.2
+   "seconds": 6.8
   }
  ],
- "at": "2026-10-07T23:05:34+00:00"
+ "at": "2026-10-19T23:01:15+00:00"
 }

@@ -1,0 +1,48 @@
+@startuml
+' ⚠️  GENERATED FILE — DO NOT EDIT. Every edit is lost on the next run.
+hide footbox
+skinparam hyperlinkUnderline false
+skinparam hyperlinkColor #1A4FA0
+title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277{Click to open the test} Test: VisitTest: create without vet]]
+footer traced because this branch wrote it in petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java — generated from real traces of end-to-end test runs, do not edit ❗
+participant Test
+participant Backend
+participant DB
+Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/OwnerRepository.java:19{Click to open OwnerRepository.save} OwnerRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://0bl9eup{Click for the statement behind this call} insert for victor.training.petclinic.domain.Owner ⊕]]
+deactivate Backend
+Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/PetTypeRepository.java:15{Click to open PetTypeRepository.save} PetTypeRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://0p9c7zm{Click for the statement behind this call} insert for victor.training.petclinic.domain.PetType ⊕]]
+deactivate Backend
+Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/PetRepository.java:18{Click to open PetRepository.save} PetRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://051oswl{Click for the statement behind this call} insert for victor.training.petclinic.domain.Pet ⊕]]
+deactivate Backend
+Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VetRepository.java:23{Click to open VetRepository.save} VetRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://1rbt9aw{Click for the statement behind this call} insert for victor.training.petclinic.domain.Vet ⊕]]
+deactivate Backend
+Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:14{Click to open VisitRepository.save} VisitRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://0gghs15{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
+deactivate Backend
+Test -> Backend: addVisit\nPOST /api/visits
+activate Backend
+Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/rest/VisitRestController.java:72{Click to open VisitRestController.bookVisit} book-visit ↗]]
+activate Backend
+Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VetRepository.java:19{Click to open VetRepository.findByIdOrNull} VetRepository.findByIdOrNull ↗]]
+Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:14{Click to open VisitRepository.save} VisitRepository.save ↗]]
+activate Backend
+Backend -> DB: [[genseq://033o5yx{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
+deactivate Backend
+deactivate Backend
+Backend --> Test: 201
+deactivate Backend
+Test -> Backend: getVisit\nGET /api/visits/{visitId}
+activate Backend
+Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:12{Click to open VisitRepository.findById} VisitRepository.findById ↗]]
+Backend --> Test: 200
+deactivate Backend
+@enduml

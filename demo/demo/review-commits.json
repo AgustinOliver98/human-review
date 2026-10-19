@@ -1,8 +1,8 @@
 {
- "base": "4ee969ff497fc3b700e82504d7b1e243bcc27d0e",
+ "base": "a931962a5a0d238c497be32a00a4688c3af85387",
  "head": "HEAD",
  "points_file": "review-points.md",
- "commits": 94,
+ "commits": 99,
  "implementation": "1bcf74d4f14a165cabaaa7e9cd1cc5faaa3311b1",
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "session": "82329d0a-55d2-448f-aff5-0363cf80b32f",
@@ -35,7 +35,12 @@
   "a6baee9dcd8b3821cc98e783844cb7a3f87a0fa1",
   "618255dd6d5f2334a3f04fc572df8c517d852883",
   "07472b141d538957832aa61f2cd35fa44ed8dfe9",
-  "b5bf415337633e550d0d6885398cbf353265ce80"
+  "b5bf415337633e550d0d6885398cbf353265ce80",
+  "39346ec541cac0bc8b4a1c207e5507fb4f98bd83",
+  "566aed82993f08f0f7047348ee7849f5d4ff5a58",
+  "3da0997879f1131785e7e2e51c02eee321c11124",
+  "6c6c3c3573b91b1fbdcdb81f6d4de6d5479e5dc9",
+  "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0"
  ],
  "after_detail": [
   {
@@ -204,6 +209,36 @@
    "sha": "b5bf415337633e550d0d6885398cbf353265ce80",
    "when": "2026-10-19T05:33:48+02:00",
    "subject": "review-points: base moves to the merge with main (4ee969ff)",
+   "auto_fix": false
+  },
+  {
+   "sha": "39346ec541cac0bc8b4a1c207e5507fb4f98bd83",
+   "when": "2026-10-19T23:18:00+02:00",
+   "subject": "E2E: book a visit with a vet, and with nobody yet, and see it on both screens (#37)",
+   "auto_fix": false
+  },
+  {
+   "sha": "566aed82993f08f0f7047348ee7849f5d4ff5a58",
+   "when": "2026-10-20T00:57:42+02:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "3da0997879f1131785e7e2e51c02eee321c11124",
+   "when": "2026-10-20T00:57:59+02:00",
+   "subject": "review-points: base moves to the merge with main (a931962a)",
+   "auto_fix": false
+  },
+  {
+   "sha": "6c6c3c3573b91b1fbdcdb81f6d4de6d5479e5dc9",
+   "when": "2026-10-20T01:06:12+02:00",
+   "subject": "E2E: the attending vet is a feature now - visit-vet.feature, two scenarios (#37)",
+   "auto_fix": false
+  },
+  {
+   "sha": "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
+   "when": "2026-10-20T01:12:27+02:00",
+   "subject": "Draw the visits \u2192 vets and visits \u2192 design-system imports the PR needs",
    "auto_fix": false
   }
  ],

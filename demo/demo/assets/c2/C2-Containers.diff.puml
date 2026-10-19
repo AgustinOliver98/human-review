@@ -14,7 +14,7 @@ System_Boundary(c2_system, "PetClinic") {
 }
 Rel(Backend, DB, "SQL", "")
 Rel(Backend, NotificationService, "[[genseq://c2-279a196c9d{Click for the calls behind this line} HTTP ⊕]]", "1 ops")
-Rel(Browser, Backend, "[[genseq://c2-fb35163739{Click for the calls behind this line} HTTP ⊕]]", "5 ops (was 4)")
+Rel(Browser, Backend, "[[genseq://c2-75fafaa11f{Click for the calls behind this line} HTTP ⊕]]", "6 ops (was 5)")
 Rel(NotificationService, SMS_gateway, "[[genseq://c2-cb01a30b7a{Click for the calls behind this line} calls ⊕]]", "1 ops")
 caption Diagram generated from [[#sequence{Open the Sequence tab} sequence diagrams]] of the test traces
 @enduml
