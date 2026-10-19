@@ -341,12 +341,17 @@ def keep_refused(review: Path, text: str) -> Path | None:
         return None
 
 
-def install(review: Path, doc: dict, offered: list[str] | None = None) -> Path:
+def install(review: Path, doc: dict, offered: list[str] | None = None,
+            digests: dict[str, str] | None = None) -> Path:
     """Write the answer, by everyone's name for it — with `offered`, the ids of every test
-    the model was shown, so a later build can tell when the coverage has put a candidate on
-    the card that this answer never read (`semcov.pairing_stale`)."""
+    the model was shown, and `digests` (`offeredDigest`), a fingerprint of each one's body
+    as it was shown, so a later build can tell when the card offers a test this answer never
+    read, or one whose body has changed since (`semcov.pairing_stale`). Neither given: the
+    record `doc` already carries stays as it is (the second read's path)."""
     if offered is not None:
         doc = {**doc, "offered": list(offered)}
+    if digests is not None:
+        doc = {**doc, "offeredDigest": dict(digests)}
     out = review / WRITES[0]
     out.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     return out
@@ -517,6 +522,7 @@ def main(argv=None) -> int:
     asked = sc.model_input(g["ticket"], g["sentences"], g["rows"], g["scripted"], g["docs"],
                            g["decisions"])
     offered = [t["id"] for t in asked["tests"]]
+    digests = sc.offered_digests(asked["tests"])
     decided = len(g["scripted"]["decided"])
     links = sum(len(e["tests"]) for e in g["scripted"]["decided"])
     print(f"[model] {len(g['sentences'])} sentences, {len(g['rows'])} tests: the script "
@@ -559,7 +565,7 @@ def main(argv=None) -> int:
                                   f"checks: {', '.join(dropped)}"}
         doc, said = downgrade(sc, doc, g)
         keep_previous(review)
-        print(f"[model] {install(review, _noted(doc, said), offered)} written from {args.answer}"
+        print(f"[model] {install(review, _noted(doc, said), offered, digests)} written from {args.answer}"
               + (f" — {said}" if said else "") + ". Its second read: --check-prompt, then "
               "--check-answer.")
         return 0
@@ -580,7 +586,7 @@ def main(argv=None) -> int:
         keep_previous(review)
         install(review, {"schema": sc.SCHEMA_VERSION,
                          "note": "no sentence of the ticket makes a claim; no model was asked",
-                         "sentences": []}, offered)
+                         "sentences": []}, offered, digests)
         print("[model] no sentence makes a claim — no model run, nothing spent.")
         return 0
 
@@ -662,7 +668,7 @@ def main(argv=None) -> int:
                 doc, said_check = checked(sc, doc, parse_answer(csaid or cproc.stdout), asked)
     ledger()
     doc = _noted(doc, said_script, said_check)
-    install(review, doc, offered)
+    install(review, doc, offered, digests)
     total = _priced(billed())[0]
     price = f"${total:.4f}" if isinstance(total, (int, float)) else "an unpriced run"
 

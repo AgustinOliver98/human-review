@@ -430,3 +430,46 @@ def test_without_a_measurement_the_old_card_says_it_is_not_one(tmp_path):
     assert "cov-card" not in page
     assert "Coverage was not measured" in page
     assert T.CARD_WHO in page                     # the AI's card, as today
+
+
+def test_a_second_measurement_of_the_same_checkout_waits_for_the_first(tmp_path):
+    """Two runs on one checkout share `junit-0/`, the Karma output and `target/`: one of
+    them (20 Oct 2026) wrote a coverage file with 386 JUnit tests of 193. The second now
+    waits, and says why, until the first lets go."""
+    import fcntl
+    import subprocess
+    import time
+    work = tmp_path / "coverage"
+    work.mkdir()
+    with open(work / ".lock", "a") as fh:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        code = (f"import importlib.util,sys; s=importlib.util.spec_from_file_location('t', "
+                f"{str(HERE / 'testcov.py')!r}); m=importlib.util.module_from_spec(s); "
+                f"s.loader.exec_module(m); from pathlib import Path; "
+                f"m.hold_measuring_lock(Path({str(work)!r})); print('held', flush=True)")
+        proc = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True)
+        time.sleep(1.5)
+        assert proc.poll() is None, "the second run did not wait for the first"
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+    out, err = proc.communicate(timeout=20)
+    assert "held" in out and "another run is measuring this checkout" in err
+
+
+def test_the_traces_step_takes_the_same_lock(tmp_path, monkeypatch):
+    """The browser suites write their dumps where `testcov` reads them."""
+    import fcntl
+    monkeypatch.chdir(tmp_path)
+    seen = []
+
+    def probe(ctx):
+        with open(Path(".human-review/coverage/.lock"), "a") as fh:
+            try:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                seen.append("free")
+            except BlockingIOError:
+                seen.append("held")
+    monkeypatch.setattr(rs, "_traces_locked", probe)
+    # flock is per open file description: a second open in the same process conflicts.
+    rs._traces(rs.Ctx("main", {}, False))
+    assert seen == ["held"]

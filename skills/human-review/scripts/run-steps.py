@@ -87,6 +87,11 @@ class Ctx:
         self.base, self.cfg, self.dry = base, cfg, dry
         self.no_ledger = no_ledger
         self.notes: list[str] = []
+        # Set False by a step whose run must not be reused by the next refresh even though
+        # it finished (`_city_tests`, `_traces`: a red suite). A cache hit returns no notes,
+        # so a key recorded over "the traced suite did not pass" would drop that finding
+        # from every later page while the run it describes stayed the one on disk.
+        self.keep_key = True
 
     def step_cfg(self, name: str) -> dict:
         return (self.cfg.get("steps") or {}).get(name) or {}
@@ -1262,6 +1267,7 @@ def _city_tests(ctx: Ctx) -> None:
     for cmd in tests or []:
         r = sh(cmd, ctx, check=False)
         if r.returncode != 0:
+            ctx.keep_key = False
             ctx.notes.append(f"the traced browser suite did not pass ({cmd}); its recordings "
                              "and its coverage are of that run")
 
@@ -2069,6 +2075,35 @@ def _traces(ctx: Ctx):
     that run (`--trace on`, or an env knob its config reads); `commands` is here for the
     project that genuinely has no other run to attach to.
     """
+    # Under `testcov`'s lock (`testcov.hold_measuring_lock`): the suites write per-test
+    # dumps into `.human-review/coverage/`, and another run measuring this checkout at the
+    # same time reads them half-written (20 Oct 2026: two overlapping refreshes, an E2E
+    # Cucumber suite harvested as 2 tests of 7).
+    with _coverage_lock(ctx):
+        _traces_locked(ctx)
+
+
+@contextlib.contextmanager
+def _coverage_lock(ctx: Ctx):
+    if ctx.dry:
+        yield
+        return
+    import fcntl
+    work = ART.parent / "coverage"
+    work.mkdir(parents=True, exist_ok=True)
+    with open(work / ".lock", "a") as fh:
+        try:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(f"    another run is measuring this checkout ({work}/.lock) — waiting")
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+
+
+def _traces_locked(ctx: Ctx):
     c = ctx.step_cfg("traces")
     report = c.get("report")
     # The browser suite first, whether or not there is a report to harvest from it: its
@@ -2083,6 +2118,7 @@ def _traces(ctx: Ctx):
         for cmd in c.get("commands") or []:
             r = sh(app.command(cmd), ctx, check=False)
             if r.returncode != 0:
+                ctx.keep_key = False
                 ctx.notes.append(f"the traced suite did not pass ({cmd}); the recordings below "
                                  "are of that run, which is exactly when they are worth most")
     project = f' --project-dir "{c["projectDir"]}"' if c.get("projectDir") else ""
@@ -2212,6 +2248,22 @@ STEP_INPUTS = {
                      "reads": ("coverage/playwright/run.json", "coverage/cucumber/run.json"),
                      "tools": ("testcov.py", "testcov"),
                      "outputs": ("assets/test-coverage.json",)},
+    # The browser suites (`city.tests`, then `traces.commands`) and the recordings they
+    # leave. Uncached, every cheap refresh re-ran the whole e2e suite against nothing new,
+    # and its fresh `run.json` made `testcov` miss and rewrite the coverage too (20 Oct
+    # 2026: the Tests tab's pairing was called stale after every refresh, and a paid rerun
+    # cleared it each time). The whole repository, like `testcov`: the suite drives the
+    # app, so test sources and app code alike are inputs. `config` adds `city`, whose
+    # `tests` is the command this step runs. `leaves` is what the run left for `testcov`:
+    # fingerprinted by content after the run, so a later run of the suite outside this
+    # step (or a wiped `coverage/`) is a miss. A red suite records no key (`keep_key`), so
+    # its note is said again next time rather than lost to a hit; the masthead's ↺⏳
+    # passes `--force` to run the suites whatever the key says.
+    "traces":       {"paths": ("*",),
+                     "config": ("city",),
+                     "leaves": ("coverage/playwright/run.json", "coverage/cucumber/run.json"),
+                     "tools": ("playwright-traces.py",),
+                     "outputs": ("assets/traces.json",)},
 }
 
 #: Where the per-step hashes live. Beside `.steps.json` and deliberately not inside it: the
@@ -2353,6 +2405,9 @@ def _step_key(name: str, ctx: Ctx, mb: str, head: str, dirty: list[str]) -> str 
     # must re-run them, or the page keeps 56 links to a path that no longer exists.
     h.update(f"{Path.cwd().resolve()}\0".encode())
     h.update(json.dumps(ctx.step_cfg(name), sort_keys=True).encode())
+    for other in spec.get("config") or ():
+        h.update(f"\0config\0{other}\0".encode())
+        h.update(json.dumps(ctx.step_cfg(other), sort_keys=True).encode())
     # The project's own `generated` globs steer `aftermath`'s split and nothing else reads
     # them, but they are config the step consults, so a change to them has to be a miss.
     h.update(json.dumps(ctx.cfg.get("generated"), sort_keys=True).encode())
@@ -2375,6 +2430,9 @@ def _step_key(name: str, ctx: Ctx, mb: str, head: str, dirty: list[str]) -> str 
     review = STEP_CACHE.parent
     for rel in spec.get("reads") or ():
         h.update(f"\0reads\0{rel}\0".encode())
+        _hash_file(review / rel, h)
+    for rel in spec.get("leaves") or ():
+        h.update(f"\0leaves\0{rel}\0".encode())
         _hash_file(review / rel, h)
 
     for rel in spec.get("tools") or ():
@@ -2672,7 +2730,7 @@ def run_step(name, tabs, label, prereq, fn, ctx: Ctx,
             shared.notes.extend(ctx.notes)
     return {"step": name, "tabs": tabs, "status": status, "reason": reason,
             "seconds": round(time.monotonic() - t0, 2),
-            "notes": ctx.notes[before:]}
+            "notes": ctx.notes[before:], **({} if ctx.keep_key else {"keep": False})}
 
 
 def load_config(path: Path) -> dict:
@@ -2793,12 +2851,13 @@ def main(argv=None) -> int:
         # recomputed *after* it ran rather than reused from before: the fingerprint covers
         # the step's own outputs, which is precisely what the run just changed. Storing the
         # pre-run key would make the very next refresh a miss, for ever.
-        if r["status"] == RAN and not r.get("cached") and not args.dry_run:
+        if r["status"] == RAN and not r.get("cached") and r.get("keep", True) \
+                and not args.dry_run:
             fresh = _step_key(name, ctx, mb, head, dirty)
             if fresh:
                 cache[name] = {"key": fresh, "seconds": r.get("seconds") or 0,
                                "at": _stamp()}
-        elif r["status"] != RAN:
+        elif r["status"] != RAN or not r.get("keep", True):
             # A failed or skipped step must not leave last run's key behind it: the next
             # refresh would find a hit, skip the step, and report as current an artifact
             # this run had just proved it could not produce.

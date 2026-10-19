@@ -286,15 +286,16 @@ def plan(review: Path, steps: str, base: str | None, serve: bool,
     return out
 
 
-#: Where the build leaves the merged pairing, and — when the model's half is older than the
-#: coverage it should have read — why (`semcov.write_fragment`, key `stale`).
+#: Where the build leaves the merged pairing, and — when the model's half never read some of
+#: the tests now on the card — why (`semcov.write_fragment`, key `stale`).
 MERGED_MAPPING = "assets/test-mapping.merged.json"
 
 
 def stale_pairing(review: Path, since: float | None = None) -> dict | None:
-    """`{"why", "command"}` when the build just drew the Tests tab from a pairing that
-    predates the coverage run, else None. Only a merged file this run wrote counts
-    (`since`): one left by an earlier build says nothing about this one."""
+    """`{"why", "command"}` when the build just drew the Tests tab from a pairing that has
+    not read every test now on the card (`semcov.pairing_stale`), else None. Only a merged
+    file this run wrote counts (`since`): one left by an earlier build says nothing about
+    this one."""
     p = review / MERGED_MAPPING
     try:
         if since is not None and p.stat().st_mtime < since:
@@ -311,8 +312,8 @@ def warn_stale_pairing(stale: dict) -> None:
     last thing on the screen rather than one line in a scroll of build chatter. It never
     runs the model: the pairing is the one paid step, and only a human starts it."""
     bar = "!" * 78
-    print(f"[refresh] {bar}\n[refresh] WARNING: the Tests tab's pairing predates the coverage "
-          f"run — {stale['why']}.\n[refresh] The page says so, as a !🤖 pill after the ticket checkbox. Re-run the "
+    print(f"[refresh] {bar}\n[refresh] WARNING: the Tests tab's pairing has not read every "
+          f"test now on the card — {stale['why']}.\n[refresh] The page says so, as a !🤖 pill after the ticket checkbox. Re-run the "
           f"pairing step (a paid model call), then refresh:\n[refresh]   "
           f"{stale.get('command') or 'rerun-model.py'}\n[refresh] {bar}", file=sys.stderr)
 

@@ -1862,8 +1862,8 @@ def load_model_mapping(review: Path) -> dict | None:
 
 #: The per-test coverage the right-hand column is drawn from (`tests.py:COVERAGE_JSON`).
 COVERAGE = "assets/test-coverage.json"
-#: The note over the ticket when the pairing is older than the evidence it should have read.
-STALE_NOTE = "The test pairing is older than the coverage run: rerun"
+#: The note over the ticket when the pairing never read some of the tests now on the card.
+STALE_NOTE = "The test pairing has not read every test now on the card: rerun"
 #: Said by the `!🤖` pill after the ticket's checkbox (it used to be an amber banner over the ticket).
 STALE_TAIL = "(AI, paid)."
 
@@ -1877,35 +1877,68 @@ def rerun_command(out_dir: Path, root: Path) -> str:
     return "rerun-model.py" + ("" if rel == ".human-review" else f" --dir {rel}")
 
 
-def pairing_stale(out_dir: Path, offered_now=None, spec: dict | None = None) -> str | None:
-    """Why the model's pairing (`test-mapping.json`) predates the coverage it should have
-    read, or None when it does not.
+def body_digest(body: str) -> str:
+    """A short fingerprint of one test's body exactly as the model is shown it
+    (`model_input`'s `tests[].body`). rerun-model.py records one per offered test
+    (`offeredDigest`), and `pairing_stale` compares it with today's."""
+    return hashlib.sha256((body or "").encode("utf-8")).hexdigest()[:16]
 
-    The visit-vet demo (5 Oct 2026): the pairing ran at 19:35 over 30 candidates, no e2e
-    test among them; the coverage that put 13 e2e runs on changed lines was written at
-    21:10. Every later build drew that matrix as if the model had read the e2e tests and
-    found nothing, and nothing said otherwise. Two signals, either one enough: the mapping
-    is older than the coverage file, or it records the tests it was offered (`offered`,
-    written by rerun-model.py) and the candidates drawn from today's coverage include one
-    it never saw. Never runs the model — it only says the command."""
+
+def offered_digests(tests: list[dict]) -> dict[str, str]:
+    """`{test id: body_digest}` for `model_input(...)["tests"]`."""
+    return {t["id"]: body_digest(t.get("body") or "") for t in tests}
+
+
+def _names(ids: list[str]) -> str:
+    return ", ".join(Path(t).name for t in ids[:4]) + (" …" if len(ids) > 4 else "")
+
+
+def pairing_stale(out_dir: Path, offered_now=None, spec: dict | None = None,
+                  digests_now: dict[str, str] | None = None) -> str | None:
+    """Why the model's pairing (`test-mapping.json`) did not read the tests the card now
+    offers, or None when it did. Content only, never a clock.
+
+    The visit-vet demo (5 Oct 2026): the pairing ran over 30 candidates, no e2e test among
+    them; a later coverage run put 13 e2e runs on changed lines. Every later build drew that
+    matrix as if the model had read the e2e tests and found nothing, and nothing said
+    otherwise. That is signal 1 below, and it is enough on its own: rerun-model.py records
+    the ids it showed the model (`offered`), and today's candidates include one outside it.
+
+    1. a candidate drawn from today's coverage (`offered_now`) is not in `offered`;
+    2. a candidate the model *was* shown has another body now: its `offeredDigest`
+       (`body_digest`, also written by rerun-model.py) differs from `digests_now`.
+
+    There used to be a third: the mapping file older than `assets/test-coverage.json`. It
+    fired on every refresh — `traces` re-ran the browser suite, its `run.json` moved,
+    `testcov` rewrote the coverage file whether or not a single candidate changed — and
+    clearing it cost a paid rerun each time (20 Oct 2026: three, $0.81, for nothing).
+
+    A mapping with no `offered` at all (written before 5 Oct 2026, or by hand) is not
+    called stale: there is no record of what its model read, and nothing short of one is
+    evidence — guessing from the ids it happens to name flags every candidate it read and
+    left unmentioned. A mapping with `offered` and no `offeredDigest` gets signal 1 only.
+    `spec` is no longer read; it stays for callers. Never runs the model — it only says the
+    command."""
     m = Path(out_dir) / MAPPING
     if not m.is_file():
         return None
-    reasons = []
-    cov = Path(out_dir) / ((spec or {}).get("testCoverage") or COVERAGE)
-    if cov.is_file() and m.stat().st_mtime < cov.stat().st_mtime:
-        fmt = "%d %b %H:%M"
-        reasons.append(
-            f"{MAPPING} ({datetime.datetime.fromtimestamp(m.stat().st_mtime).strftime(fmt)}) is "
-            f"older than {cov.name} ({datetime.datetime.fromtimestamp(cov.stat().st_mtime).strftime(fmt)})")
     doc = _read_json(m)
     offered = doc.get("offered") if isinstance(doc, dict) else None
-    if isinstance(offered, list) and offered_now:
-        unseen = [t for t in offered_now if t not in set(offered)]
-        if unseen:
-            names = ", ".join(Path(t).name for t in unseen[:4])
-            reasons.append(f"{len(unseen)} candidate test(s) the model was never shown: "
-                           f"{names}" + (" …" if len(unseen) > 4 else ""))
+    if not isinstance(offered, list) or not offered_now:
+        return None
+    reasons = []
+    shown = set(offered)
+    unseen = [t for t in offered_now if t not in shown]
+    if unseen:
+        reasons.append(f"{len(unseen)} candidate test(s) the model was never shown: "
+                       f"{_names(unseen)}")
+    then = doc.get("offeredDigest")
+    if isinstance(then, dict) and digests_now:
+        moved = [t for t in offered_now if t in shown and t in then and t in digests_now
+                 and then[t] != digests_now[t]]
+        if moved:
+            reasons.append(f"{len(moved)} test(s) changed since the model read them: "
+                           f"{_names(moved)}")
     return "; ".join(reasons) or None
 
 
@@ -2233,7 +2266,7 @@ def render(ticket: dict, blocks: list[dict], rows: list[dict], entries: list[dic
            root: Path, measured: bool = True, who: str | None = None,
            stale: tuple[str, str] | None = None) -> str:
     """The matrix fragment: same inputs, same bytes. `stale` is `(why, command)` when the
-    pairing predates the coverage (`pairing_stale`): a note over the ticket says so."""
+    pairing never read some of the tests on the card (`pairing_stale`): a pill says so."""
     T = _tests_tab()
     by_sid = {e["id"]: e for e in entries}
     rows_by = {r["id"]: r for r in rows}
@@ -2390,17 +2423,18 @@ def write_fragment(spec: dict, out_dir: Path, root: Path) -> str | None:
     if g is None:
         return None
     entries = merge(g["sentences"], g["scripted"], model, g["decisions"])
-    offered_now = [t["id"] for t in model_input(g["ticket"], g["sentences"], g["rows"],
-                                                g["scripted"], g["docs"], g["decisions"])["tests"]]
-    why = pairing_stale(out_dir, offered_now, spec) if model is not None else None
+    asked = model_input(g["ticket"], g["sentences"], g["rows"], g["scripted"], g["docs"],
+                        g["decisions"])["tests"]
+    why = pairing_stale(out_dir, [t["id"] for t in asked], spec,
+                        offered_digests(asked)) if model is not None else None
     cmd = rerun_command(out_dir, root)
     if why:
         # Loud on purpose: the matrix below is drawn from a pairing that never read some of
         # the tests now on the card. The model is never run from here — it costs money.
         bar = "!" * 78
-        print(f"[semcov] {bar}\n[semcov] WARNING: the Tests tab's pairing predates the "
-              f"coverage run — {why}.\n[semcov] Re-run the pairing step from the repository "
-              f"root: {cmd}\n[semcov] {bar}", file=sys.stderr)
+        print(f"[semcov] {bar}\n[semcov] WARNING: the Tests tab's pairing has not read "
+              f"every test now on the card — {why}.\n[semcov] Re-run the pairing step from "
+              f"the repository root: {cmd}\n[semcov] {bar}", file=sys.stderr)
     page = render(g["ticket"], g["blocks"], g["rows"], entries, root, g["measured"],
                   who=_tests_tab().covcard_who(spec, out_dir),
                   stale=(why, cmd) if why else None)

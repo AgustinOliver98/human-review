@@ -344,3 +344,85 @@ def test_a_renamed_checkout_misses(repo, monkeypatch):
     repo.rename(moved)
     monkeypatch.chdir(moved)
     assert _key(moved, "complexity") != before
+
+
+# ------------------------------------------------------------------- the browser suites
+
+#: `traces` runs the project's whole e2e suite. Uncached, every cheap refresh re-ran it
+#: against nothing new, its fresh `run.json` made `testcov` rewrite the coverage, and the
+#: Tests tab called its paid pairing stale each time (20 Oct 2026).
+TRACED = {"steps": {"traces": {"report": "r"}, "city": {"tests": ["npm test"]}}}
+
+
+def test_the_suite_command_is_part_of_the_traces_key(repo):
+    """`_traces` runs `city.tests` before its own commands: a new suite command is a miss
+    even though it lives under another step's name."""
+    other = {"steps": {"traces": {"report": "r"}, "city": {"tests": ["npm run e2e"]}}}
+    assert _key(repo, "traces", TRACED) == _key(repo, "traces", TRACED)
+    assert _key(repo, "traces", TRACED) != _key(repo, "traces", other)
+
+
+def test_a_test_or_app_edit_moves_the_traces_key(repo):
+    before = _key(repo, "traces", TRACED)
+    (repo / "src" / "A.java").write_text("class A { int t; }\n", encoding="utf-8")
+    assert _key(repo, "traces", TRACED) != before
+
+
+def test_a_suite_run_outside_the_step_moves_the_traces_key(repo):
+    """What the run left for `testcov` is fingerprinted by content: a `run.json` some other
+    run wrote (or a wiped `coverage/`) is not the one this key vouches for."""
+    run = repo / ".human-review" / "coverage" / "playwright" / "run.json"
+    run.parent.mkdir(parents=True)
+    run.write_text('{"startedAt": "1"}', encoding="utf-8")
+    before = _key(repo, "traces", TRACED)
+    run.write_text('{"startedAt": "2"}', encoding="utf-8")
+    assert _key(repo, "traces", TRACED) != before
+    run.unlink()
+    assert _key(repo, "traces", TRACED) != before
+
+
+def _fake_suite(monkeypatch, red: bool) -> list:
+    """`traces` with its runner swapped for one that leaves what the real one leaves — and,
+    when `red`, says the suite did not pass, the way `_city_tests` does."""
+    calls = []
+
+    def fn(ctx):
+        calls.append(1)
+        (rs.ART / "traces.json").write_text("[]", encoding="utf-8")
+        run = rs.ART.parent / "coverage" / "playwright" / "run.json"
+        run.parent.mkdir(parents=True, exist_ok=True)
+        run.write_text('{"startedAt": "%d"}' % len(calls), encoding="utf-8")
+        if red:
+            ctx.keep_key = False
+            ctx.notes.append("the traced browser suite did not pass (npm test)")
+    steps = [(n, t, l, (lambda c: True) if n == "traces" else p, fn if n == "traces" else f)
+             for n, t, l, p, f in rs.STEPS]
+    monkeypatch.setattr(rs, "STEPS", steps)
+    Path("human-review.json").write_text(
+        json.dumps({"base": "main", **TRACED}), encoding="utf-8")
+    return calls
+
+
+def _traces_once() -> dict:
+    assert rs.main(["--only", "traces", "--skip", "testcov,city", "--no-ledger",
+                    "--jobs", "1"]) in (0, None)
+    rows = json.loads(Path(".human-review/.steps-status.json").read_text())
+    return {r["step"]: r for r in rows}["traces"]
+
+
+def test_a_green_suite_is_not_run_again_for_nothing(repo, monkeypatch):
+    calls = _fake_suite(monkeypatch, red=False)
+    assert not _traces_once().get("cached")
+    assert _traces_once().get("cached") is True, "the e2e suite re-ran although nothing moved"
+    assert calls == [1]
+
+
+def test_a_red_suite_records_no_key_so_its_note_is_said_again(repo, monkeypatch):
+    """A hit returns no notes: caching a red run would drop "did not pass" from every later
+    page while that run stayed the one on disk."""
+    calls = _fake_suite(monkeypatch, red=True)
+    first = _traces_once()
+    assert first.get("keep") is False and "traces" not in rs.load_step_cache()
+    second = _traces_once()
+    assert not second.get("cached") and calls == [1, 1]
+    assert any("did not pass" in n for n in second["notes"])

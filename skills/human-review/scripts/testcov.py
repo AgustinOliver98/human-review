@@ -54,6 +54,7 @@ left nothing to write.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -77,6 +78,32 @@ M2 = Path(os.environ.get("MAVEN_REPO") or Path.home() / ".m2" / "repository")
 ENGINES = {"junit-jupiter": "JUnit", "cucumber": "Cucumber", "junit-vintage": "JUnit 4",
            "testng": "TestNG", "spock": "Spock", "archunit": "ArchUnit"}
 STATUS = {"SUCCESSFUL": "passed", "FAILED": "failed", "ABORTED": "skipped"}
+
+
+#: The open lock file of this process's measurement (`hold_measuring_lock`); released when
+#: the process exits, however it exits.
+_HELD = None
+
+
+def hold_measuring_lock(work: Path = WORK) -> None:
+    """Hold `<work>/.lock` for the rest of this process — waiting, and saying so, while
+    another run measures the same checkout.
+
+    Two runs at once on one checkout share everything this program measures with: the
+    JUnit dump directory (`junit-0/`, wiped and refilled per run, files numbered from 1 in
+    both), the Karma output, the module's `target/`. 20 Oct 2026 on petclinic: two
+    refreshes overlapped and one coverage file listed 386 JUnit tests of 193, and the
+    candidate set the Tests tab offers its model moved between runs. `run-steps.py`'s
+    `traces` takes the same lock while the browser suites write their dumps here."""
+    global _HELD
+    work.mkdir(parents=True, exist_ok=True)
+    fh = open(work / ".lock", "a")
+    try:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        log(f"another run is measuring this checkout ({work}/.lock) — waiting for it to end")
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+    _HELD = fh
 
 
 def log(msg: str) -> None:
@@ -712,7 +739,7 @@ def main(argv=None) -> int:
         if keep:
             changed[path] = keep
 
-    WORK.mkdir(parents=True, exist_ok=True)
+    hold_measuring_lock(WORK)
     tools = None
     if (cfg.get("junit") and "junit" in only) or cfg.get("e2e"):
         try:
