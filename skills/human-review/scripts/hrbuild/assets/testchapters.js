@@ -77,17 +77,20 @@
     sec.className = 'rm-ch';
     sec.dataset.cat = c[0];
     sec.dataset.open = OPEN[c[0]] ? 'yes' : 'no';
-    // The caret first, in the column the rows keep for their wire button, so the badge
-    // stands over the rows' badges; a blank arrow's width after it, so the subtitle starts
-    // where the test names do. The counts close the row, in the column the card title's
-    // own `−12 ✍5 +42` stands in, the chapter's total last with its `+N` right before it -
-    // the Complexity tab's `+1 12` (Victor, 19 Oct 2026).
+    // The caret first, in the column the rows keep for their wire button, then the badge
+    // and the subtitle right after it. The subtitle used to wait a blank arrow's width past
+    // a 4.5em badge, to start where the rows' names did behind their own badges; the rows
+    // wear no badge any more (their names take the kind's colour), and the gap it left
+    // read as a hole (Victor, 19 Oct 2026: "remove this space"). While a sentence is
+    // picked, `.rm-chhit` says how many of this kind's tests cover it - "none" included.
+    // The counts close the row, in the column the card title's grand total stands in, the
+    // chapter's total last with its `+N` right before it - the Complexity tab's `+1 12`.
     sec.innerHTML = '<div class="rm-chh" role="button" tabindex="0" aria-expanded="'
       + (OPEN[c[0]] ? 'true' : 'false') + '">'
       + '<span class="rm-chev rm-chcaret" aria-hidden="true">&#9654;</span>'
       + '<span class="rm-cat" data-cat="' + c[0] + '">' + esc(LABEL[c[0]] || c[0]) + '</span>'
-      + '<span class="rm-chev rm-chpad" aria-hidden="true">&#9654;</span>'
       + '<span class="rm-chsub">' + esc(c[1]) + '</span>'
+      + '<span class="rm-chhit" hidden></span>'
       + '<span class="rm-chled"></span></div>'
       + '<div class="rm-chb"><div class="rm-cho"></div></div>';
     chapters[c[0]] = sec;
@@ -147,6 +150,16 @@
   lab.innerHTML = '<input type="checkbox"> Show all tests';
   var head = map.querySelector('.rm-code > .rm-tkhead');
   if (head) head.insertBefore(lab, head.querySelector('.tledger'));
+  // The grand total, on the card's title row in the chapters' own four columns: the sum of
+  // their `−`, ✍️ and `+` and of the tests listed (Victor, 19 Oct 2026: the masthead's
+  // `tests +20` is the chapters' `+11` and `+9`, and nothing on the card added them up).
+  // The checkbox moves left of it.
+  var grand = null;
+  if (head) {
+    grand = document.createElement('span');
+    grand.className = 'rm-chled rm-grand';
+    head.insertBefore(grand, lab.nextSibling);
+  }
   var box = head ? lab.querySelector('input') : null;
   Array.prototype.forEach.call(list.querySelectorAll('.rm-t[data-catoff]'), function (r) {
     delete r.dataset.catoff;
@@ -217,6 +230,8 @@
       var clash = shown.indexOf(r) >= 0 && (by[k] || []).length > 1;
       var face = clash ? shortFile(r.dataset.file) : tw.dataset.face;
       if (tw.textContent !== face) tw.textContent = face;
+      // A longer name fills the file column: the DB-fixture dot cannot slide into it.
+      if (clash) tw.dataset.clash = 'yes'; else delete tw.dataset.clash;
     });
   }
 
@@ -225,8 +240,22 @@
   function folded(row) {
     return row.dataset.own === 'yes' || row.dataset.del === 'yes';
   }
+  // `−`, ✍️, `+` and the total, four slots always, an empty one kept (Victor, 14 Oct 2026:
+  // "align in columns"), so the chapters' counts and the grand total stand in columns.
+  function led(st, n, K, what) {
+    var k = K ? ' ' + K : '';
+    function tests(x) { return ' test' + (x === 1 ? '' : 's'); }
+    return (st.deleted ? '<span class="removed" data-tip="' + st.deleted + k + tests(st.deleted)
+        + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
+      + (st.edited ? '<span class="changed" data-tip="' + st.edited + k + tests(st.edited)
+        + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>')
+      + (st.new ? '<span class="added" data-tip="' + st.new + ' new' + k + tests(st.new) + '">+'
+        + st.new + '</span>' : '<span></span>')
+      + '<span class="rm-chn" data-tip="' + n + k + tests(n) + ' ' + what + '">' + n + '</span>';
+  }
   function count() {
     var all = list.dataset.all === 'yes';
+    var sum = {new: 0, deleted: 0, edited: 0}, total = 0;
     CH.forEach(function (c) {
       var sec = chapters[c[0]], n = 0, shown = [];
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t'), function (r) {
@@ -240,21 +269,22 @@
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t .rm-st[data-st]'), function (s) {
         if (s.dataset.st in st) st[s.dataset.st]++;
       });
-      // Four slots, always, an empty one kept (Victor, 14 Oct 2026: "align in columns"):
-      // `−`, ✍️ and `+` columns, then the total, so the chapters' counts and the card title's
-      // stand one under the other instead of sliding right whenever a sign is missing. The
-      // `+N` sits right in front of the total, as the Complexity tab writes `+1 12`.
+      // The `+N` sits right in front of the total, as the Complexity tab writes `+1 12`.
       var K = esc(LABEL[c[0]] || c[0].toUpperCase());
-      sec.querySelector('.rm-chled').innerHTML =
-        (st.deleted ? '<span class="removed" data-tip="' + st.deleted + ' ' + K
-          + ' test' + (st.deleted === 1 ? '' : 's') + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
-        + (st.edited ? '<span class="changed" data-tip="' + st.edited + ' ' + K
-          + ' test' + (st.edited === 1 ? '' : 's') + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>')
-        + (st.new ? '<span class="added" data-tip="' + st.new + ' new ' + K
-          + ' test' + (st.new === 1 ? '' : 's') + '">+' + st.new + '</span>' : '<span></span>')
-        + '<span class="rm-chn" data-tip="' + n + ' ' + K + ' test' + (n === 1 ? '' : 's')
-          + ' listed">' + n + '</span>';
+      sec.querySelector('.rm-chled').innerHTML = led(st, n, K, 'listed');
+      Object.keys(st).forEach(function (k) { sum[k] += st[k]; });
+      total += n;
     });
+    if (grand) {
+      grand.innerHTML = led(sum, total, '', 'listed, all kinds');
+      // The checkbox steps into the grand total's empty leading slots, so it stands right
+      // beside the first number and the title keeps the width (Victor, 20 Oct 2026: "aligned
+      // to the right … to avoid the ellipses in the title"). The slots stay in the grid, so
+      // the columns still line up with the chapters'.
+      var lead = 0;
+      for (var i = 0; i < 3 && !grand.children[i].textContent; i++) lead++;
+      lab.style.marginRight = lead ? (8 - 43 * lead) + 'px' : '';
+    }
   }
   function setAll(on) {
     if (on) buildOthers();
@@ -302,7 +332,8 @@
 
   // A sentence picked on the left lights its tests on the right (reqmap.js `open`). A lit
   // row in a closed chapter would be lit where nobody can see it, so its chapter opens and
-  // the first lit row is brought to the top of the card. Runs after the renderer's own
+  // the first lit row is brought to the top of the card - under its chapter's heading,
+  // which sticks to the card's top edge as the list scrolls. Runs after the renderer's own
   // handler: it is registered later on the same element.
   function reveal() {
     if (list.dataset.sel !== 'yes') return;
@@ -310,9 +341,33 @@
       function (r) { return !folded(r) || list.dataset.all === 'yes'; });
     if (!hits.length) return;
     hits.forEach(function (r) { var s = r.closest('.rm-ch'); if (s) openCh(s, true); });
-    var top = hits[0].getBoundingClientRect().top - list.getBoundingClientRect().top;
-    if (top < 0 || top > list.clientHeight - 30) list.scrollTop += top - 4;
+    var sec = hits[0].closest('.rm-ch'), hh = sec ? sec.querySelector('.rm-chh').offsetHeight : 0;
+    var top = hits[0].getBoundingClientRect().top - list.getBoundingClientRect().top - hh;
+    if (top < 0 || top > list.clientHeight - hh - 30) list.scrollTop += top - 4;
     window.dispatchEvent(new Event('resize'));
+  }
+  // How many of each kind's tests cover the picked sentence, on the kind's own heading -
+  // "none" too, so a kind with no test for it reads at a glance, open or closed, on screen
+  // or scrolled away (Victor, 19 Oct 2026: "I'd want to know there are no unit tests
+  // covering this"). Follows `data-sel` on the list, which reqmap.js sets on a pick and
+  // takes off on every way out of one.
+  function hitMarks() {
+    var on = list.dataset.sel === 'yes';
+    CH.forEach(function (c) {
+      var sec = chapters[c[0]], mark = sec.querySelector('.rm-chhit');
+      if (!on) { delete sec.dataset.hits; mark.hidden = true; mark.textContent = ''; return; }
+      var n = sec.querySelectorAll('.rm-t[data-hit=yes]').length;
+      var K = LABEL[c[0]] || c[0].toUpperCase();
+      sec.dataset.hits = String(n);
+      mark.hidden = false;
+      mark.textContent = n ? '\u2713 ' + n : 'none';
+      mark.setAttribute('data-tip', n
+        ? n + ' ' + K + ' test' + (n === 1 ? ' covers' : 's cover') + ' the picked sentence'
+        : 'No ' + K + ' test covers the picked sentence');
+    });
+  }
+  if (window.MutationObserver) {
+    new MutationObserver(hitMarks).observe(list, {attributes: true, attributeFilter: ['data-sel']});
   }
   map.addEventListener('click', function (e) { if (e.target.closest('.rm-f')) reveal(); });
 

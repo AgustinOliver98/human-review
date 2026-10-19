@@ -340,14 +340,19 @@
     els=els.filter(function(e){return e&&e.getClientRects().length;});
     var sc=scroller(pane);
     if(!sc||!els.length)return;
+    // A heading that sticks to the scroller's top edge (the card's E2E/API/UNIT chapters)
+    // covers the first rows under it: the target lands below it, not behind it.
+    var ch=els[0].closest&&els[0].closest('.rm-ch'),hh=ch&&ch.querySelector('.rm-chh'),
+        pad=hh?hh.offsetHeight:0;
     var p=sc.getBoundingClientRect(),top=Infinity,inView=true;
     els.forEach(function(e){var r=e.getBoundingClientRect();
-      top=Math.min(top,r.top);if(r.top<p.top||r.bottom>p.bottom)inView=false;});
-    if(!inView)sc.scrollBy({top:top-p.top-8,behavior:'smooth'});
+      top=Math.min(top,r.top);if(r.top<p.top+pad||r.bottom>p.bottom)inView=false;});
+    if(!inView)sc.scrollBy({top:top-p.top-pad-8,behavior:'smooth'});
   }
 
   function draw(){
     var row=wired&&list.querySelector('.rm-t[data-link=yes]');
+    if(!row&&cur&&list.dataset.sel==='yes'){drawSel();return;}
     if(!row){svg.textContent='';wrap.dataset.wired='no';return;}
     var base=wrap.getBoundingClientRect(),t=ticket.getBoundingClientRect(),
         sd=sideCol.getBoundingClientRect(),c=card.getBoundingClientRect();
@@ -390,6 +395,66 @@
     });
     svg.innerHTML=d?d+'<circle class="rm-hub" cx="'+ax+'" cy="'+ay+'" r="3"/>':'';
     wrap.dataset.wired=d?'yes':'no';
+  }
+
+  // The first direction, drawn too (Victor, 19 Oct 2026): a picked sentence wires itself to
+  // every test that covers it, whichever chapter it is filed in - one dot on the ticket's
+  // border, one wire per test. Where the test cannot be seen the wire still says where it
+  // is: into its chapter's heading when the chapter is closed, and onto the card's top or
+  // bottom edge when the row is scrolled past, where a `▲ 3` / `▼ 2` counts the rows that
+  // way. A kind with no test for the sentence says "none" on its heading (testchapters.js).
+  function drawSel(){
+    var off=function(){svg.textContent='';wrap.dataset.wired='no';};
+    var base=wrap.getBoundingClientRect(),t=ticket.getBoundingClientRect(),
+        sd=sideCol.getBoundingClientRect(),c=card.getBoundingClientRect();
+    if(sd.left<t.right+8)return off();
+    var rects=cur.getClientRects();if(!rects.length)return off();
+    var top=Infinity,bot=-Infinity;
+    Array.prototype.forEach.call(rects,function(k){top=Math.min(top,k.top);bot=Math.max(bot,k.bottom);});
+    var tc=textCol?view(textCol):t,x0=t.right-base.left,ax=sd.left-base.left,
+        mid=Math.min(Math.max((top+bot)/2,tc.top+8),tc.bottom-8)-base.top,
+        sv=view(sideCol),lv=list.getBoundingClientRect(),
+        lo=Math.max(lv.top,c.top,sv.top),hi=Math.min(lv.bottom,c.bottom,sv.bottom);
+    if(hi-lo<16)return off();
+    var ends={},up=0,down=0;
+    Array.prototype.forEach.call(list.querySelectorAll('.rm-t[data-hit=yes]'),function(r){
+      var sec=r.closest('.rm-ch'),head=sec&&sec.querySelector('.rm-chh'),
+          el=r.querySelector('.rm-thead'),floor=lo;
+      if(sec&&sec.hidden)return;
+      if(!el.getClientRects().length){
+        // Not laid out: in a closed chapter, its heading is the place; in an open one it is
+        // folded out of the list, and there is nowhere to point.
+        if(!sec||sec.dataset.open==='yes'||!head)return;
+        el=head;
+      }else if(head){
+        floor=Math.max(lo,head.getBoundingClientRect().bottom);   // behind its stuck heading
+      }
+      var b=el.getBoundingClientRect(),y=(b.top+b.bottom)/2;
+      if(el!==head&&y<floor)up++;
+      else if(y>hi)down++;
+      else ends[Math.round(y)]=1;
+    });
+    var d='',ys=Object.keys(ends).map(Number);
+    if(up)ys.push(lo+9);
+    if(down)ys.push(hi-9);
+    ys.forEach(function(y){
+      var ay=y-base.top,dx=Math.min(Math.max(12,Math.abs(ay-mid)*0.16),Math.max(4,(ax-x0)*0.9));
+      d+='<path class="rm-wire" d="M'+x0+' '+mid+'C'+(x0+dx)+' '+mid+' '+(ax-dx)+' '+ay+' '+ax+' '+ay+'"/>'
+        +'<circle class="rm-hub" cx="'+ax+'" cy="'+ay+'" r="3"/>';
+    });
+    function edge(n,y,glyph){
+      // Astride the card's border, where the wire lands: half in the gutter, half over the
+      // rows' blank wire column, so it covers no name and no heading's badge.
+      var w=n>9?34:28;
+      return '<g class="rm-edge"><rect x="'+(ax-w/2)+'" y="'+(y-base.top-8)+'" width="'+w
+        +'" height="16" rx="8"/><text x="'+ax+'" y="'+(y-base.top+4)+'">'+glyph+'\u2009'+n
+        +'</text></g>';
+    }
+    if(up)d+=edge(up,lo+9,'\u25B2');
+    if(down)d+=edge(down,hi-9,'\u25BC');
+    if(!d)return off();
+    svg.innerHTML=d+'<circle class="rm-dot" cx="'+x0+'" cy="'+mid+'" r="3"/>';
+    wrap.dataset.wired='yes';
   }
 
   // Every redraw is a full remeasure, and the things that move the endpoints are the page
@@ -448,7 +513,7 @@
       delete row.dataset.hit;
       var b=row.querySelector('.rm-cat');if(b)delete b.dataset.strength;
       row.querySelector('.rm-thead').removeAttribute('data-tip');});
-    gap.innerHTML='';gap.hidden=true;rejMark(null);
+    gap.innerHTML='';gap.hidden=true;rejMark(null);redraw();
   }
   list.addEventListener('click',function(e){
     var fb=e.target.closest('.rm-fold');                // semcov: show/hide the folded rest
@@ -527,6 +592,7 @@
       +(s.decision?'<p class="rm-dec">'+recorded(s)+'</p>':''):'';
     gap.hidden=!s.gap;
     rejMark(s.rejected);
+    redraw();
     bringIn(sideCol,Array.prototype.filter.call(list.querySelectorAll('.rm-t[data-hit=yes]'),
       function(r){return r.dataset.catoff!=='yes';}));
   }

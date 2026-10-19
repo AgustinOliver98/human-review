@@ -300,9 +300,9 @@ EXPLAIN: dict[str, dict[str, object]] = {
     'requirements': {
         "li": [
             'Left: the ticket; right: every test that ran a line this PR changed (blue shield).',
-            'AI matched them by meaning, so it can be wrong.',
-            '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test, so ask for one.',
-            'E2E and API tests weigh most: they prove the feature, not one method.',
+            '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test; AI-matched, may be wrong.',
+            'Name colour = kind: E2E and API weigh most, they prove the feature, not one method.',
+            'Click a sentence: a line to each test covering it; <b>▲ ▼</b> = more scrolled away.',
             '<b>− ✍️ +</b> before a total: deleted, edited, new tests; <b>Show all tests</b> adds the rest.',
             'Dot: the DB data a test starts on; grey = Default, hollow = uses none of its rows.',
         ],

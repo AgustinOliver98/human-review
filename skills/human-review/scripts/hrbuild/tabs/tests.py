@@ -1382,14 +1382,48 @@ REQMAP_CSS = """
 .reqmap .rm-list > .rm-tgroup,.reqmap .rm-list > .rm-fold{display:none}
 .reqmap .rm-chh{display:flex;align-items:center;gap:8px;padding:7px 16px 7px 6px;
   font-size:12px;font-weight:600;line-height:1.35;color:var(--fg,#1c1c1c);cursor:pointer;
-  user-select:none;border-bottom:1px solid var(--line,#e2e2e2);background:rgba(127,127,127,.12)}
-.reqmap .rm-chh:hover{background:rgba(127,127,127,.19)}
+  user-select:none;border-bottom:1px solid var(--line,#e2e2e2);
+  background:linear-gradient(rgba(127,127,127,.12),rgba(127,127,127,.12)),var(--card,#fff)}
+.reqmap .rm-chh:hover{
+  background:linear-gradient(rgba(127,127,127,.19),rgba(127,127,127,.19)),var(--card,#fff)}
+/* The heading of the chapter being read stays on the card's top edge while its rows scroll
+   under it, and the next chapter's pushes it off (Victor, 19 Oct 2026: "so I always know
+   what category I'm looking at"). Opaque, its tint laid over the card's own colour, or the
+   rows would show through it. */
+.reqmap .rm-chh{position:sticky;top:0;z-index:2}
+/* While a sentence is picked: how many of this kind's tests cover it, `none` in red. */
+.reqmap .rm-chhit{flex:0 0 auto;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--rm-g-edge);white-space:nowrap;cursor:help}
+.reqmap .rm-chhit[hidden]{display:none}
+.reqmap .rm-ch[data-hits="0"] .rm-chhit{color:var(--rm-r-edge)}
+.reqmap .rm-ch[data-hits="0"] > .rm-chh .rm-chsub{opacity:.55}
 .reqmap .rm-chh .rm-cat{display:inline-flex;justify-content:center;min-width:4.5em}
 .reqmap .rm-chh .rm-chev{flex:0 0 auto;font-size:13px!important;line-height:1;opacity:1;
   color:var(--muted,#6b6b6b);
   transition:transform .15s ease}
 .reqmap .rm-chh .rm-chcaret{width:12px;text-align:center;margin-right:-4px}
-.reqmap .rm-chh .rm-chpad{visibility:hidden}
+/* A row wears no badge: the chapter heading over it already says the kind, and the badge
+   took 53px of every row from the test's name (Victor, 19 Oct 2026). The name wears the
+   kind's colour instead - the badge's own ink, E2E's orange darkened to read as text. The
+   badge stays in the markup, hidden: the selection still marks how hard a test pins the
+   picked sentence on it (`data-strength`), and the name says it now - dashed underline
+   for a test that only runs through the sentence, dotted for one that only touches it. */
+.reqmap{--rm-e2e-ink:#b4580a}
+@media (prefers-color-scheme:dark){.reqmap{--rm-e2e-ink:#ec9a52}}
+.reqmap .rm-t .rm-thead > .rm-cat{display:none}
+.reqmap .rm-t[data-cat=e2e] .rm-tt{color:var(--rm-e2e-ink)}
+.reqmap .rm-t[data-cat=api] .rm-tt{color:var(--rm-api-fg)}
+.reqmap .rm-t[data-cat=unit] .rm-tt{color:var(--rm-unit-fg)}
+.reqmap .rm-thead:has(> .rm-cat[data-strength=exercised]) .rm-tt{
+  text-decoration:underline dashed 1px;text-underline-offset:3px}
+.reqmap .rm-thead:has(> .rm-cat[data-strength=touched]) .rm-tt{
+  text-decoration:underline dotted 1px;text-underline-offset:3px}
+/* The DB-fixture dot (fixtures.js) slides right, into the blank the file column keeps on a
+   `.java` row - the column is as wide as `.feature` - so it sits by the file it is about
+   and the name gets the room (Victor, 19 Oct 2026). Only where the link says `.java`: a
+   longer file name has no blank to slide into (`data-clash`, testchapters.js). */
+.reqmap .rm-thead > .fx-dot:has(+ .rm-tw[data-face=".java"]:not([data-clash])){
+  margin-right:-21px;position:relative;z-index:1}
 .reqmap .rm-ch[data-open=yes] > .rm-chh .rm-chcaret{transform:rotate(90deg)}
 .reqmap .rm-chsub{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The counts are a grid of four fixed columns, `−`, ✍️, `+` and the chapter's total,
@@ -1404,6 +1438,11 @@ REQMAP_CSS = """
   color:var(--fg,#1c1c1c)}
 .reqmap .rm-chled [data-tip]{cursor:help}
 .reqmap .rm-ch[data-open=no] > .rm-chb{display:none}
+/* Where a picked sentence's wire runs off the card's top or bottom edge (reqmap.js
+   `drawSel`): `▲ 3` - three more of its tests that way. */
+.reqmap .rm-wires .rm-edge rect{fill:var(--card,#fff);stroke:var(--rm-g-edge);stroke-width:1}
+.reqmap .rm-wires .rm-edge text{fill:var(--rm-g-edge);font:700 10px/1 ui-monospace,SFMono-Regular,
+  Menlo,monospace;text-anchor:middle}
 /* A wire button whose test pins no sentence (testchapters.js `quiet`): still out of sight,
    as reqmap.css hides it, but its slot answers a hover with why - a faint fan and a tip. */
 .reqmap .rm-code .rm-link[aria-disabled=true]{visibility:visible;opacity:0;cursor:help}
@@ -1433,8 +1472,21 @@ REQMAP_CSS = """
    the card's title row, right-aligned, just before the changed-tests counts. */
 .reqmap .rm-list:not([data-all=yes]) .rm-cho{display:none}
 .reqmap .rm-code > .rm-tkhead > .rm-allf{margin-left:auto;align-self:center;display:inline-flex;
+  position:relative;z-index:1;
   align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--muted,#6b6b6b);
   user-select:none;white-space:nowrap}
+/* The grand total closes the title row, in the chapters' four columns and right above
+   them; "Show all tests" moves left of it (Victor, 19 Oct 2026). The strip's own 16px
+   right padding is the headings', so the columns stand one over the other. */
+.reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;margin-left:6px;align-self:center}
+.reqmap .rm-grand > .rm-chn{font-weight:700}
+/* One row, always (Victor, 19 Oct 2026): on a narrow card the totals wrapped under the
+   title. The title gives way instead, cut with an ellipsis; its hover keeps the rest. A
+   page with the changed-tests ledger keeps the wrap that ledger's own row needs. */
+.reqmap .rm-code > .rm-tkhead:not(:has(> .tledger)){flex-wrap:nowrap}
+.reqmap .rm-code > .rm-tkhead > .cov-head{flex:0 1 auto;min-width:0}
+.reqmap .rm-code > .rm-tkhead > .cov-head .rm-who{min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
 /* The counts take a row of their own, right-aligned, so their three columns end where the
    chapters' do, one column over the other (Victor, 14 Oct 2026). */
 .reqmap .rm-code > .rm-tkhead > .tledger{flex:1 0 100%;margin:2px 0 0}
@@ -1484,6 +1536,16 @@ REQMAP_CSS = """
   .reqmap .rm-legend{flex:none}
   .reqmap .rm-issue,.reqmap .rm-list{flex:1 1 auto;min-height:0;overflow-y:auto;
     overscroll-behavior:contain}
+  /* The two scrollbars take no width and push nothing left (Victor, 19 Oct 2026: "the
+     screen is very crowded"): the native one is hidden and rmscroll.js draws a thin thumb
+     over the content - out of sight until the pane is pointed at (faint) or scrolled. */
+  .reqmap .rm-ticket,.reqmap .rm-code{position:relative}
+  .reqmap .rm-ovs{scrollbar-width:none}
+  .reqmap .rm-ovs::-webkit-scrollbar{display:none}
+  .reqmap .rm-ovbar{position:absolute;right:2px;width:6px;border-radius:3px;z-index:3;
+    background:rgba(127,127,127,.75);opacity:0;transition:opacity .25s ease}
+  .reqmap .rm-ovbar.near{opacity:.3}
+  .reqmap .rm-ovbar.on,.reqmap .rm-ovbar:hover{opacity:.7}
   /* The blind-spot box under the ticket and the suite chips under the card can each be
      long; they scroll inside a cap rather than squeeze the list above them to nothing. */
   .reqmap .rm-gap,.reqmap .rm-side > .cov-after{flex:none;max-height:35vh;overflow-y:auto}
@@ -1498,6 +1560,9 @@ REQMAP_CSS = """
   .reqmap .rm-head,.reqmap .rm-text,.reqmap .rm-cats,.reqmap .rm-side{grid-column:1;
     grid-row:auto}
   .reqmap .rm-cats{margin:46px 2px 10px}
+  /* Stacked, the list is not a scroller and the page is: a heading stuck to the window's
+     top would hide under the masthead, so it stays in the flow. */
+  .reqmap .rm-chh{position:static}
 }
 /* The fragment's own stylesheet is written by a model and has, so far, only ever been a
    light one: ink #1b1f23, ticket and card on #f6f8fa, pastel status chips. On a dark page
@@ -1604,6 +1669,12 @@ REQMAP_CHAPTERS_JS = ("<script>"
                       + (Path(__file__).resolve().parent.parent / "assets" / "testchapters.js")
                       .read_text(encoding="utf-8") + "</script>")
 
+#: The two panes' scrollbars drawn over the content instead of beside it (Victor, 19 Oct
+#: 2026): `assets/rmscroll.js`, after the chapters so it measures the list they built.
+REQMAP_SCROLL_JS = ("<script>"
+                    + (Path(__file__).resolve().parent.parent / "assets" / "rmscroll.js")
+                    .read_text(encoding="utf-8") + "</script>")
+
 #: The changed-tests summary, moved onto the covering card's title row (Victor, 4 Oct
 #: 2026): rendered as its own block after the matrix, it floated at the bottom of the left
 #: column, far from the list it summarises.
@@ -1661,6 +1732,24 @@ REQMAP_TIP_JS = """
   document.addEventListener('pointerover', measure, true);
   document.addEventListener('focusin', measure, true);
 })();</script>""" % REQMAP_CUT
+
+
+def gap_under_card(text_col: str, side_col: str) -> tuple[str, str]:
+    """The blind-spot box (`.rm-gap`), out of the ticket's column and under the card.
+
+    It says what no test shows (Victor, 19 Oct 2026: "this panel should show up on the
+    other side"): a finding about the tests, so it stands under the tests, right after the
+    card and before the suites it is short of. Optional - a fragment without the box keeps
+    its two columns as they are, rather than giving the whole layout up over it."""
+    cut = _take(text_col, "rm-gap")
+    if not cut:
+        return text_col, side_col
+    rest, gap = cut
+    end = side_col.find("</aside>")
+    if end < 0:
+        return text_col, side_col
+    end += len("</aside>")
+    return rest, side_col[:end] + gap + side_col[end:]
 
 
 def reqmap_layout(frag: str, spec: dict, out_dir: Path, root: Path | None = None) -> str:
@@ -1731,6 +1820,7 @@ def reqmap_layout(frag: str, spec: dict, out_dir: Path, root: Path | None = None
     side_col = coverage_side(side_col, frag, spec, out_dir,
                              root if root is not None else out_dir.resolve().parent,
                              generated=generated)
+    text_col, side_col = gap_under_card(text_col, side_col)
     ref = (generated and drawn_ticket(frag)) or ticket_ref(spec, out_dir)
     body = (m.group(0) + ticket_head(ref)
             + text_col + all_tests_toggle(cats) + side_col + "</div>")
@@ -1743,7 +1833,7 @@ def reqmap_layout(frag: str, spec: dict, out_dir: Path, root: Path | None = None
     at = root if root is not None else out_dir.resolve().parent
     inventory = all_tests_inventory(out, doc, at) + test_cover_files(out, doc, at)
     return (out + REQMAP_CSS + inventory + REQMAP_FIT_JS + REQMAP_TIP_JS + REQMAP_SEMCOV_JS
-            + REQMAP_CHAPTERS_JS + REQMAP_LEDGER_JS)
+            + REQMAP_CHAPTERS_JS + REQMAP_LEDGER_JS + REQMAP_SCROLL_JS)
 
 
 # --- the third run mode: run the tests, then re-derive ---------------------------------

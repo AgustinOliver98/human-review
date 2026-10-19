@@ -135,19 +135,124 @@ def test_the_card_is_read_in_chapters_by_kind_not_by_sentence():
 def test_a_chapter_heading_is_caret_badge_subtitle_then_its_own_counts():
     """Victor, 7 Oct 2026: the caret leads, in the rows' wire column; the heading has a
     tint of its own; the card title's +added / -deleted / edited counts, per chapter, in
-    the same right-hand column, counted off the stamps the rows wear."""
+    the same right-hand column, counted off the stamps the rows wear. Victor, 19 Oct 2026:
+    no blank arrow between the badge and the subtitle ("remove this space")."""
     js, css = T.REQMAP_CHAPTERS_JS, T.REQMAP_CSS
     order = [js.index(x) for x in ('rm-chev rm-chcaret', '<span class="rm-cat" data-cat="',
-                                   'rm-chev rm-chpad', 'rm-chsub', 'rm-chled')]
+                                   'rm-chsub', '<span class="rm-chhit"', 'rm-chled')]
     assert order == sorted(order)
+    assert "rm-chpad" not in js and "rm-chpad" not in css
     assert "sec.querySelectorAll('.rm-t .rm-st[data-st]')" in js
     for cls in ('class="added"', 'class="removed"', 'class="changed"'):
         assert cls in js
-    assert "background:rgba(127,127,127,.12)" in css
+    assert "linear-gradient(rgba(127,127,127,.12),rgba(127,127,127,.12)),var(--card,#fff)" in css
     assert ".reqmap .rm-chh{display:flex;align-items:center;gap:8px;padding:7px 16px 7px 6px;" in css
     # The card's title strip (and the ticket's, to stay level) a fifth shorter.
     assert (".reqmap .rm-ticket > .rm-tkhead,.reqmap .rm-code > .rm-tkhead"
             "{padding-top:4.5px;padding-bottom:4.5px}") in css
+
+
+def test_the_chapter_heading_sticks_to_the_top_of_the_list_and_is_opaque():
+    """Victor, 19 Oct 2026: "this header should stay fixed as I scroll down, so I always
+    know what category I'm looking at". Sticky inside the list (the scroller), over the
+    card's own colour so the rows do not show through; a pick scrolls its first test to
+    below the stuck heading, not behind it."""
+    css = T.REQMAP_CSS
+    assert ".reqmap .rm-chh{position:sticky;top:0;z-index:2}" in css
+    js = T.REQMAP_CHAPTERS_JS
+    assert "hh = sec ? sec.querySelector('.rm-chh').offsetHeight : 0" in js
+    rm = (HERE / "reqmap" / "reqmap.js").read_text(encoding="utf-8")
+    assert "pad=hh?hh.offsetHeight:0" in rm
+
+
+def test_a_row_names_its_kind_by_colour_not_by_a_badge():
+    """Victor, 19 Oct 2026: the per-row E2E/API/UNIT pill goes; the name wears the kind's
+    colour. The pill stays in the markup, hidden, because the pick still writes how hard a
+    test pins the sentence on it - and the name shows that now."""
+    css = T.REQMAP_CSS
+    assert ".reqmap .rm-t .rm-thead > .rm-cat{display:none}" in css
+    for cat, ink in (("e2e", "--rm-e2e-ink"), ("api", "--rm-api-fg"), ("unit", "--rm-unit-fg")):
+        assert f".reqmap .rm-t[data-cat={cat}] .rm-tt{{color:var({ink})}}" in css
+    assert ".rm-thead:has(> .rm-cat[data-strength=exercised]) .rm-tt" in css
+    # The chapter heading keeps its badge.
+    assert ".reqmap .rm-chh .rm-cat{" in css
+
+
+def test_the_fixture_dot_slides_into_the_file_columns_blank():
+    """Victor, 19 Oct 2026: the DB-fixture dot further right, to leave the name more room -
+    into the blank a `.java` link leaves in its `.feature`-wide column, never over a longer
+    file name the clash rule wrote there."""
+    css, js = T.REQMAP_CSS, T.REQMAP_CHAPTERS_JS
+    assert ('.reqmap .rm-thead > .fx-dot:has(+ .rm-tw[data-face=".java"]:not([data-clash])){'
+            '\n  margin-right:-21px;') in css
+    assert "if (clash) tw.dataset.clash = 'yes'; else delete tw.dataset.clash;" in js
+
+
+def test_the_title_row_carries_the_grand_total_after_show_all():
+    """Victor, 19 Oct 2026: the masthead's `tests +20` was the chapters' `+11` and `+9`
+    and nothing added them up. The title row ends in the chapters' four columns, summed;
+    "Show all tests" moves left of it."""
+    js, css = T.REQMAP_CHAPTERS_JS, T.REQMAP_CSS
+    assert "grand.className = 'rm-chled rm-grand';" in js
+    assert "head.insertBefore(grand, lab.nextSibling);" in js
+    assert "grand.innerHTML = led(sum, total, '', 'listed, all kinds');" in js
+    # The checkbox steps into the total's empty leading slots, beside its first number.
+    assert "lab.style.marginRight = lead ? (8 - 43 * lead) + 'px' : '';" in js
+    assert ".reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;" in css
+    # One row: the totals never wrap under the title, the title is cut instead.
+    assert ".reqmap .rm-code > .rm-tkhead:not(:has(> .tledger)){flex-wrap:nowrap}" in css
+
+
+def test_a_picked_sentence_counts_its_tests_on_every_chapter_heading():
+    """"I'd want to know that there are no unit tests covering this": while a sentence is
+    picked each heading says how many of its tests cover it, `none` in red; it follows the
+    list's `data-sel`, which every way out of a pick takes off."""
+    js, css = T.REQMAP_CHAPTERS_JS, T.REQMAP_CSS
+    assert "observe(list, {attributes: true, attributeFilter: ['data-sel']})" in js
+    assert "mark.textContent = n ? '\\u2713 ' + n : 'none';" in js
+    assert '.reqmap .rm-ch[data-hits="0"] .rm-chhit{color:var(--rm-r-edge)}' in css
+
+
+def test_a_picked_sentence_is_wired_to_every_test_that_covers_it():
+    """The first direction drawn too: one wire per covering test, whichever chapter; into
+    the heading of a closed chapter; onto the card's edge, counted, when scrolled away."""
+    rm = (HERE / "reqmap" / "reqmap.js").read_text(encoding="utf-8")
+    assert "if(!row&&cur&&list.dataset.sel==='yes'){drawSel();return;}" in rm
+    assert "if(!sec||sec.dataset.open==='yes'||!head)return;" in rm   # folded: nowhere
+    assert "if(up)d+=edge(up,lo+9,'\\u25B2');" in rm
+    assert "if(down)d+=edge(down,hi-9,'\\u25BC');" in rm
+    # Taking the pick back takes the wires with it.
+    assert "rejMark(null);redraw();" in rm
+    assert ".reqmap .rm-wires .rm-edge rect{" in T.REQMAP_CSS
+
+
+def test_the_panes_scrollbars_take_no_width():
+    """Victor, 19 Oct 2026: the scrollbar must not push the pane left - hidden until the
+    pane is pointed at or scrolled, then semi-transparent. The native bar is hidden and
+    rmscroll.js draws a thumb over the content, on both panes."""
+    css = T.REQMAP_CSS
+    assert ".reqmap .rm-ovs{scrollbar-width:none}" in css
+    assert ".reqmap .rm-ovs::-webkit-scrollbar{display:none}" in css
+    assert ".reqmap .rm-ovbar{position:absolute;" in css and ".reqmap .rm-ovbar.near{opacity:.3}" in css
+    assert "document.querySelectorAll('.reqmap .rm-issue, .reqmap .rm-list')" in T.REQMAP_SCROLL_JS
+    assert T.REQMAP_SCROLL_JS.startswith("<script>") and T.REQMAP_SCROLL_JS.endswith("</script>")
+
+
+def test_the_blind_spot_box_moves_under_the_card(tmp_path):
+    """Victor, 19 Oct 2026: "this panel should show up on the other side" - the box says
+    what no test shows, so it stands under the tests, right after the card."""
+    out = _laid_out(tmp_path)
+    side = out[out.index('class="rm-side"'):]
+    assert '<div class="rm-gap" hidden></div>' in side
+    text = out[out.index('class="rm-text"'):out.index('class="rm-side"')]
+    assert "rm-gap" not in text
+    assert side.index("</aside>") < side.index('class="rm-gap"')
+    assert T.REQMAP_SCROLL_JS in out
+
+
+def test_a_fragment_without_a_blind_spot_box_keeps_its_layout(tmp_path):
+    out = _laid_out(tmp_path, frag=FRAGMENT.replace('<div class="rm-gap" hidden></div>', ""))
+    assert 'class="rm-legend"' in out and "rm-gap" not in out.split("<style>")[0]
 
 
 def test_the_shield_opens_a_popover_of_the_code_the_test_runs():
