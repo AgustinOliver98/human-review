@@ -413,17 +413,14 @@ def windows_of(app: str, target: Path):
 def pick_ide(ide: str | None, *targets: Path) -> tuple[str, bool]:
     """`(app, fell_back)`: the editor a click the page aimed at `ide` goes to.
 
-    The one the reader chose, when one of its windows owns the path; the other one when only
-    *it* does — a reference that opens in the wrong IDE is still the right line, and one that
-    opens nowhere is a dead click — and the chosen one again when nobody owns it, so the OS
-    fallback speaks its URL scheme. `fell_back` is what the page says when it was not the
-    one asked. No `ide` asks nothing of the bridges: VS Code, as before."""
+    Always the one the reader chose: its bridge opens a file no window of it has yet, so
+    there is nothing to rescue by sending the click to the other editor (Victor, 20 Oct 2026:
+    IntelliJ connected, and a click opened VS Code — "do you want to route them to VSC?").
+    `fell_back` stays in the shape for the callers and the page, and is never true now.
+    No `ide` asks nothing of the bridges: VS Code, as before."""
     if ide not in IDES:
         return "vscode", False
-    owners = {app_of(i) for t in dict.fromkeys(targets) for _e, i in owning_windows(t)}
-    if ide in owners or not owners:
-        return ide, False
-    return next(a for a in IDES if a in owners), True
+    return ide, False
 
 
 def os_open_url(app: str, path, line) -> str:
