@@ -197,28 +197,32 @@ _CLASS_TITLE = re.compile(r"^([A-Za-z_$][\w$]*):\s+(\S.*)$")
 
 
 def _pair_title(titles: list[str]) -> str:
-    """The row's sentence, with the test class set apart from the test it runs.
+    """The row's sentence: the test it runs, without its class, read as words.
 
-    `AddVisitApiTest: adds a visit to an existing pet` read as one bold string, the class
-    as loud as the scenario (Victor, 19 Oct 2026: "the name of the test class should be
-    separated more from the names of the actual tests"). The class is the file the reader
-    can already see at the row's right end; the scenario is what the row is about. So the
-    class goes quiet — muted, regular weight — behind a spaced `›`, and the scenario
-    keeps the row's weight. One span, so a narrow card wraps it as one sentence instead of
-    squeezing two flex items apart. Several scenarios of one class name the class once.
-    Prose titles (E2E scenarios) have no class to set apart and are left as they were."""
+    The class is the file already named at the row's right end, so it is dropped (Victor,
+    20 Oct 2026: "I can only see the class name in the right hand, so ditch it"), and a bare
+    method name is spelled the way `PrettyTestNames` spells one — `create_withoutVet()`
+    reads "create without vet", like its neighbour's `adds a visit to an existing pet`.
+    Prose titles (E2E scenarios) are left as they were; a colon in prose is not a class."""
     split = [_CLASS_TITLE.match(t) for t in titles]
     if not titles or not all(split):
         return " · ".join(html.escape(t) for t in titles)
-    classes = list(dict.fromkeys(m[1] for m in split))
-    if len(classes) == 1:
-        parts = [(classes[0], " · ".join(m[2] for m in split))]
-    else:
-        parts = [(m[1], m[2]) for m in split]
-    return ('<span class="seqtitle">' + " · ".join(
-        f'<span class="seqcls">{html.escape(c)}</span>'
-        f'<span class="seqsep">›</span>{html.escape(n)}'
-        for c, n in parts) + '</span>')
+    return ('<span class="seqtitle">'
+            + " · ".join(html.escape(_test_words(m[2])) for m in split) + '</span>')
+
+
+#: A method name as JUnit's standard generator prints it: `create_withoutVet()`.
+_METHOD_NAME = re.compile(r"^[A-Za-z_$][\w$]*(?:\(\))?$")
+
+
+def _test_words(name: str) -> str:
+    """`create_withoutVet()` → `create without vet`: what `PrettyTestNames` (ReplaceUnderscores,
+    then the capitals lowered behind a space) would have named it. Anything not a bare
+    method name — a `@DisplayName`, a sentence already — is kept as written."""
+    if not _METHOD_NAME.match(name):
+        return name
+    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name.removesuffix("()").replace("_", " "))
+    return " ".join(words.split()).lower()
 
 
 #: The glyph `extract-snippet.py` puts on a quoted block's source bar for what the branch

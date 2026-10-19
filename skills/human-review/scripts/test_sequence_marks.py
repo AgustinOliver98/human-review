@@ -101,20 +101,20 @@ def test_each_pair_wears_the_tests_tab_dot_for_the_fixture_its_test_starts_from(
     assert "DB Fixture: Default · doesn’t rely on its rows" in own
 
 
-def test_the_test_class_is_set_apart_from_the_test_it_runs():
-    """`AddVisitApiTest: adds a visit…` read as one bold string; the class goes quiet
-    behind a chevron and the scenario keeps the row (Victor, 19 Oct 2026). Prose titles
-    — E2E scenarios — have no class, and a colon in prose is not one."""
-    junit = build._pair_title(["VisitTest: create_withoutVet()"])
-    assert junit == ('<span class="seqtitle"><span class="seqcls">VisitTest</span>'
-                     '<span class="seqsep">›</span>create_withoutVet()</span>')
-    both = build._pair_title(["VisitTest: a()", "VisitTest: b()"])
-    assert both.count("seqcls") == 1 and "a() · b()" in both, "one class, named once"
+def test_the_row_names_the_test_in_words_without_its_class():
+    """The class is the file at the row's right end, so it is dropped, and a bare method
+    name reads as words, the way `PrettyTestNames` spells one (Victor, 20 Oct 2026).
+    Prose titles — E2E scenarios — have no class, and a colon in prose is not one."""
+    assert build._pair_title(["VisitTest: create_withoutVet()"]) == \
+        '<span class="seqtitle">create without vet</span>'
+    assert build._pair_title(["AddVisitApiTest: adds a visit to an existing pet"]) == \
+        '<span class="seqtitle">adds a visit to an existing pet</span>'
+    assert build._pair_title(["VisitTest: a()", "VisitTest: b()"]) == \
+        '<span class="seqtitle">a · b</span>'
     for prose in ("Searching with an empty last name lists every owner",
                   "Owner search: an empty name lists everyone"):
         assert build._pair_title([prose]) == html.escape(prose)
     css = (Path(build.__file__).parent / "hrbuild/assets/css/sequence.css").read_text()
-    assert ".seqcls { color:var(--muted); font-weight:400; }" in css
     assert "details.testpair > summary::before { margin-right:-.05rem; }" in css, \
         "the caret sits half as far from the kind chip as core.css's folds do"
 
