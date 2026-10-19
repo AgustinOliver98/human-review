@@ -31,9 +31,11 @@ details.testpair[open] { padding-bottom:.8rem; }
 @keyframes seq-flash { from { border-color:var(--link); } to { border-color:var(--line); } }
 .testpair.seq-hit { animation:seq-flash 2s ease-out 1; }
 .testlead { margin:.7rem 0 0; }
-/* The DB fixture the test starts from, right after its name: the Tests tab's dot
-   (fixtures.css). A way into that fixture's data where the page has it (seqfold.js). */
-details.testpair > summary .fx-dot { align-self:center; margin-left:.1rem; cursor:inherit; }
+/* The DB fixture the test starts from, at the row's right end just before the file name
+   (inside `.seqlang`, whose gap spaces it), where the Tests tab puts the same dot: the
+   Tests tab's dot (fixtures.css). A way into that fixture's data where the page has it
+   (seqfold.js). It used to follow the title, a mark in the middle of the sentence. */
+details.testpair > summary .fx-dot { align-self:center; margin-right:.15rem; cursor:inherit; }
 details.testpair > summary .fx-dot[role=button] { cursor:pointer; }
 details.testpair > summary .fx-dot[role=button]:hover,
 details.testpair > summary .fx-dot[role=button]:focus-visible { outline:2px solid var(--fx);
@@ -47,6 +49,17 @@ details.testpair > summary { cursor:pointer; list-style:none; display:flex; gap:
   align-items:baseline; color:var(--fg); font-size:.95rem; font-weight:600;
   padding:.25rem 0; }
 details.testpair > summary:hover { color:var(--link); }
+/* The caret closer to the kind chip: half the gap core.css gives every fold (its .3rem
+   margin plus this row's .4rem flex gap), on this tab only (Victor, 19 Oct 2026). */
+details.testpair > summary::before { margin-right:-.05rem; }
+/* `AddVisitApiTest › adds a visit to an existing pet`: the test class quiet, the test it
+   runs in the row's weight, a spaced chevron between (sequence.py `_pair_title`). One
+   flex item, so a narrow card wraps it as a sentence; `anywhere` lets a method name wider
+   than a phone's row break instead of running under the file name. The class keeps its
+   grey while the row hovers link-blue — it is the label, the scenario is the line. */
+.seqtitle { min-width:0; overflow-wrap:anywhere; }
+.seqcls { color:var(--muted); font-weight:400; }
+.seqsep { color:var(--muted); font-weight:400; margin:0 .45rem; opacity:.8; }
 /* What kind of test drew the sequence, in the chip the Tests tab wears for the same three
    words and in the same three colours — `.evi.e2e` / `.api` / `.unit` a few hundred lines
    up are that palette, and the requirements map's own `--rm-*-bg` are the same hues again.

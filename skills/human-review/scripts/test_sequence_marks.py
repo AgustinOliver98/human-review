@@ -1,8 +1,9 @@
 """The Sequence tab's marks (Victor, 19 Oct 2026): the open arrow in the diagram's strongest
 ink, the `?`/`values` badge in the SQL marks' colours, the IDE logo where the generator wrote
-`↗`, and the DB fixture each test starts from beside its name."""
+`↗`, and the DB fixture each test starts from beside its file name."""
 from __future__ import annotations
 
+import html
 import importlib.util
 import re
 import subprocess
@@ -91,12 +92,31 @@ def test_each_pair_wears_the_tests_tab_dot_for_the_fixture_its_test_starts_from(
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
     rows = _summaries(out)
     green = rows["Searching on the green data"]
-    assert re.search(r'Searching on the green data<span class="fx-dot" role="img"[^>]*'
-                     r'data-tip="DB Fixture: green"[^>]*data-fixture="green"[^>]*'
-                     r'style="--fx:#2fa84f"></span><span class="seqlang">', green), green
+    # At the right end, just before the file name — not in the middle of the sentence.
+    assert re.search(r'Searching on the green data<span class="seqlang"><span class="fx-dot"'
+                     r' role="img"[^>]*data-tip="DB Fixture: green"[^>]*data-fixture="green"'
+                     r'[^>]*style="--fx:#2fa84f"></span><a class="srcref seqfile"', green), green
     own = rows["Adding its own owner"]
     assert 'class="fx-dot fx-free"' in own, "on the seed, leaning on none of its rows: a ring"
     assert "DB Fixture: Default · doesn’t rely on its rows" in own
+
+
+def test_the_test_class_is_set_apart_from_the_test_it_runs():
+    """`AddVisitApiTest: adds a visit…` read as one bold string; the class goes quiet
+    behind a chevron and the scenario keeps the row (Victor, 19 Oct 2026). Prose titles
+    — E2E scenarios — have no class, and a colon in prose is not one."""
+    junit = build._pair_title(["VisitTest: create_withoutVet()"])
+    assert junit == ('<span class="seqtitle"><span class="seqcls">VisitTest</span>'
+                     '<span class="seqsep">›</span>create_withoutVet()</span>')
+    both = build._pair_title(["VisitTest: a()", "VisitTest: b()"])
+    assert both.count("seqcls") == 1 and "a() · b()" in both, "one class, named once"
+    for prose in ("Searching with an empty last name lists every owner",
+                  "Owner search: an empty name lists everyone"):
+        assert build._pair_title([prose]) == html.escape(prose)
+    css = (Path(build.__file__).parent / "hrbuild/assets/css/sequence.css").read_text()
+    assert ".seqcls { color:var(--muted); font-weight:400; }" in css
+    assert "details.testpair > summary::before { margin-right:-.05rem; }" in css, \
+        "the caret sits half as far from the kind chip as core.css's folds do"
 
 
 def test_a_test_the_verdicts_do_not_name_gets_no_dot(tmp_path, monkeypatch):

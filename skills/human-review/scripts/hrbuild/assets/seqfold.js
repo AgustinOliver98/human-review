@@ -62,7 +62,7 @@
     requestAnimationFrame(function () { if (fold.open !== was) fold.open = was; });
   }, true);
 
-  // The DB fixture dot after a test's name opens that fixture's data, as the same dot does
+  // The DB fixture dot before a test's file name opens that fixture's data, as the same dot does
   // on the Tests tab — where the Demo tab's dataset view is on the page to open it. It sits
   // in the summary, so the press is taken before the row folds under it. Without the view
   // the dot stays a mark, and its tip promises no click.

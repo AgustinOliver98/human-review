@@ -315,7 +315,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Diff: green/red = a call this PR added/removed; its tx box and activation bar tinted.',
             'Click <b>⊕</b> for the SQL or JSON; <b>values</b> fills in each <b>?</b>.',
             'An IDE logo on a call opens that method in the IDE picked top right.',
-            'The dot after a test is the DB fixture it starts from: grey = Default.',
+            'The dot before the file name is the DB fixture the test starts from: grey = Default.',
         ],
         "code": (
             'GET /api/owners\n'

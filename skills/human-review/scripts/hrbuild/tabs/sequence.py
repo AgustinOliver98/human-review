@@ -158,7 +158,7 @@ def _cat_chip(cat: str | None, test_rel: str = "") -> str:
 
 
 def _lang_label(test_rel: str, root: Path | None = None, line: int | None = None,
-                mark: str = "") -> str:
+                mark: str = "", lead: str = "") -> str:
     """The test's file name — `OwnerListTest.java`, `owner-search.feature`,
     `add-visit.spec.ts` — at the row's right end, as the way to the code, with the glyph for
     what the branch did to it right beside.
@@ -172,17 +172,52 @@ def _lang_label(test_rel: str, root: Path | None = None, line: int | None = None
     A `srcref` like every other file reference on the page, so the served page's
     open-in-editor handler on `document` takes it; `SEQFOLD_JS` keeps the click from also
     folding the row. A test not in this checkout has nothing to open and stays plain text.
+
+    `lead` goes first inside the label: the DB fixture dot, which sits just before the file
+    name (Victor, 19 Oct 2026) — where the Tests tab's `fixtures.js` puts the same dot, and
+    out of the sentence, which reads better without a mark in its middle.
     """
     name = Path(test_rel).name
     if not name:
-        return ""
+        return lead
     face = html.escape(name)
     if root is not None and (root / test_rel).is_file():
         at = line or 1
         face = (f'<a class="srcref seqfile" href="vscode://file/{(root / test_rel).resolve()}'
                 f':{at}:1" data-tip="Open in VS Code: {html.escape(name, quote=True)}'
                 f' (line {at})">{face}</a>')
-    return f'<span class="seqlang">{face}{mark}</span>'
+    return f'<span class="seqlang">{lead}{face}{mark}</span>'
+
+
+#: A JUnit scenario's title as the generator writes it: `AddVisitApiTest: adds a visit…`.
+#: Only an identifier before the colon counts — a Gherkin or Playwright title is prose, and
+#: a colon in prose is not a class.
+_CLASS_TITLE = re.compile(r"^([A-Za-z_$][\w$]*):\s+(\S.*)$")
+
+
+def _pair_title(titles: list[str]) -> str:
+    """The row's sentence, with the test class set apart from the test it runs.
+
+    `AddVisitApiTest: adds a visit to an existing pet` read as one bold string, the class
+    as loud as the scenario (Victor, 19 Oct 2026: "the name of the test class should be
+    separated more from the names of the actual tests"). The class is the file the reader
+    can already see at the row's right end; the scenario is what the row is about. So the
+    class goes quiet — muted, regular weight — behind a spaced `›`, and the scenario
+    keeps the row's weight. One span, so a narrow card wraps it as one sentence instead of
+    squeezing two flex items apart. Several scenarios of one class name the class once.
+    Prose titles (E2E scenarios) have no class to set apart and are left as they were."""
+    split = [_CLASS_TITLE.match(t) for t in titles]
+    if not titles or not all(split):
+        return " · ".join(html.escape(t) for t in titles)
+    classes = list(dict.fromkeys(m[1] for m in split))
+    if len(classes) == 1:
+        parts = [(classes[0], " · ".join(m[2] for m in split))]
+    else:
+        parts = [(m[1], m[2]) for m in split]
+    return ('<span class="seqtitle">' + " · ".join(
+        f'<span class="seqcls">{html.escape(c)}</span>'
+        f'<span class="seqsep">›</span>{html.escape(n)}'
+        for c, n in parts) + '</span>')
 
 
 #: The glyph `extract-snippet.py` puts on a quoted block's source bar for what the branch
@@ -408,19 +443,18 @@ def _folded_pair(puml_rel: str, test_rel: str, pieces: list[str],
     into a column the eye can run down, and a kind that arrives after the sentence arrives
     after it was needed.
 
-    `fixture` is the DB fixture dot the test starts from, right after its name — the Tests
-    tab's own dot (see `render_testpairs`).
+    `fixture` is the DB fixture dot the test starts from, at the right end just before the
+    file name — the Tests tab's own dot (see `render_testpairs`).
     """
     titles = [t for _, t in scenarios if t]
-    name = (" · ".join(html.escape(t) for t in titles) if titles
-            else html.escape(test_rel.rsplit("/", 1)[-1]))
+    name = _pair_title(titles) if titles else html.escape(test_rel.rsplit("/", 1)[-1])
     lines = [ln for ln, _ in scenarios if ln]
     mark = next((m.group(0) for q in quoted for m in [FILEMARK.search(q)] if m), "")
-    label = _lang_label(test_rel, root, min(lines) if lines else None, mark)
+    label = _lang_label(test_rel, root, min(lines) if lines else None, mark, lead=fixture)
     return (f'<details class="testpair" open id="{pair_anchor(puml_rel)}"'
             f' data-test="{html.escape(test_rel)}">'
             f'<summary data-tip="{html.escape(test_rel)}">'
-            f'{_cat_chip(cat, test_rel)}{_why_chip(why, also, via)}{name}{fixture}{label}'
+            f'{_cat_chip(cat, test_rel)}{_why_chip(why, also, via)}{name}{label}'
             '</summary>'
             + "\n".join(x.strip("\n") for x in pieces)
             + "</details>")
