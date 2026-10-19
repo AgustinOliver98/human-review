@@ -39,7 +39,8 @@ of them must be green for the exact SHA. Unconfigured, the one workflow named li
 is used; with none or several, every run on the SHA has to be green. A cancelled run, a
 workflow that never got a runner, and GitHub not answering are reported as what they are —
 none of them is a red build, and none of them is a pass. The decision lands in
-`.human-review/.gate.json` (workflow, run id, SHA, verdict), on a refusal too.
+`.human-review/.gate.json` (workflow, run id, SHA, verdict), on a refusal too — and, when
+that run has Sonar steps, `sonar` (their verdict, the quality gate, the dashboard URL).
 
 Exit codes:  0 ready · 1 the gate refused · 2 misuse.
 
@@ -47,6 +48,7 @@ Usage:
   preflight.py --base origin/main
   preflight.py --base origin/main --workflow ci.yml
   preflight.py --no-gate          # local experiment; the guide must say the gate was skipped
+  preflight.py --sonar-only       # re-read Sonar off the recorded run; no push, no wipe
 """
 from __future__ import annotations
 
@@ -203,6 +205,187 @@ def _refusal(e: dict, wait_minutes: float) -> str:
         return (f"could not ask GitHub about {name} for {sha12} — not a build failure, a "
                 f"discovery failure: {e.get('detail', '')}")
     return f"{name}{run_id} concluded {e.get('conclusion') or v} for {sha12} — not a pass"
+
+
+#: A CI step that runs Sonar: its name says so. Which one is the scan and which the quality
+#: gate is told apart by the name too — petclinic's job also has `Cache SonarCloud packages`
+#: and its `Post …` twin, which say "sonar" and analyse nothing.
+SONAR_STEP = re.compile(r"sonar", re.I)
+SONAR_GATE_STEP = re.compile(r"quality[\s_-]*gate", re.I)
+SONAR_NOT_A_STEP = re.compile(r"^post\b|cache", re.I)
+#: The public API is asked to confirm the gate unless this is "0" (tests, offline runs).
+SONAR_API_ENV = "HR_SONAR_API"
+SONAR_API_TIMEOUT_S = 5.0
+
+
+def sonar_steps(jobs: list) -> tuple[dict | None, dict | None]:
+    """`(scan, quality gate)` among a run's job steps, either None when the run has none."""
+    scan = gate_step = None
+    for job in jobs or []:
+        for st in (job.get("steps") or []) if isinstance(job, dict) else []:
+            name = str(st.get("name") or "") if isinstance(st, dict) else ""
+            if not SONAR_STEP.search(name) or SONAR_NOT_A_STEP.search(name):
+                continue
+            if SONAR_GATE_STEP.search(name):
+                gate_step = gate_step or st
+            else:
+                scan = scan or st
+    return scan, gate_step
+
+
+def sonar_project(root: Path = Path(".")) -> tuple[str | None, str]:
+    """`(projectKey, host)` — from `sonar-project.properties`, else the pom's
+    `<sonar.projectKey>`, else a `-Dsonar.projectKey=` in a workflow. SonarCloud unless
+    `sonar.host.url` says otherwise."""
+    key, host = None, "https://sonarcloud.io"
+    try:
+        props = (root / "sonar-project.properties").read_text(encoding="utf-8")
+    except OSError:
+        props = ""
+    for line in props.splitlines():
+        k, _, v = line.partition("=")
+        k, v = k.strip(), v.strip()
+        if k == "sonar.projectKey" and v:
+            key = v
+        elif k == "sonar.host.url" and v:
+            host = v.rstrip("/")
+    if not key:
+        for pom in [root / "pom.xml", *sorted(root.glob("*/pom.xml"))]:
+            try:
+                m = re.search(r"<sonar\.projectKey>\s*([^<\s]+)\s*</", pom.read_text("utf-8"))
+            except OSError:
+                continue
+            if m:
+                key = m.group(1)
+                break
+    if not key:
+        for wf in sorted((root / ".github" / "workflows").glob("*.y*ml")):
+            try:
+                m = re.search(r"-Dsonar\.projectKey=([\w.:-]+)", wf.read_text("utf-8"))
+            except OSError:
+                continue
+            if m:
+                key = m.group(1)
+                break
+    return key, host
+
+
+def sonar_url(host: str, key: str, branch: str | None, pr: int | str | None) -> str:
+    """The dashboard of what was analysed: the pull request's analysis, else the branch's."""
+    from urllib.parse import quote
+    page = "summary/new_code" if "sonarcloud.io" in host else "dashboard"
+    url = f"{host}/{page}?id={quote(key, safe='')}"
+    if pr:
+        return f"{url}&pullRequest={pr}"
+    return f"{url}&branch={quote(branch, safe='')}" if branch else url
+
+
+def _sonar_api_status(host: str, key: str, branch: str | None, pr) -> dict | None:
+    """The quality gate SonarCloud holds for this branch/PR, with the commit it describes —
+    best effort: any network or parse error is None, never a failed build."""
+    if os.environ.get(SONAR_API_ENV) == "0":
+        return None
+    import urllib.parse
+    import urllib.request
+    q = urllib.parse.quote(key, safe="")
+    path = (f"api/project_pull_requests/list?project={q}" if pr
+            else f"api/project_branches/list?project={q}")
+    try:
+        with urllib.request.urlopen(f"{host}/{path}", timeout=SONAR_API_TIMEOUT_S) as r:
+            doc = json.loads(r.read().decode("utf-8"))
+    except Exception:  # noqa: BLE001 — offline, 401 on a private project, a slow host
+        return None
+    rows = doc.get("pullRequests" if pr else "branches") if isinstance(doc, dict) else None
+    want = str(pr) if pr else branch
+    row = next((r for r in rows or [] if isinstance(r, dict)
+                and str(r.get("key" if pr else "name")) == want), None)
+    if not row:
+        return None
+    return {"status": (row.get("status") or {}).get("qualityGateStatus"),
+            "sha": (row.get("commit") or {}).get("sha")}
+
+
+def sonar_from_run(view: dict, sha: str, root: Path = Path("."), pr=None) -> dict | None:
+    """`{verdict, gate, url, …}` for a run's Sonar steps, from `gh run view --json
+    jobs,event,headBranch`; None when the run has no Sonar step.
+
+    The verdict is the steps' unless the public API holds a red gate **for this very
+    commit**: a quality-gate step with `continue-on-error`, or none at all, leaves a green
+    job over a red gate. An API answer about another commit (the branch moved on) is kept as
+    `api.stale` and changes nothing."""
+    scan, gate_step = sonar_steps(view.get("jobs") or [])
+    if not scan and not gate_step:
+        return None
+    sc = ((scan or gate_step).get("conclusion") or "").lower()
+    gc = ((gate_step or {}).get("conclusion") or "").lower() or None
+    if sc == "skipped":
+        verdict = "skipped"
+    elif "failure" in (sc, gc):
+        verdict = "failure"
+    elif sc == "success":
+        verdict = "success"
+    else:
+        verdict = sc or "unknown"
+    out = {"verdict": verdict, "gate": gc,
+           "scanStep": (scan or {}).get("name"), "gateStep": (gate_step or {}).get("name")}
+    key, host = sonar_project(root)
+    branch = view.get("headBranch")
+    if key:
+        out["projectKey"] = key
+        out["url"] = sonar_url(host, key, branch, pr)
+        api = _sonar_api_status(host, key, branch, pr) if verdict != "skipped" else None
+        if api:
+            api["stale"] = bool(api.get("sha") and sha and api["sha"] != sha)
+            out["api"] = api
+            if not api["stale"] and api.get("status") == "ERROR":
+                out["verdict"] = "failure"
+    return out
+
+
+def sonar_evidence(evidence: dict, root: Path = Path(".")) -> dict | None:
+    """Sonar's verdict on the run the gate decided on: the first authoritative run with a
+    Sonar step. Any `gh` failure is silence, not a verdict."""
+    for wf in evidence.get("workflows") or []:
+        run_id = wf.get("runId")
+        if not run_id or wf.get("status") not in (None, "completed"):
+            continue
+        r = run(f"gh run view {int(run_id)} --json jobs,event,headBranch")
+        try:
+            view = json.loads(r.stdout or "") if r.returncode == 0 else None
+        except json.JSONDecodeError:
+            view = None
+        if not isinstance(view, dict):
+            continue
+        pr = None
+        if (view.get("event") or "").startswith("pull_request"):
+            pr = run(f"gh api repos/{{owner}}/{{repo}}/actions/runs/{int(run_id)} "
+                     "--jq '.pull_requests[0].number // empty'").stdout.strip()
+            if not pr.isdigit() and view.get("headBranch"):
+                pr = run(f"gh pr list --head {shlex.quote(view['headBranch'])} --state all "
+                         "--limit 1 --json number --jq '.[0].number // empty'").stdout.strip()
+            pr = int(pr) if pr.isdigit() else None
+        found = sonar_from_run(view, evidence.get("sha") or wf.get("sha") or "", root, pr)
+        if found:
+            return dict(found, runId=run_id)
+    return None
+
+
+def refresh_sonar() -> int:
+    """`--sonar-only`: re-read the Sonar steps of the run `.gate.json` already names, and
+    write them back into it. No push, no gate, no wipe — the recorded verdict, SHA and run
+    stand; only the `sonar` entry is replaced (or dropped when that run has no Sonar)."""
+    path = HR / ".gate.json"
+    try:
+        evidence = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        print(f"[preflight] no readable {path} — run the gate first", file=sys.stderr)
+        return 2
+    evidence.pop("sonar", None)
+    found = sonar_evidence(evidence)
+    if found:
+        evidence["sonar"] = found
+    write_evidence(evidence)
+    return 0
 
 
 def gate(wait_minutes: float, workflows: list[str] | None = None,
@@ -465,7 +648,13 @@ def main(argv=None) -> int:
                          "workflow named like ci/build, else every run on the SHA")
     ap.add_argument("--config", default="human-review.json")
     ap.add_argument("--session", default=os.environ.get("CLAUDE_CODE_SESSION_ID", ""))
+    ap.add_argument("--sonar-only", action="store_true",
+                    help="re-read the Sonar steps of the run .gate.json already names into "
+                         "it; no push, no gate, no wipe")
     args = ap.parse_args(argv)
+
+    if args.sonar_only:
+        return refresh_sonar()
 
     caveat = ""
     if args.no_gate:
@@ -477,6 +666,10 @@ def main(argv=None) -> int:
     else:
         ok, caveat, evidence = gate(args.wait_minutes,
                                     configured_workflows(args.workflow, args.config))
+        # What the run's Sonar steps said, when it has any: the page asks "CI *and* Sonar?".
+        sonar = sonar_evidence(evidence)
+        if sonar:
+            evidence["sonar"] = sonar
         # Written on a refusal too: it is a dotfile beside the guide, not the guide, and the
         # caller needs it most exactly when the gate said no.
         write_evidence(dict(evidence, caveat=caveat))

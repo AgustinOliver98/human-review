@@ -100,7 +100,9 @@ Only the **authoritative** workflows count — `"ci": {"workflows": ["ci.yml"]}`
 `human-review.json` or `--workflow ci.yml` (repeatable, all must be green); unset, the one
 workflow named like ci/build, else every run on the SHA. A green Pages deploy never opens the
 gate. Cancelled, never-picked-up (runner outage) and GitHub-unreachable are reported as such,
-not as a red build; the verdict (workflow, run id, SHA) is in `.human-review/.gate.json`.
+not as a red build; the verdict (workflow, run id, SHA) is in `.human-review/.gate.json`,
+with `sonar` (steps' verdict, quality gate, dashboard URL) when that run has Sonar steps —
+`preflight.py --sonar-only` re-reads it off the recorded run, with no push and no wipe.
 
 If `.human-review/review.html` already exists, ask what changed first — see *Iterating*.
 

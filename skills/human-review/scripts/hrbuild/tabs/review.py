@@ -934,6 +934,11 @@ SPARE_SIGNALS = ("narrowed", "spec-commit")
 GRADE_CAPS = {
     "ci-failed": 4,         # CI ran on the reviewed commit and failed
     "ci-unproven": 6,       # no CI run proved the reviewed commit (skipped, cancelled, none)
+    # Sonar's quality gate is red on the reviewed commit while the build stayed green (the
+    # gate step did not fail the job). Not a broken build — the code runs — but a measured
+    # quality problem on the new code (coverage, duplication, new issues) the project itself
+    # set as a bar: like a breaking API change, it keeps the page out of the green 8+ band.
+    "ci-sonar-failed": 7,
     "open-high": 5,         # an open review issue the reviewer filed as `high`
     "api-breaking": 7,      # the REST contract breaks a client
     "no-evidence": 7,       # one tab carries a reason instead of this run's evidence
@@ -995,6 +1000,15 @@ def _ci_signal(out_dir: Path) -> dict | None:
         return sig
     if gate["verdict"] == "green":
         run = next((w for w in runs if w.get("runId")), {})
+        sonar = _sonar(gate)
+        if sonar and sonar["verdict"] == "success":
+            # "Is Sonar green too?" (Victor, 20 Oct 2026): one bullet, two words, two links.
+            sig = linked(_signal("ci-green", f"CI and Sonar green on {sha}" if sha
+                                 else "CI and Sonar green", ""), run)
+            links = [(sig["href"], "CI")] if sig.get("href") else []
+            if sonar.get("url"):
+                links.append((sonar["url"], "Sonar"))
+            return dict(sig, links=links) if links else sig
         # No hover: the face says green and links the run.
         return linked(_signal("ci-green", f"CI green on {sha}" if sha else "CI green", ""), run)
     if any(w.get("verdict") == "failure" for w in runs) or gate["verdict"] == "failure":
@@ -1008,6 +1022,39 @@ def _ci_signal(out_dir: Path) -> dict | None:
                           caveat or f"the CI gate says {gate['verdict']!r}, not green",
                           GRADE_CAPS["ci-unproven"]),
                   next((w for w in runs if w.get("url")), {}), "build")
+
+
+def _sonar(gate: dict) -> dict | None:
+    """`.gate.json`'s `sonar` entry (what the CI run's Sonar steps said), with its dashboard
+    URL kept only when it is a web link; None when the run had no Sonar step."""
+    sonar = gate.get("sonar") if isinstance(gate, dict) else None
+    if not isinstance(sonar, dict) or not sonar.get("verdict"):
+        return None
+    url = str(sonar.get("url") or "")
+    return dict(sonar, url=url if url.startswith(("https://", "http://")) else "")
+
+
+def _sonar_signal(out_dir: Path) -> dict | None:
+    """A red Sonar quality gate under a green build, as its own bullet.
+
+    The build can be green over a red gate — a gate step with `continue-on-error`, or none
+    — and "CI green" alone would read as "Sonar too". Only when CI is green: a red build
+    already caps harder and says so, and a skipped analysis says nothing about the code."""
+    gate = _read_json(Path(out_dir) / GATE_JSON)
+    sonar = _sonar(gate) if isinstance(gate, dict) and gate.get("verdict") == "green" else None
+    if not sonar or sonar["verdict"] != "failure":
+        return None
+    sha = str(gate.get("sha") or "")[:8]
+    api = sonar.get("api") if isinstance(sonar.get("api"), dict) else {}
+    why = ("SonarCloud holds a red quality gate for this commit"
+           if api.get("status") == "ERROR" and not api.get("stale")
+           else f"the {sonar.get('gateStep') or 'Sonar'} step concluded failure")
+    sig = _signal("ci-sonar-failed",
+                  f"Sonar quality gate failed on {sha}" if sha else "Sonar quality gate failed",
+                  f"{why}, while the build stayed green", GRADE_CAPS["ci-sonar-failed"])
+    if sonar["url"]:
+        sig.update(href=sonar["url"], linkText="Sonar", linkInline=True)
+    return sig
 
 
 def _api_signal(out_dir: Path) -> dict | None:
@@ -1331,9 +1378,9 @@ def grade_signals(spec, out_dir: Path, root: Path | None = None) -> list[dict]:
     root = root if root is not None else _git_root(out_dir)
     base_ref = _base_ref(spec, root) if root else None
     out = []
-    ci = _ci_signal(out_dir)
-    if ci:
-        out.append(ci)
+    for sig in (_ci_signal(out_dir), _sonar_signal(out_dir)):
+        if sig:
+            out.append(sig)
     out.extend(_pile_signals(spec))
     for sig in (_api_signal(out_dir), _evidence_signal(spec, out_dir),
                 _after_review_signal(out_dir, root, base_ref),
@@ -1417,6 +1464,9 @@ def _grade_rows(spec) -> list[tuple[str, str, tuple[str, str, bool] | None]]:
             short += f" (caps the grade at {s['cap']})"
         link = ((s["href"], s.get("linkText") or "source", bool(s.get("linkInline")))
                 if s.get("href") else None)
+        if s.get("links"):
+            # Several words of the bullet, each its own link (`CI` and `Sonar` green on …).
+            link = [(href, face, True) for href, face in s["links"]]
         out.append((short, s.get("full") or short, link))
     room = max(1 if own else 0, min(MODEL_GRADE_LINES, GRADE_LINES_MAX - len(out)))
     if len(own) > room:
@@ -1741,6 +1791,18 @@ def grade_reasons_html(spec) -> str:
     def bullet(short: str, at) -> str:
         if not at:
             return html.escape(short)
+        if isinstance(at, list):
+            # Each face linked where it first occurs after the previous one, left to right.
+            parts, pos = [], 0
+            for href, face, _ in at:
+                i = re.compile(rf"\b{re.escape(face)}\b").search(short, pos)
+                if not i:
+                    continue
+                parts.append(html.escape(short[pos:i.start()])
+                             + f'<a href="{html.escape(href, quote=True)}" target="_blank" '
+                             f'rel="noopener">{html.escape(face)}</a>')
+                pos = i.end()
+            return "".join(parts) + html.escape(short[pos:])
         href, face, inline = at
         a = f'<a href="{html.escape(href, quote=True)}" target="_blank" rel="noopener">'
         # A word of the bullet is the link (`CI` green on …) when the bullet has it; else
@@ -1763,7 +1825,7 @@ def grade_reasons_html(spec) -> str:
 
     # Good news gets a tick: green CI is the one bullet that is not a worry. Red or pending
     # keep the plain wording.
-    good = lambda short: "\u2705 " if short.startswith("CI green") else ""
+    good = lambda short: "\u2705 " if re.match(r"CI (?:and Sonar )?green\b", short) else ""
     items = "".join(
         f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{good(short)}{bullet(short, at)}</li>'
         if full and rest(short, full) else f"<li>{good(short)}{bullet(short, at)}</li>"

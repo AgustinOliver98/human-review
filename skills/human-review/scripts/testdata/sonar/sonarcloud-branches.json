@@ -1,0 +1,39 @@
+{
+ "branches": [
+  {
+   "name": "main",
+   "isMain": true,
+   "type": "LONG",
+   "status": {
+    "qualityGateStatus": "OK",
+    "bugs": 55,
+    "vulnerabilities": 3,
+    "codeSmells": 127
+   },
+   "analysisDate": "2026-10-19T07:30:52+0000",
+   "commit": {
+    "sha": "f1c7da79658604eeb96abd72c1932a40c56c792b"
+   },
+   "branchId": "32cce77c-3a30-421a-a6e4-4a296ebe674e",
+   "branchUuidV1": "AZ45oGQUYuf4Jk4pPg2l"
+  },
+  {
+   "name": "test-pr",
+   "isMain": false,
+   "type": "SHORT",
+   "mergeBranch": "main",
+   "status": {
+    "qualityGateStatus": "OK",
+    "bugs": 0,
+    "vulnerabilities": 0,
+    "codeSmells": 1
+   },
+   "analysisDate": "2026-10-05T17:23:44+0000",
+   "commit": {
+    "sha": "be762955d5f477feeca0f7db55e32fa1c2fb8db5"
+   },
+   "branchId": "e6fb8235-3f0f-4293-aafc-1b50b8819c8f",
+   "branchUuidV1": "AaABr730fWoM8eonANuX"
+  }
+ ]
+}

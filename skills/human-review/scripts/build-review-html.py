@@ -241,7 +241,7 @@ from hrbuild.tabs.review import (
     API_VERDICT_HTML, FILM_VERDICT_JSON, GATE_JSON, GRADE_CAPS, MODEL_GRADE_LINES, PILE_SIGNALS,
     SEQUENCE_VERDICT_JSON, _after_review_signal, _api_signal, _base_ref, _ci_signal,
     _evidence_signal, _git_out, _git_root, _out_of_range_signal, _pile_signals, _plain_text,
-    _read_json, _signal, cap_grade, grade_signals,
+    _read_json, _signal, _sonar, _sonar_signal, cap_grade, grade_signals,
     FIX_BOOKKEEPING, FIX_HUNK_REACH, _fix_range, _gap, _ref_spans, attribute_fix_hunks,
     fix_hunks, _assumption_why, drop_model_summary, pr_exists, resolve_piles,
     _reviewers, CLAUSE_CAP, _CODE_SPAN, TEST_MAPPING_FILES, REQMAP_HTML, NARROWED_LINES,
