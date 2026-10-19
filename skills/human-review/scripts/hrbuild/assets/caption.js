@@ -1,4 +1,9 @@
-document.querySelectorAll('.vidwrap').forEach(function (wrap) {
+// Every film's captions, wired once at load and again over whatever a rebuild swaps in
+// (`hr:swapped`, a tab's panel from `panels.js` or a card from `rerun.js`): the new
+// markup arrives with none of the listeners below.
+(function () {
+function wire(root) {
+root.querySelectorAll('.vidwrap').forEach(function (wrap) {
   var video = wrap.querySelector('video');
   var items = Array.prototype.slice.call(wrap.querySelectorAll('.transcript li[data-t]'));
   if (!items.length) return;
@@ -110,3 +115,9 @@ document.querySelectorAll('.vidwrap').forEach(function (wrap) {
     else if (a.bottom > p.bottom) panel.scrollTop += a.bottom - p.bottom + 8;
   });
 });
+}
+wire(document);
+document.addEventListener('hr:swapped', function (ev) {
+  if (ev.detail && ev.detail.querySelectorAll) wire(ev.detail);
+});
+})();

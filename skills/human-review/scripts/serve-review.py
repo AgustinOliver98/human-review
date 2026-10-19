@@ -1094,6 +1094,22 @@ WATCH_MAX_FILES = 20000
 
 WATCHER = None
 
+# The page cut along its tabs, beside it: the build writes `tabs/<id>.html` per tab and this
+# manifest last (`hrbuild/shared/panels.py`, `PANELS_DIR` / `PANELS_MANIFEST`). The watch
+# answer carries it, so an open page can swap in place the tabs a rebuild changed instead
+# of reloading whole (`assets/panels.js`).
+PANELS_MANIFEST = Path("tabs") / "tabs.json"
+
+
+def read_panels(root) -> dict | None:
+    """The tab manifest in the served directory, or `None` (none, or caught mid-write —
+    the page then reloads, which is what it did before there were pieces)."""
+    try:
+        found = json.loads((Path(root) / PANELS_MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return found if isinstance(found, dict) else None
+
 
 def fingerprint(root: Path) -> str:
     """One short string for "the tree, as it is right now".
@@ -1156,11 +1172,19 @@ class Watcher:
         self._stamp = self._seen = fingerprint(self.root)
         self._since = time.time()
         self._holds = 0
+        # Read when a stamp is published, not when it is asked for: the manifest an open
+        # page is handed is the one of the tree that stamp describes.
+        self._panels = read_panels(self.root)
 
     @property
     def stamp(self) -> str:
         with self._lock:
             return self._stamp
+
+    def answer(self) -> dict:
+        """What `/__watch__` says: the stamp, and the tab manifest that goes with it."""
+        with self._lock:
+            return {"stamp": self._stamp, "panels": self._panels}
 
     def hold(self) -> None:
         with self._lock:
@@ -1181,9 +1205,11 @@ class Watcher:
         from under the card it just swapped; so the run says it is finished, the stamp moves
         now, and the page that pressed is handed the new stamp along with the card."""
         found = fingerprint(self.root)
+        panels = read_panels(self.root)
         with self._lock:
             self._stamp = self._seen = found
             self._since = time.time()
+            self._panels = panels
             return found
 
     def tick(self, now=None) -> str:
@@ -1195,6 +1221,7 @@ class Watcher:
             elif (found != self._stamp and not self._holds
                   and now - self._since >= self.quiet):
                 self._stamp = found
+                self._panels = read_panels(self.root)
             return self._stamp
 
     def run(self, interval=0.4):
@@ -2272,7 +2299,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if problem:
                 self.reply_text(problem, 403)
                 return
-            self.reply_json({"stamp": WATCHER.stamp if WATCHER else ""})
+            self.reply_json(WATCHER.answer() if WATCHER else {"stamp": ""})
             return
         if self.path.split("?")[0] == MARKER:
             # `hits` is here so a caller can tell "the panel reloaded" from "the

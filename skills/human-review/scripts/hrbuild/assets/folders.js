@@ -13,12 +13,16 @@
 // answers — and only when the probe says `revealFolder`, because a server started before
 // `/__reveal_folder__` existed would answer the click with a bare 404.
 (function () {
-  var boxes = document.querySelectorAll('[data-folder]');
-  if (!boxes.length) return;
   window.HR.onready(function (caps) {
     if (!caps || !caps.revealFolder) return;
     var flash = window.HR.flash || function () {};
-    Array.prototype.forEach.call(boxes, function (box) {
+    wire(document);
+    // And the boxes of a panel a rebuild swaps in (`hr:swapped`, panels.js).
+    document.addEventListener('hr:swapped', function (ev) {
+      if (ev.detail && ev.detail.querySelectorAll) wire(ev.detail);
+    });
+    function wire(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-folder]'), function (box) {
       var name = box.getAttribute('data-folder-name') || box.getAttribute('data-folder');
       // One tip per box, the one that says what this click does now.
       var link = box.querySelector('a');
@@ -64,5 +68,6 @@
         if (ev.key === 'Enter' || ev.key === ' ') reveal(ev);
       });
     });
+    }
   });
 })();

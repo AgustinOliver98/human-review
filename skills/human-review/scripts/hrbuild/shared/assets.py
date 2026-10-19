@@ -76,6 +76,11 @@ SERVER_JS = _script("server.js")
 RERUN_JS = _script("rerun.js")
 
 
+# The served page's in-place rebuild: swaps the tabs a build changed instead of reloading
+# (`shared/panels.py` writes the pieces it fetches). After RERUN_JS, whose presses it serves.
+PANELS_JS = _script("panels.js")
+
+
 APP_ENV_JS = _script("app-env.js")
 
 TIP_JS = _script("tip.js")

@@ -1,7 +1,11 @@
 // The focus chooser: every level is already in the page, so switching is a visibility
 // flip, not a fetch — the guide must keep working as a single emailed file.
+// Wired at load and again over whatever a rebuild swaps in (`hr:swapped`), once per bar.
 (function () {
-  document.querySelectorAll('.diagram .focus').forEach(function (bar) {
+  function wire(root) {
+  root.querySelectorAll('.diagram .focus').forEach(function (bar) {
+    if (bar.__hrFocus) return;
+    bar.__hrFocus = true;
     var diagram = bar.closest('.diagram');
     bar.addEventListener('click', function (ev) {
       var button = ev.target.closest('button[data-level]');
@@ -14,6 +18,12 @@
         box.hidden = box.getAttribute('data-level') !== level;
       });
     });
+  });
+  }
+  wire(document);
+  document.addEventListener('hr:swapped', function (ev) {
+    var root = ev.detail;
+    if (root && root.querySelectorAll) wire(root);
   });
 })();
 

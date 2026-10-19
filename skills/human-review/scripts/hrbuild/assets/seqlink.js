@@ -11,10 +11,13 @@
 // registry `render_testpairs` writes while it renders the pairs — so a row can only
 // ever link to a pair that is really on the page.
 (function () {
-  var el = document.getElementById('hr-genseq');
-  if (!el) return;
-  var reg; try { reg = JSON.parse(el.textContent); } catch (e) { return; }
-  var byKey = {}, byName = {}, dup = {};
+  // Read again when a rebuild swaps the Sequence panel in place (`hr:swapped`, below): the
+  // registry rides in that panel, and its pairs may have moved.
+  var byKey, byName, dup;
+  function load() {
+  byKey = {}; byName = {}; dup = {};
+  var el = document.getElementById('hr-genseq'), reg = [];
+  if (el) { try { reg = JSON.parse(el.textContent) || []; } catch (e) { reg = []; } }
   reg.forEach(function (e) {
     if (!byKey[e.test]) byKey[e.test] = e;
     // The map addresses a row by repo-relative path, and so does the registry, so the
@@ -25,6 +28,8 @@
     if (byName[name] && byName[name].pair !== e.pair) dup[name] = true;
     else byName[name] = e;
   });
+  return reg.length > 0;
+  }
 
   function lookup(id) {
     if (byKey[id]) return byKey[id];
@@ -57,8 +62,8 @@
     });
   }
 
-  function decorate() {
-    var rows = document.querySelectorAll('.rm-t[data-id]');
+  function decorate(root) {
+    var rows = (root || document).querySelectorAll('.rm-t[data-id]');
     Array.prototype.forEach.call(rows, function (row) {
       if (row.querySelector('.rm-seq')) return;
       var entry = lookup(row.getAttribute('data-id') || '');
@@ -82,6 +87,20 @@
       where.parentNode.insertBefore(a, row.querySelector('.rm-tv') || where);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', decorate);
+  // A swapped Sequence panel brings a new registry: every ⇥ on the page is redrawn from it.
+  // A swapped Tests panel brings rows without one: those get theirs.
+  document.addEventListener('hr:swapped', function (ev) {
+    var root = ev.detail;
+    if (!root || !root.querySelectorAll) return;
+    if (root.querySelector('#hr-genseq')) {
+      load();
+      [].forEach.call(document.querySelectorAll('.rm-seq'), function (a) { a.remove(); });
+      decorate(document);
+    } else {
+      decorate(root);
+    }
+  });
+  if (!load()) return;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { decorate(); });
   else decorate();
 })();

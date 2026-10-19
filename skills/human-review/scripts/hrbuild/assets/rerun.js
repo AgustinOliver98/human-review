@@ -251,7 +251,8 @@
 
   // Read once, on the load the reload produced. Removed as it is read, so a reader who
   // refreshes the page five minutes later is not told about a rerun they have forgotten.
-  (function sayWhatHappened() {
+  // Also called without a reload, when the run's build was swapped in place (`landed`).
+  function sayWhatHappened() {
     if (!done) return;
     var line = null;
     try { line = sessionStorage.getItem(SAID); sessionStorage.removeItem(SAID); }
@@ -263,7 +264,8 @@
       done.classList.add('going');
       setTimeout(function () { done.hidden = true; done.classList.remove('going'); }, 500);
     }, 6000);
-  })();
+  }
+  sayWhatHappened();
   // Where the reader was, restored after the reload this ends in — `HR.keepPlace`, which
   // the diagram offers and every other `reload` action call too. It used to live here, and
   // "the same scroll position, saved under the same key, restored on the same event" is
@@ -297,6 +299,23 @@
     });
   }
 
+  // The run is done and its build is on disk. The watcher brings it in (`HR.afterRebuild`):
+  // swapped in place, after which the press is over here and now — the bar goes, the
+  // buttons come back, the summary shows — or by a reload, which keeps the place and the
+  // summary for the other side as it always did.
+  function landed(btn, since) {
+    if (!window.HR.afterRebuild) { remember(); location.reload(); return; }
+    window.HR.afterRebuild(since).then(function () {
+      progress.hide();
+      buttons.forEach(function (other) { other.disabled = false; });
+      if (btn) {
+        btn.classList.remove('running');
+        btn.setAttribute('data-tip', btn.getAttribute('data-idle-tip') || '');
+      }
+      sayWhatHappened();
+    });
+  }
+
   function go(btn) {
     if (fail) fail.hidden = true;
     // And last run's summary, if it is still on screen: it is about the press before this
@@ -312,7 +331,7 @@
     // was pressed — and the mark that spins is the same mark the run glyphs down the page
     // already spin, so a reader who has seen one knows this one is working.
     btn.classList.add('running');
-    remember();
+    var since = window.HR.stampNow ? window.HR.stampNow() : null;
     var tab = btn.getAttribute('data-tab');
     // The steps this press runs, when the button says: a tab's own, or the masthead ↺⏳'s
     // whole list (the slow ones included, which the last run's timings may not know).
@@ -332,8 +351,9 @@
         // What the run said about itself, kept for the other side of the reload.
         stash(snap);
         // The server holds its reload-watcher for the length of the rerun, so this is the
-        // single reload of the whole run rather than one per producer.
-        location.reload();
+        // single reload of the whole run rather than one per producer — or no reload at all,
+        // when the tabs the run changed can be swapped in place (`landed`).
+        landed(btn, since);
         return;
       }
       stop(btn, 'the rebuild did not finish', snap);
@@ -554,7 +574,11 @@
     });
   }
 
-  buttons.forEach(function (btn) {
+  // Per button, at load and for every one a rebuild swaps in later (`hr:swapped`, below):
+  // a tab's panel carries its own ↻ in its title, and a swapped panel's arrive unwired.
+  function bind(btn) {
+    if (btn.__hrRerun) return;
+    btn.__hrRerun = true;
     // Stashed on the element so `stop` can put the button back exactly as it was without
     // a closure per button holding the strings. Only the tooltip: the face is a glyph the
     // run never replaces, so there is nothing else to put back.
@@ -566,7 +590,8 @@
       if (!paid) { go(btn); return; }
       confirmSpend(btn).then(function (yes) { if (yes) go(btn); });
     });
-  });
+  }
+  buttons.forEach(bind);
 
   window.HR.onready(function (caps) {
     if (!caps) return;
@@ -578,31 +603,53 @@
     prices = caps.prices || {};
     if (!prices.model && caps.price) prices.model = caps.price;
     var price = prices.model;
-    buttons.forEach(function (btn) {
-      var fmt = btn.getAttribute('data-tip-fmt');
-      var own = priceOf(btn);
-      if (!fmt || !own || !own.text) return;
+    buttons.forEach(raise);
+    if (price && price.text) {
+      var face = panel && panel.querySelector('.hrconfirm-price');
+      if (face) face.textContent = 'about ' + price.text + onModel(price);
+    }
+    adopt();
+  });
+
+  // What the probe's answer does to one button: its price, and whether it shows at all.
+  function raise(btn) {
+    var caps = window.HR.caps && window.HR.caps();
+    if (!caps) return;
+    var fmt = btn.getAttribute('data-tip-fmt');
+    var own = priceOf(btn);
+    if (fmt && own && own.text) {
       btn.setAttribute('data-tip', fillPrice(fmt, own));
       btn.setAttribute('data-idle-tip', btn.getAttribute('data-tip'));
       if (/costs about/.test(btn.getAttribute('aria-label') || '')) {
         btn.setAttribute('aria-label', 'Rerun with AI \u2014 costs about ' + own.text + onModel(own));
       }
-    });
-    if (price && price.text) {
-      var face = panel && panel.querySelector('.hrconfirm-price');
-      if (face) face.textContent = 'about ' + price.text + onModel(price);
     }
     // Per button, from the probe's own answer for that verb. Inferring the paid one from
     // the free one would draw a $5 control over a server that has no model step beside it.
-    buttons.forEach(function (btn) {
-      if (!window.HR.can(btn.getAttribute('data-rerun'), btn.getAttribute('data-tab'),
-                         btn.getAttribute('data-card'))) return;
-      btn.hidden = false;
-      btn.removeAttribute('aria-disabled');
-      // The `Served` badge stays beside it: Victor wants the badge to say what this copy
-      // is, and the ↺ to be only the press.
+    if (!window.HR.can(btn.getAttribute('data-rerun'), btn.getAttribute('data-tab'),
+                       btn.getAttribute('data-card'))) return;
+    btn.hidden = false;
+    btn.removeAttribute('aria-disabled');
+    // The `Served` badge stays beside it: Victor wants the badge to say what this copy
+    // is, and the ↺ to be only the press.
+  }
+
+  // A rebuild swapped part of the page in place (`panels.js`, or a card redrawn above): the
+  // buttons that left are dropped from the set every run disables, the new ones join it,
+  // wired and raised exactly as the ones the page loaded with. A card's own ring is moved
+  // into the new card rather than replaced, so it is already bound and is skipped.
+  document.addEventListener('hr:swapped', function (ev) {
+    var root = ev.detail;
+    if (!root || !root.querySelectorAll) return;
+    buttons = buttons.filter(function (b) { return b.isConnected; });
+    [].forEach.call(root.querySelectorAll('button.chip-rerun[data-rerun]'), function (btn) {
+      if (btn.__hrRerun) return;
+      buttons.push(btn);
+      bind(btn);
+      raise(btn);
+      // A run is going (every button is disabled while one is): the new one waits with them.
+      if (buttons.some(function (b) { return b.disabled && b !== btn; })) btn.disabled = true;
     });
-    adopt();
   });
 
   // A run that was going when this page loaded. The reader pressed Rerun, waited, and
@@ -625,12 +672,12 @@
       });
       progress.start(st.kind, st.started);
       progress.update(st.active);
+      var since = window.HR.stampNow ? window.HR.stampNow() : null;
       window.HR.follow(st.active, progress.update).then(function (snap) {
         if (snap.state === 'done') {
           progress.finish();
           stash(snap);
-          remember();
-          location.reload();
+          landed(mine || buttons[0], since);
           return;
         }
         stop(mine || buttons[0], 'the rebuild did not finish', snap);

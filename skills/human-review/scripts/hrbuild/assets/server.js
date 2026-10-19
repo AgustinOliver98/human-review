@@ -293,14 +293,49 @@ window.HR = (function () {
   // forty-second round trip the swap exists to avoid, and it would lose the reader's place:
   // so while a swap is under way the watcher does not reload, and when it is done it adopts
   // the stamp the server published for exactly the tree the swap came from.
-  var seenStamp = null, holdReload = 0;
+  //
+  // And a rebuild no longer has to mean a reload. The build also writes the page cut along
+  // its tabs (`hrbuild/shared/panels.py`), the watch answer carries their hashes, and
+  // `panels.js` (`HR.catchUp`) swaps in place the tabs that changed, keeping the reader's
+  // tab, scroll and open folds. It refuses — the shell moved, a tab came or went, a panel
+  // whose own script cannot be re-run changed, anything threw — and then this reloads, as
+  // it always did.
+  var seenStamp = null, holdReload = 0, watching = false, waiters = [];
   function adoptStamp(stamp) { if (stamp) seenStamp = stamp; }
   function quiet(on) { holdReload = Math.max(0, holdReload + (on ? 1 : -1)); }
+  function stampNow() { return seenStamp; }
+  function reloadKeepingPlace() { keepPlace(); location.reload(); }
+
+  function catchUp(w) {
+    if (!window.HR.catchUp) { location.reload(); return Promise.resolve(false); }
+    holdReload++;
+    return window.HR.catchUp(w).then(function () {
+      seenStamp = w.stamp;
+      holdReload--;
+      waiters.splice(0).forEach(function (fn) { try { fn(); } catch (e) {} });
+      return true;
+    }, function () { reloadKeepingPlace(); return false; });
+  }
+
+  // For a control whose run rebuilt the page (the ↺ presses, rerun.js): resolves once the
+  // page shows that build — in place — and never when it took a reload to get there.
+  // `since` is the stamp the page had when the run started: the server holds the watcher
+  // for the length of a run, so a stamp other than that one is the run's build, possibly
+  // already swapped in by the poll before the run's own poller heard it was done.
+  function afterRebuild(since) {
+    if (!watching) { reloadKeepingPlace(); return new Promise(function () {}); }
+    if (since && seenStamp !== since) return Promise.resolve();
+    return new Promise(function (resolve) {
+      var t = setTimeout(reloadKeepingPlace, 20000);
+      waiters.push(function () { clearTimeout(t); resolve(); });
+    });
+  }
 
   onready(function (j) {
     if (!j || !j.watch) return;
     var misses = 0;
     seenStamp = j.watch;
+    watching = true;
     (function next() {
       // Slower when the tab is in the background: it will be reloaded before anyone
       // looks at it either way, and a dozen parked reports are a dozen pollers.
@@ -310,13 +345,16 @@ window.HR = (function () {
           .then(function (w) {
             misses = 0;
             // `reload()` and not a cache-buster: the server sends no-store.
-            if (w.stamp && w.stamp !== seenStamp && !holdReload) { location.reload(); return; }
+            if (w.stamp && w.stamp !== seenStamp && !holdReload) {
+              catchUp(w).then(function (inPlace) { if (inPlace) next(); });
+              return;
+            }
             next();
           })
           // The server is mortal by design — idle for `--idle-minutes` and it is gone,
           // under a tab that is still open. That is not an error to report, it is the
           // end of the poll: three tries so a blip does not end it, then silence.
-          .catch(function () { if (++misses < 3) next(); });
+          .catch(function () { if (++misses < 3) next(); else watching = false; });
       }, document.hidden ? 5000 : 1000);
     })();
   });
@@ -518,6 +556,6 @@ window.HR = (function () {
   return {ready: ready, can: can, onready: onready, run: run, rerun: rerun, follow: poll,
           rerunAi: rerunAi, tail: tail, copy: copy, keepPlace: keepPlace,
           status: status, caps: function () { return caps; },
-          adoptStamp: adoptStamp, quiet: quiet,
+          adoptStamp: adoptStamp, quiet: quiet, stampNow: stampNow, afterRebuild: afterRebuild,
           localOnly: localOnly, localHint: localHint};
 })();

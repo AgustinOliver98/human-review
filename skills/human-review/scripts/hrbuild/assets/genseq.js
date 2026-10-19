@@ -260,7 +260,14 @@
     group.insertBefore(rect, group.firstChild);
   }
 
-  document.querySelectorAll('.diagram').forEach(function (diagram) {
+  // Per diagram, over the page at load and over whatever a rebuild swaps in (`hr:swapped`,
+  // at the bottom): a swapped-in panel's arrows arrive with no handles on them.
+  function wireDiagrams(root) {
+  var all = [].slice.call(root.querySelectorAll('.diagram'));
+  if (root.matches && root.matches('.diagram')) all.unshift(root);
+  all.forEach(function (diagram) {
+    if (diagram.__hrGenseq) return;
+    diagram.__hrGenseq = true;
     // Every carrier, not the first: a diagram is now drawn three times in one card
     // (Diff / New / Old), and each side's handles are keyed by ids derived from that
     // side's payloads. One carrier covered one side, and the other panes' handles were
@@ -325,6 +332,8 @@
     // at the moment the reader is looking at it. A sentence above the diagram says the
     // same thing to everyone, including the reader who has already clicked one.
   });
+  }
+  wireDiagrams(document);
 
   // The generator ends a label that opens a method in the editor with `↗` (`OwnerRepository
   // .save ↗`). The arrow said "somewhere else" without saying where; the logo of the IDE the
@@ -377,7 +386,8 @@
     return true;
   }
 
-  document.querySelectorAll('.diagram svg a').forEach(function (link) {
+  function wireLogos(root) {
+  root.querySelectorAll('.diagram svg a').forEach(function (link) {
     var texts = link.querySelectorAll('text');
     var stripped = false;
     for (var i = texts.length - 1; i >= 0 && !stripped; i--) stripped = stripGlyph(texts[i]);
@@ -387,6 +397,8 @@
     if (!logos.length || !/^vscode:\/\/file\//.test(link.getAttribute('href') || '')) return;
     if (!placeLogos(link)) unplaced.push(link);
   });
+  }
+  wireLogos(document);
 
   function placeLater() {
     if (!unplaced.length) return;
@@ -412,9 +424,23 @@
 
   // The panel is placed in page coordinates, so a diagram scrolled sideways under it
   // would leave it pointing at the wrong arrow.
-  document.querySelectorAll('.diagram .svgbox').forEach(function (box) {
-    box.addEventListener('scroll', close);
-  });
+  function wireScroll(root) {
+    root.querySelectorAll('.diagram .svgbox').forEach(function (box) {
+      box.addEventListener('scroll', close);
+    });
+  }
+  wireScroll(document);
   document.addEventListener('click', close);
+  // A rebuild swapped part of the page (`panels.js`, `rerun.js`): the open detail may point
+  // at an arrow that is gone, and the new arrows need their handles.
+  document.addEventListener('hr:swapped', function (ev) {
+    var root = ev.detail;
+    if (!root || !root.querySelectorAll) return;
+    close();
+    unplaced = unplaced.filter(function (link) { return link.isConnected; });
+    wireDiagrams(root);
+    wireLogos(root);
+    wireScroll(root);
+  });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') close(); });
 })();

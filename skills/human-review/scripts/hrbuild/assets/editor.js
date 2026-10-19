@@ -221,6 +221,9 @@
   // it read `connected` while still undefined, threw, and took every click handler below
   // with it — no copy button on a file:// page copied anything (19 Oct 2026).
   window.HR.onready(function (caps) { SERVED = !!caps; paintIde(); });
+  // A rebuild swapped part of the page in place (`hr:swapped`, panels.js): its "in VS Code"
+  // words and tips arrive as the build wrote them, and are painted for the pick again.
+  document.addEventListener('hr:swapped', function () { paintIde(); });
 
   // Said when the server sent a click to the other IDE: the picked one has no window on it.
   function fellBack(said) {

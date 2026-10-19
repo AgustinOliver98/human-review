@@ -68,9 +68,18 @@
   // off `[data-state]` on that element; what travels is the header's contents. `show` and
   // the click handler are the two places that then have to look the bar up from the card
   // instead of from `views`, and they do.
-  document.querySelectorAll('.diagram.dgm-bare > .head').forEach(function (head) {
-    var bar = head.parentElement.querySelector('.dgmviews > .dgmbar');
-    if (!bar) return;
-    while (head.firstChild) bar.appendChild(head.firstChild);
+  //
+  // Over the whole page at load, and over whatever a rebuild swaps in later (`hr:swapped`:
+  // a tab's panel, or a redrawn card), which arrives with its header not yet merged.
+  function merge(root) {
+    root.querySelectorAll('.diagram.dgm-bare > .head').forEach(function (head) {
+      var bar = head.parentElement.querySelector('.dgmviews > .dgmbar');
+      if (!bar) return;
+      while (head.firstChild) bar.appendChild(head.firstChild);
+    });
+  }
+  merge(document);
+  document.addEventListener('hr:swapped', function (ev) {
+    if (ev.detail && ev.detail.querySelectorAll) merge(ev.detail);
   });
 })();

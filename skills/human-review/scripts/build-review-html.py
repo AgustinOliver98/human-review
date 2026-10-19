@@ -66,7 +66,14 @@ from hrbuild.shared.assets import (
     APP_ENV_JS, CAPTION_JS, CSS, CSS_FILES, DGM_VIEWS_JS, EDITOR_JS, FOCUS_JS, FOOTER_CSS,
     GENSEQ_JS, HSCROLL_JS, LATE_CSS, PAINT_HOLD_JS, PAINT_RELEASE_JS, RERUN_JS, SEQFOLD_JS, SEQHEADS_JS,
     SEQLINK_JS, SERVER_JS, TABS_JS, TIP_JS, TRACE_JS, XREF_CSS, XREF_JS, FOLDERS_JS,
-    FIXTURES_JS, EXPLAIN_JS
+    FIXTURES_JS, EXPLAIN_JS, PANELS_JS
+)
+from hrbuild.shared.panels import (
+    PANELS_DIR, PANELS_MANIFEST, PANELS_VERSION, _PANEL_OPEN, _PANEL_STRIP, _PANEL_PILL,
+    _PANEL_SCRIPT, _PANEL_DATA_TYPE, _PANEL_SWAP, _PANEL_LOCAL_REF, _PANEL_HTML_OPEN,
+    _panel_hash, _panel_file_mark, _panel_write_if_changed, panel_blockers, split_panels,
+    stamp_panels, panel_piece, write_panels, read_panels_manifest, restamp_page,
+    _PANEL_STAMPED, _PANEL_SHELL_STAMPED
 )
 from hrbuild.shared.fixtures import (
     FIXTURE_COLORS_FILE,
@@ -1507,6 +1514,7 @@ def _main(argv=None) -> int:
 {EDITOR_JS}
 {TRACE_JS}\n{SEQLINK_JS}\n{FOLDERS_JS}\n{SEQFOLD_JS}\n{SEQHEADS_JS}\n{HSCROLL_JS}\n{TABS_JS}\n{PAINT_RELEASE_JS}
 {RERUN_JS}
+{PANELS_JS}
 {TIP_JS}
 {explain_data()}
 {EXPLAIN_JS}
@@ -1518,11 +1526,17 @@ def _main(argv=None) -> int:
     doc = one_tooltip_only(doc)
     doc = promote_traced(doc)
     check_baked_excerpts(doc)
+    # Last of all, over the finished document: each panel's hash on it, and the page cut
+    # along its tabs for the served copy to swap in place (`shared/panels.py`).
+    doc, pieces = stamp_panels(doc, out_dir, out_path.name)
     out_path.write_text(doc, encoding="utf-8")
     # After the page, so the manifest can never promise a verb for a build that failed to
     # write its own HTML — and every declaration is in by now, the register being filled
     # as the emitters run.
     write_actions(out_dir)
+    # And the pieces after both: the last thing written is the tab manifest, so a manifest
+    # on disk always describes a page and an action list already there.
+    write_panels(out_dir, pieces)
     print(f"[review] wrote {out_path}", file=sys.stderr)
     return 0
 

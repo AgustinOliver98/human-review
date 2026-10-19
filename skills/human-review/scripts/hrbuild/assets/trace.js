@@ -11,15 +11,22 @@
 // own inline script and do not know what the run recorded, and should not have to. So
 // the pairing is done here, from the outside, after the map has drawn.
 (function () {
-  var el = document.getElementById('hr-traces');
-  if (!el) return;
-  var reg; try { reg = JSON.parse(el.textContent); } catch (e) { return; }
-  var byKey = {};
-  (reg.tests || []).forEach(function (t) { byKey[t.test] = t; });
-  var served = !!reg.viewer && location.protocol !== 'file:';
+  // Read again when a rebuild swaps the Tests panel in place (`hr:swapped`, below): the
+  // registry rides in that panel.
+  var reg, byKey, served;
+  function load() {
+    var el = document.getElementById('hr-traces');
+    reg = null; byKey = {};
+    if (el) { try { reg = JSON.parse(el.textContent); } catch (e) { reg = null; } }
+    if (!reg) return false;
+    (reg.tests || []).forEach(function (t) { byKey[t.test] = t; });
+    served = !!reg.viewer && location.protocol !== 'file:';
+    return true;
+  }
 
-  function decorate() {
-    var rows = document.querySelectorAll('.rm-t[data-id]');
+  function decorate(root) {
+    if (!reg) return;
+    var rows = (root || document).querySelectorAll('.rm-t[data-id]');
     Array.prototype.forEach.call(rows, function (row) {
       if (row.querySelector('.rm-tv')) return;
       var id = row.getAttribute('data-id') || '';
@@ -68,6 +75,13 @@
       where.parentNode.insertBefore(tv, where);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', decorate);
+  document.addEventListener('hr:swapped', function (ev) {
+    var root = ev.detail;
+    if (!root || !root.querySelectorAll) return;
+    if (root.querySelector('#hr-traces')) load();
+    decorate(root);
+  });
+  if (!load()) return;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { decorate(); });
   else decorate();
 })();

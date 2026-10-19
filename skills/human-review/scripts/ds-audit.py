@@ -1633,9 +1633,12 @@ details.dsa-why.ok .dsa-snip { opacity: .85; }
 }
 """
 
-HL_JS = """<script>
+HL_JS = """<script data-hr-swap="keep">
 // Hovering a row lights its box on the picture. Delegated on `document` for the same
 // reason the diagram viewer is: the fragment is pasted into a page it does not own.
+// Delegated only, which is what `data-hr-swap="keep"` says: when a rebuild swaps this tab
+// into an open page (`hrbuild/shared/panels.py`), the listeners registered at load serve
+// the new markup, and this script is not run a second time.
 (function () {
   // The count opens the box that says how "changed" is decided.
   function toggleHow(el) {

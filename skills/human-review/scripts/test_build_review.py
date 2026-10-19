@@ -4151,7 +4151,9 @@ def test_the_paired_card_draws_its_controls_and_its_name_on_one_row():
     path hard right on the other. The bar stays inside .dgmviews — the stylesheet paints
     the buttons off [data-state] there — and the header's contents move into it."""
     js = build.DGM_VIEWS_JS
-    assert "document.querySelectorAll('.diagram.dgm-bare > .head')" in js
+    # Over the page at load, and over a panel or card a rebuild swaps in (`hr:swapped`).
+    assert "root.querySelectorAll('.diagram.dgm-bare > .head')" in js
+    assert "merge(document);" in js
     assert "while (head.firstChild) bar.appendChild(head.firstChild);" in js
     # Both lookups that used to start from `views` now start from the card.
     assert "(views.closest('.diagram') || views).querySelectorAll('.dgmbar button[data-go]')" in js

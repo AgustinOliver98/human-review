@@ -370,7 +370,9 @@ trailer if the claim was never true.
 the page — in the VS Code window's own browser, beside the code, when the run is in a VS
 Code terminal and the Human Review VS Code extension (`vscode-extension/` in this repository,
 `victorrentea.human-review`) is installed; in the default browser otherwise. Later rebuilds open nothing: the tab already
-open reloads itself. Do not open it again by hand, and never `open review.html`.
+open catches up by itself — it swaps in place only the tabs the rebuild changed (the build
+writes them beside the page, `tabs/<id>.html`), and reloads whole when a shared part moved.
+Do not open it again by hand, and never `open review.html`.
 
 **Print `$URL` as the last line of the run.** Then make sure the app runs from *this*
 checkout, open the screen the change affects, and start `/relay` so they can dictate tweaks
@@ -417,7 +419,7 @@ review's own run (Step 2) still does, which is what the cost attribution is buil
 **Rerun** beside the `served` badge — `refresh-report.py --steps static`, which is the
 producers that need nothing up: the diagram deltas, the container view, the complexity
 increment, the REST contract and its second opinions, the logging scan, code owners and the
-test manifest. It rebuilds and the tab reloads itself on the same tab, keeping its place.
+test manifest. It rebuilds and the tab catches up on the same tab, keeping its place.
 It is deliberately *not* `--steps cheap`: that one keeps `traces`, whose configured commands
 are the project's own e2e suite. And it is deliberately not the film — the button says so on
 its hover, because that is the one a reader is right to worry about.

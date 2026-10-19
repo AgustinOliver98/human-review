@@ -30,7 +30,10 @@
     else location.hash = id;
   }
 
-  document.querySelectorAll('details.testpair[id]').forEach(function (pair) {
+  // At load, and over a panel a rebuild swaps in (`hr:swapped`, panels.js), which keeps
+  // the reader's folds itself and only needs its pairs to keep reporting them.
+  function wire(root) {
+  root.querySelectorAll('details.testpair[id]').forEach(function (pair) {
     // `toggle` fires asynchronously, so the folding above arrives here too — harmlessly:
     // a pair being shut only rewrites the hash when the hash is naming that very pair,
     // which at load is true of the one pair this loop leaves open.
@@ -42,6 +45,11 @@
         remember(panel && panel.id ? panel.id : '');
       }
     });
+  });
+  }
+  wire(document);
+  document.addEventListener('hr:swapped', function (ev) {
+    if (ev.detail && ev.detail.querySelectorAll) wire(ev.detail);
   });
 
   // The row's file name is a link — to VS Code, at the scenario's line — and it sits inside
@@ -67,13 +75,19 @@
   // in the summary, so the press is taken before the row folds under it. Without the view
   // the dot stays a mark, and its tip promises no click.
   if (typeof window.hrOpenDataset === 'function') {
-    document.querySelectorAll('details.testpair > summary .fx-dot').forEach(function (dot) {
-      dot.setAttribute('role', 'button');
-      dot.setAttribute('tabindex', '0');
-      var tip = dot.getAttribute('data-tip') + (dot.classList.contains('fx-empty')
-        ? ' · click to view the rest' : ' · click to view the data');
-      dot.setAttribute('data-tip', tip);
-      dot.setAttribute('aria-label', tip);
+    var dots = function (root) {
+      root.querySelectorAll('details.testpair > summary .fx-dot').forEach(function (dot) {
+        dot.setAttribute('role', 'button');
+        dot.setAttribute('tabindex', '0');
+        var tip = dot.getAttribute('data-tip') + (dot.classList.contains('fx-empty')
+          ? ' · click to view the rest' : ' · click to view the data');
+        dot.setAttribute('data-tip', tip);
+        dot.setAttribute('aria-label', tip);
+      });
+    };
+    dots(document);
+    document.addEventListener('hr:swapped', function (ev) {
+      if (ev.detail && ev.detail.querySelectorAll) dots(ev.detail);
     });
     var onDot = function (ev) {
       var dot = ev.target.closest && ev.target.closest('details.testpair > summary .fx-dot');

@@ -14,10 +14,22 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
   var PAD_TOP = 6, PAD_BOTTOM = 10;          // viewBox units: the boxes plus a lifeline stub
   var diagrams = [];
-  document.querySelectorAll('.diagram .svgbox svg').forEach(function (svg) {
-    if (svg.querySelector('g.participant-head')) diagrams.push(svg);
+  function collect(root) {
+    root.querySelectorAll('.diagram .svgbox svg').forEach(function (svg) {
+      if (svg.querySelector('g.participant-head')) diagrams.push(svg);
+    });
+  }
+  collect(document);
+  // A rebuild that swaps a panel in place (`hr:swapped`, from panels.js) takes its diagrams
+  // with it and brings new ones: drop the ones that left, take the ones that came. So no
+  // early return on a page without any: a swap may bring the first one.
+  document.addEventListener('hr:swapped', function (ev) {
+    if (!ev.detail || !ev.detail.querySelectorAll) return;
+    diagrams = diagrams.filter(function (svg) { return svg.isConnected; });
+    collect(ev.detail);
+    shown = null;
+    schedule();
   });
-  if (!diagrams.length) return;
 
   var strip = document.createElement('div');
   strip.id = 'seqheads';

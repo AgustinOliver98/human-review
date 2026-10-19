@@ -115,8 +115,11 @@ dest="$repo/demo/$slug"
 
 # Raw material the run keeps for itself and the page never links: the per-test coverage
 # store (testcov's jars, dumps and logs — 121 MB on petclinic-pr, a 70 MB backend jar among
-# them). Copying it made the size check below refuse every publish.
-NOT_PUBLISHED=(coverage)
+# them). Copying it made the size check below refuse every publish. And `tabs/`: the page
+# again, cut along its tabs for the served copy to swap in place (`hrbuild/shared/panels.py`)
+# — a published copy is never served by us, so it would be a second copy of review.html
+# in the repository's history for nothing.
+NOT_PUBLISHED=(coverage tabs)
 
 # A large asset silently blows past what GitHub Pages will serve; catch it before the push.
 # Built as an array, never word-split: an unquoted `*/coverage/*` is a shell glob first,

@@ -51,6 +51,7 @@ from hrbuild.shared.actions import ACTIONS, ACTIONS_FILE  # noqa: E402
 from hrbuild.shared.adopt import _close, place_prompts  # noqa: E402
 from hrbuild.shared.diagrams import (CARD_NAME, card_rerun_id,  # noqa: E402
                                      drawio_unchanged, drawio_widget_html, shorten_dgm_src)
+from hrbuild.shared.panels import restamp_page  # noqa: E402
 from hrbuild.shared.postprocess import one_tooltip_only, open_links_in_new_tabs  # noqa: E402
 
 DRAWIO_DIFF = HERE / "drawio-diff.py"
@@ -241,6 +242,10 @@ def main(argv=None) -> int:
     if not splice(review, name, card):
         return full_rebuild(rebuild, f"the card named {name} left the page")
     merge_actions(review, name, dict(ACTIONS))
+    # The panel the card sits in changed: its hash on the page and its piece beside it
+    # follow, so another open copy of the page swaps that tab in rather than keep the old
+    # card (`shared/panels.py`).
+    restamp_page(review)
     write_atomically(card_file(review, name), card)
     lap("splice")
     steps = " · ".join(f"{what} {b - a:.2f}s"

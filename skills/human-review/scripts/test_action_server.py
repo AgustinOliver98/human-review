@@ -843,7 +843,7 @@ def test_a_page_that_is_not_served_has_no_rerun_button():
     assert 'aria-disabled="true"' in build.RERUN_CHIP
     # Per button, from the probe's own answer for that verb — not from "is there a server".
     assert ("if (!window.HR.can(btn.getAttribute('data-rerun'), btn.getAttribute('data-tab'),\n"
-            "                         btn.getAttribute('data-card'))) return;") in build.RERUN_JS
+            "                       btn.getAttribute('data-card'))) return;") in build.RERUN_JS
     assert "btn.hidden = false;" in build.RERUN_JS
     assert "fetch(route, {" in build.SERVER_JS and "'/__rerun__'" in build.SERVER_JS
     # No clipboard consolation prize: there is nothing to paste that would be this button.
@@ -2009,7 +2009,7 @@ def test_the_demo_tab_paid_press_is_served_only_and_quotes_its_own_price(tmp_pat
     js = build.RERUN_JS
     assert "getAttribute('data-price')" in js and "caps.prices" in js
     assert ("if (!window.HR.can(btn.getAttribute('data-rerun'), btn.getAttribute('data-tab'),\n"
-            "                         btn.getAttribute('data-card'))) return;") in js
+            "                       btn.getAttribute('data-card'))) return;") in js
 
 
 def test_the_probe_prices_the_film_out_of_its_own_ledger(server, tmp_path):
