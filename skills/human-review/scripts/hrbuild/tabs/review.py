@@ -1706,13 +1706,11 @@ def pr_description_html(spec) -> str:
     body = _PR_BODY_BOILERPLATE.sub("", str(got.get("body") or "")).strip()
     if not body:
         return ""
-    url = str(got.get("url") or "")
-    m = _PULL_URL.search(url)
+    # No link to the PR here: the masthead's title already is one.
+    m = _PULL_URL.search(str(got.get("url") or ""))
     repo_url = f"https://github.com/{m.group(1)}" if m else ""
-    link = (f' <a class="prdesc-gh" href="{html.escape(url, quote=True)}" target="_blank" '
-            'rel="noopener">on GitHub &#8599;</a>' if url else "")
     return (f'<section class="prdesc" aria-label="Pull request description">'
-            f'<p class="prdesc-h">PR description{link}</p>'
+            f'<p class="prdesc-h">PR description</p>'
             f'<div class="prdesc-body">{pr_body_html(body, repo_url)}</div></section>')
 
 

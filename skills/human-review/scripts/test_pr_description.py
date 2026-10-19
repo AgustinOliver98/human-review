@@ -41,7 +41,7 @@ def test_the_agent_attribution_line_is_left_out():
                                              "[Claude Code](https://claude.com/claude-code)"}}
     out = review.pr_description_html(spec)
     assert "Closes" in out and "Generated with" not in out
-    assert f'href="{URL}"' in out
+    assert f'href="{URL}"' not in out   # the masthead's PR#N already links there
 
 
 def test_an_empty_description_draws_nothing():

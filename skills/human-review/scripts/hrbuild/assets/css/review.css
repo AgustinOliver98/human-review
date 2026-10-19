@@ -261,7 +261,6 @@ html.ide-idea a.f-vsc .vsc-ico, html.ide-idea a.pr-vsc { display:none; }
           background:color-mix(in srgb, var(--fg) 3%, transparent); border-radius:0 6px 6px 0; }
 .prdesc-h { margin:0 0 .3rem; font:700 .68rem/1.7 inherit; letter-spacing:.09em;
           text-transform:uppercase; color:var(--muted); }
-.prdesc-h .prdesc-gh { font-weight:500; letter-spacing:0; text-transform:none; margin-left:.4rem; }
 .prdesc-body { max-height:18rem; overflow:auto; font-size:.95rem; line-height:1.5; }
 .prdesc-body > :first-child { margin-top:0; }
 .prdesc-body > :last-child { margin-bottom:0; }
