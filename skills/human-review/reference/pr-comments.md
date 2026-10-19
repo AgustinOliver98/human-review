@@ -14,7 +14,7 @@ back 5xx without first looking at what it left on the PR, and skips every commen
 hidden `<!-- hr:… -->` marker is already there — a re-run posts only what is missing. What
 is on the PR afterwards, whatever the outcome, is in `pr-comments.posted.json`, which the
 served page reads back to put *on GitHub ↗* / *in VS Code* beside each item and to turn the
-button into *Published on GitHub ↗* (or *Retry*, with the reason in words).
+button into a grey, inert *✓ Published* (or *Retry*, with the reason in words).
 
 **Where:** `.human-review/pr-comments.json` (gitignored — it is a call, not a record; the
 record is `review-points.md`). Write it **after** commit #2, so `commit_id` is that commit.

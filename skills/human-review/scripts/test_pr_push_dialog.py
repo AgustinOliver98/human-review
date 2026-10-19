@@ -195,15 +195,20 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-def test_everything_posted_reads_published_and_opens_the_review(browser):
+def test_everything_posted_reads_published_as_grey_text_that_does_nothing(browser):
+    """Victor, 19 Oct 2026: not a button — grey "✓ Published", the where and when in the
+    hover, and a click opens nothing and runs nothing."""
     page = open_page(browser, {}, {"pr-comments.json": PAYLOAD_TEXT,
                                    "pr-comments.posted.json": record(sha=_sha(PAYLOAD_TEXT))})
     page.wait_for_function("document.querySelector('.pr-push').dataset.state === 'done'")
-    assert page.locator(".pr-push").inner_text() == "Published on GitHub ↗"
+    b = page.locator(".pr-push")
+    assert b.inner_text() == "Published"
+    assert b.get_attribute("aria-disabled") == "true"
+    assert b.get_attribute("data-tip") == "Published as a review on PR #51 \u2014 2026-10-07 15:28"
     assert not page.locator(".pr-repub").is_visible(), "unchanged: nothing to re-publish"
     assert page.locator("a.f-gh").count() == 2
-    page.click(".pr-push")
-    assert page.evaluate("__opened") == ["https://github.com/o/r/pull/51#pullrequestreview-9"]
+    page.click(".pr-push", force=True)  # aria-disabled: Playwright would wait for enabled
+    assert page.evaluate("__opened") == []
     assert page.evaluate("__runs") == []
     assert page.locator("a.pr-vsc").is_visible()
     assert page.locator("a.pr-vsc").get_attribute("href").endswith("uri=https%3A%2F%2Fgithub.com%2Fo%2Fr%2Fpull%2F51")
@@ -278,7 +283,9 @@ def test_a_partial_record_renders_retry_and_its_sentence():
     assert ">Retry</button>" in face and 'data-face="Publish on GitHub"' in face
     assert PARTIAL["message"] in face and "pp-err" in face
     face = build.push_pr_button({"_prPush": {**base, "status": "complete", "message": "x"}})
-    assert ">Published on GitHub ↗</button>" in face and 'data-state="done"' in face
+    assert ">Published</button>" in face and 'data-state="done"' in face
+    assert 'aria-disabled="true"' in face and "↗" not in face.split("</button>")[0]
+    assert 'data-tip="Published as a review on the pull request — 2026-10-07 15:28"' in face
     assert 'class="pr-repub" hidden' in face
     face = build.push_pr_button({"_prPush": {**base, "status": "complete", "changed": True}})
     assert 'class="pr-repub" data-tip' in face

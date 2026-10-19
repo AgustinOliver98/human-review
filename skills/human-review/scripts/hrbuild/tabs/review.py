@@ -984,13 +984,14 @@ def _ci_signal(out_dir: Path) -> dict | None:
     sha = str(gate.get("sha") or "")[:8]
     caveat = _plain_text(str(gate.get("caveat") or ""))
     runs = [w for w in gate.get("workflows") or [] if isinstance(w, dict)]
-    def linked(sig: dict, run: dict) -> dict:
+    def linked(sig: dict, run: dict, word: str = "CI") -> dict:
         # The run is the evidence, so it is a link a reader can click — eval run 8 had the
-        # URL only in the hover, where "CI green" had to be taken on trust.
+        # URL only in the hover, where "CI green" had to be taken on trust. The bullet's
+        # own first word is the link (Victor, 19 Oct 2026): a trailing `— CI run 3734… ↗`
+        # said the run number nobody reads and "CI" a second time.
         url = str(run.get("url") or "")
         if url.startswith(("https://", "http://")):
-            sig.update(href=url, linkText=f"{run.get('name') or 'CI'} run"
-                       + (f" {run['runId']}" if run.get("runId") else "") + " \u2197")
+            sig.update(href=url, linkText=word, linkInline=True)
         return sig
     if gate["verdict"] == "green":
         run = next((w for w in runs if w.get("runId")), {})
@@ -1002,9 +1003,11 @@ def _ci_signal(out_dir: Path) -> dict | None:
         return linked(_signal("ci-failed", f"CI failed on {sha}" if sha else "CI failed",
                               caveat or "a CI workflow concluded failure on the reviewed commit",
                               GRADE_CAPS["ci-failed"]), run)
-    return _signal("ci-unproven", "No build proved this commit",
-                   caveat or f"the CI gate says {gate['verdict']!r}, not green",
-                   GRADE_CAPS["ci-unproven"])
+    # Pending or skipped: the run that has not proved it yet, if there is one, on "build".
+    return linked(_signal("ci-unproven", "No build proved this commit",
+                          caveat or f"the CI gate says {gate['verdict']!r}, not green",
+                          GRADE_CAPS["ci-unproven"]),
+                  next((w for w in runs if w.get("url")), {}), "build")
 
 
 def _api_signal(out_dir: Path) -> dict | None:
@@ -1379,9 +1382,10 @@ def grade_reasons(spec) -> list[tuple[str, str]]:
     return [(short, full) for short, full, _ in _grade_rows(spec)]
 
 
-def _grade_rows(spec) -> list[tuple[str, str, tuple[str, str] | None]]:
-    """`[(short, full, (href, face) or None), …]` — `grade_reasons`, plus the link a
-    signal carries to what it rests on (a narrowed ticket sentence → the decision)."""
+def _grade_rows(spec) -> list[tuple[str, str, tuple[str, str, bool] | None]]:
+    """`[(short, full, (href, face, inline) or None), …]` — `grade_reasons`, plus the link a
+    signal carries to what it rests on (a narrowed ticket sentence → the decision). An
+    `inline` link is a word of the bullet itself (`CI` green on …), not a trailing one."""
     v = spec.get("verdict") or {}
     # The piles are counted here, at render time, not off the list the build computed:
     # the build drops unanchored assumptions after the signals were taken, and the panel
@@ -1411,7 +1415,8 @@ def _grade_rows(spec) -> list[tuple[str, str, tuple[str, str] | None]]:
         short = s["short"]
         if s.get("cap") and model_score is not None and s["cap"] < model_score:
             short += f" (caps the grade at {s['cap']})"
-        link = (s["href"], s.get("linkText") or "source") if s.get("href") else None
+        link = ((s["href"], s.get("linkText") or "source", bool(s.get("linkInline")))
+                if s.get("href") else None)
         out.append((short, s.get("full") or short, link))
     room = max(1 if own else 0, min(MODEL_GRADE_LINES, GRADE_LINES_MAX - len(out)))
     if len(own) > room:
@@ -1733,15 +1738,21 @@ def grade_reasons_html(spec) -> str:
     n = int(v["score"])
     band = "v-good" if n >= 8 else ("v-mid" if n >= 5 else "v-bad")
 
-    def link(at) -> str:
+    def bullet(short: str, at) -> str:
         if not at:
-            return ""
-        href, face = at
+            return html.escape(short)
+        href, face, inline = at
+        a = f'<a href="{html.escape(href, quote=True)}" target="_blank" rel="noopener">'
+        # A word of the bullet is the link (`CI` green on …) when the bullet has it; else
+        # the link trails it.
+        i = re.search(rf"\b{re.escape(face)}\b", short) if inline else None
+        if i:
+            return (html.escape(short[:i.start()]) + a + html.escape(face) + "</a>"
+                    + html.escape(short[i.end():]))
         # The file, not its line: `proposal.md:86` reads `proposal.md` and the link still
         # lands on line 86 (Victor, 9 Oct 2026: no line numbers as labels on this page).
         face = re.sub(r":\d+(?:[-–]\d+)?(?:,\d+(?:[-–]\d+)?)*$", "", face)
-        return (f' — <a href="{html.escape(href, quote=True)}" target="_blank" '
-                f'rel="noopener">{html.escape(face)}</a>')
+        return f'{html.escape(short)} — {a}{html.escape(face)}</a>'
     def rest(short: str, full: str) -> str:
         # The hover adds what the bullet does not say: a full sentence that opens with the
         # bullet's own words loses them, and one with nothing left gets no hover at all.
@@ -1754,8 +1765,8 @@ def grade_reasons_html(spec) -> str:
     # keep the plain wording.
     good = lambda short: "\u2705 " if short.startswith("CI green") else ""
     items = "".join(
-        f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{good(short)}{html.escape(short)}{link(at)}</li>'
-        if full and rest(short, full) else f"<li>{good(short)}{html.escape(short)}{link(at)}</li>"
+        f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{good(short)}{bullet(short, at)}</li>'
+        if full and rest(short, full) else f"<li>{good(short)}{bullet(short, at)}</li>"
         for short, full, at in reasons)
     was = v.get("modelScore")
     # The word, not the arithmetic: "was 7" struck through raised the question it was meant
@@ -1947,10 +1958,10 @@ def _render_finding_items(findings) -> str:
     return _open_list(len(findings)) + "\n".join(items) + "</ol>"
 
 
-#: The confidence chip's tooltip, fixed rather than composed per item — Victor's own
-#: words, with the scale in the unit the chip now shows. It names the scale, not the one
-#: number already on the chip's own face; the number does not need saying twice.
-CONFIDENCE_TIP = "Confidence ∈ [10% .. 90%]"
+#: The confidence chip's tooltip, fixed rather than composed per item: the face is a bare
+#: `(60%)` since Victor dropped the word "confident" (19 Oct 2026), so the hover names
+#: what the number is.
+CONFIDENCE_TIP = "Confidence level"
 
 
 def _confidence_chip(f) -> str:
@@ -1968,12 +1979,13 @@ def _confidence_chip(f) -> str:
     if c is None:
         return ""
     # A percentage, not a rate: `45%` is read at a glance, `0.45` is read as arithmetic.
-    # The lede already says "3 under 70% sure"; the chips now speak the same unit.
-    shown = f"{round(c * 100)}% confident"
+    # The lede already says "3 under 70% sure"; the chips now speak the same unit. In
+    # parentheses, without "confident" (Victor, 19 Oct 2026): one bold run with the kind
+    # before it and the title after, the word moved to the hover.
+    shown = f"({round(c * 100)}%)"
     band = "sev-high" if c < 0.5 else "sev-med" if is_unsure(f) else "sev-info"
     cls = f"f-confidence {band}"
-    # No tooltip (Victor, 7 Oct 2026): the number says it; the old range hint only added noise.
-    return f'<span class="{cls}">{shown}</span>'
+    return f'<span class="{cls}" data-tip="{CONFIDENCE_TIP}">{shown}</span>'
 
 
 #: The word on every assumption card — fixed, never the item's own `source`. The report
@@ -3628,7 +3640,7 @@ def prepare_pr_push(spec: dict, out_dir: Path, root: Path, skill_dir: Path) -> d
               for p in ("fixed", "ignored", "assumption")}
     spec["_prPush"] = {"count": len(comments), "counts": counts,
                        "posted": sum(1 for u in urls.values() if u),
-                       "pushedAt": posted.get("pushed_at"),
+                       "pushedAt": posted.get("pushed_at"), "pr": posted.get("pr"),
                        "reviewUrl": posted.get("review_url"), "prUrl": posted.get("url"),
                        # A push that stopped half-way says so on the page until a retry
                        # completes it — the record is what is on GitHub, not what was meant.
@@ -3891,9 +3903,13 @@ document.addEventListener('DOMContentLoaded', function(){
   function show() {
     var st = status(rec);
     if (st === 'complete' && (rec.review_url || rec.url)) {
-      b.textContent = 'Published on GitHub \\u2197'; b.dataset.state = 'done';
-      b.dataset.tip = 'Open the review on GitHub' + (rec.pushed_at
-        ? ' \\u2014 published ' + rec.pushed_at.slice(0, 16).replace('T', ' ') : '');
+      // A fact, not a control (Victor, 19 Oct 2026): grey "✓ Published", the check in
+      // green from the CSS, nothing to press — re-publish is the action that is left.
+      b.textContent = 'Published'; b.dataset.state = 'done';
+      b.tabIndex = -1; b.setAttribute('aria-disabled', 'true');
+      b.dataset.tip = 'Published as a review on '
+        + (rec.pr ? 'PR #' + rec.pr : 'the pull request') + (rec.pushed_at
+        ? ' \\u2014 ' + rec.pushed_at.slice(0, 16).replace('T', ' ') : '');
       rep.hidden = !changed;
       var uri = hrVscPr(rec.url || rec.review_url);
       if (uri) { vsc.href = uri; vsc.dataset.tip = 'Open PR #' + (rec.pr || '')
@@ -3902,6 +3918,8 @@ document.addEventListener('DOMContentLoaded', function(){
       b.textContent = 'Retry'; b.dataset.state = 'retry'; rep.hidden = true;
       say(rec.message, 'err');
     } else { b.textContent = face; b.dataset.state = ''; rep.hidden = true; }
+    if (b.dataset.state !== 'done') { b.removeAttribute('tabindex');
+      b.removeAttribute('aria-disabled'); }
     b.disabled = false; rep.disabled = false;
   }
   function sha(text) {
@@ -3980,8 +3998,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
   b.addEventListener('click', function () {
-    if (b.dataset.state === 'done' && rec) {
-      window.open(rec.review_url || rec.url, '_blank', 'noopener'); return; }
+    if (b.dataset.state === 'done') return;
     publish(b);
   });
   rep.addEventListener('click', function () { publish(rep); });
@@ -3996,8 +4013,8 @@ def push_pr_button(spec) -> str:
     GitHub Pages there is nothing to post with. A press asks GitHub what is already there
     (`--dry-run`), then asks the reader one question — post N comments as @them? — with the
     comments a click away; only *Post* sends anything, under the reader's own `gh` login.
-    Once everything is on the PR it reads *Published on GitHub ↗* and opens the review,
-    with a small *re-publish* beside it only when the comments changed since; a push that
+    Once everything is on the PR it reads a grey, inert *✓ Published* (the PR and the date
+    in its hover), with a small *re-publish* beside it only when the comments changed since; a push that
     stopped half-way leaves it on *Retry* with the record's sentence beside it. The page
     keeps all three true without a rebuild, from the record the server serves."""
     pp = spec.get("_prPush")
@@ -4010,9 +4027,11 @@ def push_pr_button(spec) -> str:
     done = pp.get("status") == "complete" and bool(pp.get("reviewUrl") or pp.get("prUrl"))
     n = c['fixed'] + c['ignored'] + c['assumption']
     if done:
-        label, state = "Published on GitHub ↗", "done"
-        tip = "Open the review on GitHub" + (
-            f" — published {pp['pushedAt'][:16].replace('T', ' ')}" if pp.get("pushedAt") else "")
+        # A fact, not a control (Victor, 19 Oct 2026): the check comes from the CSS.
+        label, state = "Published", "done"
+        tip = ("Published as a review on "
+               + (f"PR #{pp['pr']}" if pp.get("pr") else "the pull request")
+               + (f" — {pp['pushedAt'][:16].replace('T', ' ')}" if pp.get("pushedAt") else ""))
     else:
         label, state = ("Retry", "retry") if partial else (face, "")
         tip = (f"{n} inline PR comment{'' if n == 1 else 's'}. Asks before posting; "
@@ -4025,7 +4044,8 @@ def push_pr_button(spec) -> str:
     return (f' <button type="button" class="pr-push" hidden '
             f'data-dry="{PUSH_PR_DRY_ACTION}" data-push="{PUSH_PR_ACTION}" '
             f'data-face="{html.escape(face, quote=True)}" data-state="{state}" '
-            f'data-tip="{html.escape(tip, quote=True)}">{html.escape(label)}</button>'
+            + ('tabindex="-1" aria-disabled="true" ' if done else "")
+            + f'data-tip="{html.escape(tip, quote=True)}">{html.escape(label)}</button>'
             + vsc.replace("<a ", "<a hidden ", 1)
             + f'<button type="button" class="pr-repub"{"" if repub else " hidden"} '
             'data-tip="The comments changed since they were published — post the difference; '

@@ -207,7 +207,7 @@ the whole difference.
 rendered from, and **only** from: when it is there, piles typed into `content.json` are
 ignored, and so are any titles or intros the content file wrote over the three piles; the
 headings (`Implementation assumptions`, `Open review issues`, `Auto-fixed`), their intros and
-every card's labels (`assumption`, `79% confident`) are the builder's.
+every card's labels (`assumption`, `(79%)`) are the builder's.
 
 Its shape is [`review-points.schema.json`](review-points.schema.json) (JSON Schema 2020-12,
 `"schema": "review-points/2"`), checked twice: by `review-points.py` before it writes

@@ -108,6 +108,12 @@ a.f-src:hover, a.f-src:focus-visible { color:var(--link); border-color:var(--lin
    of its own the way the pass name is. */
 .f-src-detail { font-size:.85rem; color:var(--muted); margin-left:.3rem; }
 .f-title { font-weight:650; }
+/* The kind chip (`assumption`, `worth a look`, `fixed`…) in the title's own face, size and
+   weight rather than small uppercase (Victor, 19 Oct 2026): kind, `(60%)` and title are
+   one bold run, told apart by colour alone. */
+ol.findings > li > .badge { font:inherit; font-weight:650; text-transform:none;
+  letter-spacing:0; padding:.05rem .4rem; }
+ol.findings > li.fixed > .badge { font-weight:600; }
 .f-why { color:var(--muted); font-size:.9rem; margin:.35rem 0 0; }
 .f-why b { color:var(--fg); font-weight:650; }
 /* Which chapter the reader is standing in, on the row that never scrolls away — the
@@ -210,6 +216,15 @@ details.fmtonly > summary[data-tip] { cursor:help; }
   .pr-push { color:#6bd48a; border-color:#3f7f52; }
   .pr-push:hover, .pr-push:focus-visible { background:#6bd48a; border-color:#6bd48a; color:#10261a; } }
 .pr-push:disabled { opacity:.6; cursor:progress; }
+/* Once everything is on the PR it is a fact, not a control (Victor, 19 Oct 2026): grey
+   "✓ Published", the check in the button's own green, no border, nothing to press. The
+   hover still says where and when — so no `disabled`, which would take the hover too. */
+.pr-push[data-state="done"], .pr-push[data-state="done"]:hover,
+.pr-push[data-state="done"]:focus-visible { background:none; border-color:transparent;
+  color:var(--muted); font-weight:500; cursor:default; padding-left:0; padding-right:0; }
+.pr-push[data-state="done"]::before { content:"\2713\00a0"; color:#2e7d32; font-weight:700; }
+@media (prefers-color-scheme:dark) {
+  .pr-push[data-state="done"]::before { color:#6bd48a; } }
 .pr-push-dlg { max-width:min(960px, 92vw); border:1px solid var(--line); border-radius:8px;
   background:var(--bg); color:var(--fg); }
 .pr-push-dlg { width:min(720px, 92vw); padding:1rem 1.2rem; }
@@ -224,7 +239,7 @@ details.fmtonly > summary[data-tip] { cursor:help; }
 .pr-push-dlg .pp-where { font-size:.78rem; color:var(--muted); }
 .pr-push-dlg .pp-text { white-space:pre-wrap; overflow-wrap:anywhere; margin-top:.15rem; }
 .pr-push-dlg menu { display:flex; gap:.5rem; justify-content:flex-end; padding:0; margin:0; }
-/* Beside "Published on GitHub ↗" only when the comments changed since: small, a link. */
+/* Beside "✓ Published" only when the comments changed since: small, a link. */
 .pr-repub { margin-left:.35rem; font:500 11px/1.4 inherit; padding:0 .2rem; border:0;
   background:none; color:var(--muted); text-decoration:underline; cursor:pointer; }
 .pr-repub:hover, .pr-repub:focus-visible { color:var(--fg); }

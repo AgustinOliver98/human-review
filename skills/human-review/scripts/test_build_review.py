@@ -3030,14 +3030,11 @@ def test_an_assumptions_confidence_reads_verbatim_with_its_tooltip(tmp_path):
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}]}]))
     item = re.search(r'<li class="n-assumed">.*?</li>', page, re.S).group(0)
-    # `_confidence_chip` writes a native `title=`; the assembled page's own
-    # `one_tooltip_only` postprocess turns every native title into `data-tip`, the same
-    # rewrite PlantUML's own hints go through — one tooltip mechanism, page-wide.
     # The tooltip is `CONFIDENCE_TIP`, fixed — not a sentence composed around this item's
-    # own number — and the face is a percentage, not a rate, said as what it measures:
-    # `85% confident`, so the number beside `assumption` cannot be read as a score.
-    assert ('<span class="f-confidence sev-info">'
-            '85% confident</span>') in item
+    # own number — and the face is a bare percentage in parentheses (Victor, 19 Oct 2026):
+    # `(85%)`, the word "confident" moved to the hover.
+    assert ('<span class="f-confidence sev-info" data-tip="Confidence level">'
+            '(85%)</span>') in item
     assert "sev-med" not in item, "0.85 is not a low confidence"
 
 
@@ -3053,18 +3050,25 @@ def test_a_confidence_chip_is_coloured_red_amber_green_by_band(tmp_path, confide
                "blocks": [{"type": "assumptions", "mode": "A"}]}]))
     item = re.search(r'<li class="n-assumed">.*?</li>', page, re.S).group(0)
     assert f'class="f-confidence {band}"' in item
-    assert f">{round(confidence * 100)}% confident</span>" in item
+    assert f">({round(confidence * 100)}%)</span>" in item
 
 
 def test_the_confidence_chip_is_as_big_as_the_title_and_on_its_baseline(tmp_path):
-    """The one number the reviewer must not miss reads at the title's own size, coloured
-    in dark and light alike."""
+    """The one number the reviewer must not miss reads in the title's own face, size and
+    weight, coloured in dark and light alike — and so does the kind chip before it: one
+    bold run, not a small uppercase label and a monospace stamp (Victor, 19 Oct 2026)."""
     page, _ = _build(tmp_path, dict(
         BARE, assumptions=[_assumption(confidence=0.6)],
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}]}]))
     rule = re.search(r'\.f-confidence \{([^}]*)\}', page).group(1)
-    assert "1em/" in rule and "vertical-align:baseline" in rule
+    title = re.search(r'\n\.f-title \{([^}]*)\}', page).group(1)
+    weight = re.search(r"font-weight:(\d+)", title).group(1)
+    assert "font:inherit" in rule and f"font-weight:{weight}" in rule
+    assert "monospace" not in rule and "vertical-align:baseline" in rule
+    kind = re.search(r'ol\.findings > li > \.badge \{([^}]*)\}', page).group(1)
+    assert "font:inherit" in kind and f"font-weight:{weight}" in kind
+    assert "text-transform:none" in kind
     dark = page[page.index("@media (prefers-color-scheme: dark) {\n  .f-confidence.sev-high"):]
     for band in ("sev-high", "sev-med", "sev-info"):
         assert re.search(rf"\.f-confidence\.{band}\s*\{{", page)
@@ -5493,8 +5497,26 @@ def test_ci_green_links_to_the_run_it_rests_on(tmp_path):
     spec = {"verdict": {"score": 8}}
     build.grade_signals(spec, out, root=None)
     panel = build.grade_reasons_html(spec)
-    assert ('\u2705 CI green on 0746abc5 — <a href="https://github.com/acme/shop/actions/runs/37" '
-            'target="_blank" rel="noopener">CI run 37 ↗</a>') in panel
+    # The bullet's own "CI" is the link (Victor, 19 Oct 2026), no trailing `— CI run 37 ↗`.
+    assert ('<li>\u2705 <a href="https://github.com/acme/shop/actions/runs/37" '
+            'target="_blank" rel="noopener">CI</a> green on 0746abc5</li>') in panel
+    assert "CI run" not in panel and "↗" not in panel
+
+
+@pytest.mark.parametrize("gate,face", [
+    ("failure", '<a href="https://github.com/acme/shop/actions/runs/37" target="_blank" '
+                'rel="noopener">CI</a> failed on 0746abc5'),
+    ("skipped", 'No <a href="https://github.com/acme/shop/actions/runs/37" target="_blank" '
+                'rel="noopener">build</a> proved this commit')])
+def test_ci_red_or_pending_links_a_word_of_its_own_bullet(tmp_path, gate, face):
+    out = _signals_dir(tmp_path, gate=gate, seq=None, api=False)
+    g = json.loads((out / ".gate.json").read_text())
+    g["workflows"][0]["url"] = "https://github.com/acme/shop/actions/runs/37"
+    (out / ".gate.json").write_text(json.dumps(g))
+    spec = {"verdict": {"score": 8}}
+    build.grade_signals(spec, out, root=None)
+    panel = build.grade_reasons_html(spec)
+    assert face in panel and "CI run" not in panel
 
 
 @pytest.mark.parametrize("gate,cap", [("failure", 4), ("skipped", 6), ("green", None)])

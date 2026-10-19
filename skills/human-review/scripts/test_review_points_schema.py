@@ -246,8 +246,8 @@ def test_the_pile_titles_and_intros_are_the_builders(tmp_path, capsys):
     assert "Candidates retained for human judgement" in err and "ignored" in err
 
 
-def test_an_assumption_reads_assumption_and_n_percent_confident(tmp_path):
-    """`assumption [79% confident]`, as on the reference page — not the item's own
+def test_an_assumption_reads_assumption_and_n_percent(tmp_path):
+    """`assumption (79%)`, as on the reference page — not the item's own
     `source` as the badge (`implementation decision [79%]`)."""
     spec, _ = _resolved(tmp_path, _report(tmp_path))
     out = _render(spec)
@@ -255,7 +255,7 @@ def test_an_assumption_reads_assumption_and_n_percent_confident(tmp_path):
     assert len(cards) == 2
     for card in cards:
         assert '<span class="badge sev-assumed">assumption</span>' in card
-    assert ">79% confident</span>" in out and ">100% confident</span>" in out
+    assert ">(79%)</span>" in out and ">(100%)</span>" in out and "confident<" not in out
     assert "implementation decision" not in out
     human = next(c for c in cards if "Restrict sorting" in c)
     agent = next(c for c in cards if "Stable column" in c)
