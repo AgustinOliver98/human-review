@@ -1619,3 +1619,27 @@ def test_a_traced_diagram_with_undrawn_calls_is_not_the_unchanged_card(tmp_path)
         assert word in out
     assert "Load changes" not in out
     assert "drawio-redraw:conceptual" in build.ACTIONS
+
+
+def test_a_js_guardrail_that_reads_the_diagram_is_its_tested_badge(tmp_path):
+    """petclinic's frontend twin of PackagesArchTest is `scripts/packages-arch.test.mjs`,
+    naming its diagram in single quotes: `const DIAGRAM = 'docs/frontend-packages.puml'`.
+    Neither the `.test.mjs` suffix nor the quote counted as a test naming the file, so the
+    card went without the ✓ every other guardrailed diagram wears."""
+    diagrams = importlib.import_module("hrbuild.shared.diagrams")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    test = tmp_path / "web" / "scripts" / "packages-arch.test.mjs"
+    test.parent.mkdir(parents=True)
+    test.write_text("import {test} from 'node:test';\n"
+                    "const DIAGRAM = 'docs/frontend-packages.puml';\n", encoding="utf-8")
+    (tmp_path / "web" / "docs").mkdir()
+    (tmp_path / "web" / "docs" / "frontend-packages.puml").write_text("@startuml\n@enduml\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-A"], check=True)
+    out = diagrams.diagram_provenance("web/docs/frontend-packages.puml", tmp_path)
+    assert ">Tested vs code</a>" in out
+    assert "packages-arch.test.mjs:1:1" in out
+    assert ('data-tip="packages-arch.test.mjs checks this drawing against the code: '
+            'a mismatch fails the build"') in out
+    # A mention in a comment is not the test opening the file.
+    test.write_text("// reads docs/frontend-packages.puml\n", encoding="utf-8")
+    assert diagrams.diagram_provenance("web/docs/frontend-packages.puml", tmp_path) == ""

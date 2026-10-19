@@ -28,6 +28,9 @@ not computed does not reach the bar.
 from __future__ import annotations
 
 import copy
+import re
+
+from .diagrams import select_rows
 
 #: The canonical script-produced sections, by id. What a model writes into one of these is
 #: replaced, except the keys in `MODEL_KEYS` — the few per-run inputs no script derives.
@@ -286,3 +289,100 @@ def own_layout(spec: dict, out_dir) -> list[str]:
                             "\"autofixed\"})" + hint)
     return warnings
 
+
+
+# ── which tab a changed diagram lands on when no block named it ─────────────────────────
+#
+# `puml-diff.sh` files every `.puml` the branch changed, wherever it lives, but a tab only
+# shows the rows a block selects — `only: ["DomainModel", "DB"]` on Data, a `testpairs` on
+# Sequence. A diagram nobody thought to list (PR #49's `petclinic-frontend/docs/
+# frontend-packages.puml`, 20 Oct 2026) fell through every filter, and the build could only
+# warn that "no tab claims" it. Naming it in the content file is a fix for one PR; the next
+# one to touch a diagram nobody listed hits it again. So the build homes it by what it
+# draws: classes and entities are data, boxes and arrows between them are structure.
+
+#: A PlantUML declaration of a data shape — a class or an ERD table.
+_DATA_DECL = re.compile(r"^\s*(?:abstract\s+class|class|entity|enum|interface|annotation|"
+                        r"object|map|json)\s", re.M)
+#: …and of a structural box: a component, a package, a module, a node.
+_STRUCT_DECL = re.compile(r"^\s*(?:component|package|node|folder|frame|rectangle|"
+                          r"artifact|database|cloud|\[[^\]]+\])", re.M)
+
+#: The tab a diagram goes to when its own is not on the page, in order of preference.
+_DIAGRAM_FALLBACK = ("packages", "data")
+
+
+def diagram_home(row: dict, root) -> str:
+    """The id of the tab a manifest row belongs on: `sequence` for a sequence diagram,
+    `data` when the picture declares more classes and tables than boxes, else `packages`
+    (Structure). Read off the drawing itself, so a new diagram folder needs no setting."""
+    if row.get("kind") == "sequence":
+        return "sequence"
+    try:
+        text = (root / row.get("source", "")).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        text = ""
+    return ("data" if len(_DATA_DECL.findall(text)) > len(_STRUCT_DECL.findall(text))
+            else "packages")
+
+
+def claim_changed_diagrams(spec: dict, rows: list[dict], root) -> list[str]:
+    """Give every changed diagram of the shared gallery a block on some tab, in place.
+
+    A `puml` context card whose source the branch changed becomes the delta card for it,
+    where it stood, keeping its name: drawn from source with an `unchanged` badge it would
+    say the opposite of the card the build would otherwise add elsewhere. Any row still
+    unclaimed joins its home tab (`diagram_home`): the tab's own shared `diagrams` block
+    when it has one, else a new one after the tab's last diagram. Returns one line per
+    diagram homed, for stderr."""
+    tabs = spec.get("tabs") or []
+    by_source = {r.get("source"): r for r in rows}
+    claimed: set[str] = set()
+    for tab in tabs:
+        for b in tab.get("blocks") or []:
+            kind = b.get("type", "section")
+            if kind == "diagrams" and not b.get("manifest"):
+                claimed.update(r["name"] for r in select_rows(rows, b))
+            elif kind == "testpairs":
+                claimed.update(r["name"] for r in select_rows(rows, b)
+                               if r.get("kind") == "sequence")
+    notes: list[str] = []
+    for tab in tabs:
+        blocks = tab.get("blocks") or []
+        for i, b in enumerate(blocks):
+            row = by_source.get(b.get("src")) if b.get("type") == "puml" else None
+            if not row or row["name"] in claimed:
+                continue
+            new = {"type": "diagrams", "only": [row["name"]]}
+            if b.get("name"):
+                new["labels"] = {row["name"]: b["name"]}
+            for k in ("title", "body", "id"):
+                if k in b:
+                    new[k] = b[k]
+            blocks[i] = new
+            claimed.add(row["name"])
+            notes.append(f"{row['name']}: changed, so its context card on tab "
+                         f"{tab.get('id')!r} shows the delta")
+    present = {t.get("id"): t for t in tabs}
+    for row in rows:
+        if row["name"] in claimed:
+            continue
+        home = diagram_home(row, root)
+        tab = present.get(home) or next(
+            (present[t] for t in _DIAGRAM_FALLBACK if t in present), None)
+        if tab is None:
+            continue
+        blocks = tab.setdefault("blocks", [])
+        shared = next((b for b in blocks if b.get("type") == "diagrams"
+                       and not b.get("manifest") and b.get("only")), None)
+        if shared is not None:
+            shared["only"] = [*shared["only"], row["name"]]
+        else:
+            at = max((i + 1 for i, b in enumerate(blocks)
+                      if b.get("type") == "puml"
+                      or (b.get("type") == "diagrams" and not b.get("manifest"))), default=0)
+            blocks.insert(at, {"type": "diagrams", "only": [row["name"]]})
+        claimed.add(row["name"])
+        notes.append(f"{row['name']}: changed and named by no block — shown on tab "
+                     f"{tab.get('id')!r}")
+    return notes

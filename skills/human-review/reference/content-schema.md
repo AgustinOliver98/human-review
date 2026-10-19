@@ -289,6 +289,12 @@ same fields as a `puml` block (`src`, `name`, `note`) — and falls back to rend
 source. Without it, a tab built on that one block alone is silently dropped rather than kept
 and struck through.
 
+A changed diagram that no block names is not lost: the build homes it by what it draws
+(`layout.py` `claim_changed_diagrams`) — classes and tables join the Data tab's gallery,
+boxes and arrows get a card on Structure after its other diagrams, and a `puml` context card
+whose file the branch changed turns into that diagram's delta card, keeping its `name`.
+List a diagram in `only` only to put it somewhere else.
+
 ### `testpairs` (Step 3)
 
 ```json

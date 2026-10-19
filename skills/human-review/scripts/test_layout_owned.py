@@ -181,3 +181,91 @@ def test_the_legend_shows_only_the_marks_the_drawing_has(tmp_path):
     assert "walked by a test" in legend and "missing from the drawing" in legend
     assert "no test walks it" not in legend
     assert diagrams.trace_legend({}) == ""
+
+
+# ── a changed diagram no block names lands on its tab by itself (PR #49, 20 Oct 2026) ──
+
+FRONTEND_ROW = {"name": "frontend-packages", "kind": "structural", "status": "modified",
+                "source": "web/docs/frontend-packages.puml"}
+STRUCTURE_TABS = [
+    {"id": "data", "label": "Data", "blocks": [
+        {"type": "diagrams", "only": ["DomainModel", "DB"]}]},
+    {"id": "packages", "label": "Structure", "blocks": [
+        {"type": "puml", "src": "docs/packages.puml", "name": "Java packages"},
+        {"type": "puml", "src": "docs/MavenModules.puml", "name": "Maven modules"},
+        {"type": "diagrams", "manifest": "assets/c2/MANIFEST.tsv", "only": ["C2-Containers"]}]},
+]
+
+
+def _claim(rows, tmp_path, files):
+    import importlib
+    layout = importlib.import_module("hrbuild.shared.layout")
+    for rel, text in files.items():
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text(text, encoding="utf-8")
+    spec = {"tabs": json.loads(json.dumps(STRUCTURE_TABS))}
+    notes = layout.claim_changed_diagrams(spec, rows, tmp_path)
+    return {t["id"]: t["blocks"] for t in spec["tabs"]}, notes
+
+
+def test_a_changed_box_diagram_no_block_names_goes_on_structure_after_its_diagrams(tmp_path):
+    """frontend-packages.puml is boxes and arrows: Structure, after the two context cards
+    and before the C2 view that has its own manifest."""
+    tabs, notes = _claim([FRONTEND_ROW], tmp_path, {
+        FRONTEND_ROW["source"]: "@startuml\n[app] <<src/app>>\n[visits] <<src/app/visits>>\n"
+                                "[visits] --> [app]\n@enduml\n"})
+    assert tabs["packages"][2] == {"type": "diagrams", "only": ["frontend-packages"]}
+    assert tabs["packages"][3]["manifest"] == "assets/c2/MANIFEST.tsv"
+    assert tabs["data"][0]["only"] == ["DomainModel", "DB"]
+    assert notes and "frontend-packages" in notes[0]
+
+
+def test_a_changed_class_diagram_joins_the_data_gallery(tmp_path):
+    row = {"name": "Billing", "kind": "structural", "status": "added",
+           "source": "docs/Billing.puml"}
+    tabs, _ = _claim([row], tmp_path, {
+        "docs/Billing.puml": '@startuml\nentity "invoice" as invoice {\n}\nclass Line\n@enduml\n'})
+    assert tabs["data"][0]["only"] == ["DomainModel", "DB", "Billing"]
+    assert all("Billing" not in (b.get("only") or []) for b in tabs["packages"])
+
+
+def test_a_context_card_whose_diagram_changed_becomes_its_delta_in_place(tmp_path):
+    """A `puml` card would draw a changed packages.puml as `unchanged`, beside a delta
+    card for the same file — so it turns into that card, where it stood, keeping its name."""
+    row = {"name": "packages", "kind": "structural", "status": "modified",
+           "source": "docs/packages.puml"}
+    tabs, _ = _claim([row], tmp_path, {"docs/packages.puml": "@startuml\n[a]\n@enduml\n"})
+    assert tabs["packages"][0] == {"type": "diagrams", "only": ["packages"],
+                                   "labels": {"packages": "Java packages"}}
+    assert len(tabs["packages"]) == 3, "no second card for the same diagram"
+
+
+def test_a_diagram_a_block_already_names_is_left_where_it_is(tmp_path):
+    row = {"name": "DB", "kind": "structural", "status": "modified",
+           "source": "docs/generated/DB.puml"}
+    tabs, notes = _claim([row], tmp_path, {})
+    assert tabs["data"][0]["only"] == ["DomainModel", "DB"] and notes == []
+    assert len(tabs["packages"]) == 3
+
+
+def test_the_build_puts_an_unnamed_changed_diagram_on_structure_without_a_warning(tmp_path):
+    _assets(tmp_path)
+    d = tmp_path / "assets" / "diagrams"
+    d.mkdir()
+    svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>frontend delta</text></svg>'
+    for f in ("fp.diff.svg", "fp.new.svg", "fp.old.svg"):
+        (d / f).write_text(svg, encoding="utf-8")
+    cols = ["name", "source", "kind", "status", "diff_puml", "svg", "focus", "new_svg",
+            "old_svg"]
+    (d / "MANIFEST.tsv").write_text(
+        "\t".join(cols) + "\n" + "\t".join(["frontend-packages",
+                                            "web/docs/frontend-packages.puml", "structural",
+                                            "modified", "fp.diff.puml", "fp.diff.svg", "",
+                                            "fp.new.svg", "fp.old.svg"]) + "\n",
+        encoding="utf-8")
+    content = {**COPILOT, "tabs": [*COPILOT["tabs"], {"id": "packages", "label": "Structure",
+                                                       "blocks": []}]}
+    page, err = _build(tmp_path, content)
+    assert "no tab claims" not in err, err
+    assert "frontend delta" in _panel(page, "packages")
+    assert "frontend delta" not in _panel(page, "data")

@@ -262,6 +262,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'A new arrow is new coupling: ask why.',
             '<b>Green bar</b> in a box = its share of the lines this PR added here.',
             'Hover a box for its changed files; click one for its diff.',
+            '<b>✓ Tested vs code</b> after the title names that test; click to open it.',
         ],
         "ex": 'e.g. <code>parts</code> → <code>owners</code>: not drawn, so a test fails.',
     },

@@ -214,7 +214,8 @@ from hrbuild.shared.validate import (
 from hrbuild.shared.layout import (
     _layout_overridden, _layout_section, _video_step_ran, LAYOUT_ALWAYS, LAYOUT_MODEL_KEYS, LAYOUT_PRODUCER,
     LAYOUT_SECTIONS, LAYOUT_TABS, SHORT_TAB_LABELS, own_layout, LAYOUT_TESTPAIRS, _squash, _own_testpairs,
-    _own_diagram_title, LAYOUT_WHEN_WRITTEN, LAYOUT_BLOCK_WHEN_WRITTEN
+    _own_diagram_title, LAYOUT_WHEN_WRITTEN, LAYOUT_BLOCK_WHEN_WRITTEN, claim_changed_diagrams,
+    diagram_home, _DATA_DECL, _STRUCT_DECL, _DIAGRAM_FALLBACK
 )
 from hrbuild.tabs.review import (
     AFTERMATH_FILES, aftermath_html, aftermath_reads_takeover, AFTERMATH_JSON, commits_after_review, CONFIDENCE_TIP,
@@ -912,6 +913,11 @@ def _main(argv=None) -> int:
 
     dspec = spec.get("diagrams", {})
     manifest_rows = read_manifest(out_dir / dspec.get("manifest", "assets/diagrams/MANIFEST.tsv"))
+    # Every changed diagram gets a tab before any tab renders: one no block named goes to
+    # the tab its drawing belongs on (layout.py `claim_changed_diagrams`), so the orphan
+    # warning below is left for a page that has no such tab at all.
+    for note in claim_changed_diagrams(spec, manifest_rows, root):
+        print(f"[review] diagrams: {note}", file=sys.stderr)
     placed = set()
 
     def heading(block, fallback_id, fallback_title):
@@ -1015,6 +1021,8 @@ def _main(argv=None) -> int:
             # the author asked for. Popping it here is what used to make
             # `only: ["DomainModel", "DB"]` come out alphabetical anyway.
             merged["only"] = block.get("only") or dspec.get("only") or []
+            if block.get("labels"):
+                merged["labels"] = block["labels"]
             if own:
                 # Every SVG a row names is resolved relative to its own manifest, so this
                 # has to travel with the rows or the pictures 404 next to the gallery's.
