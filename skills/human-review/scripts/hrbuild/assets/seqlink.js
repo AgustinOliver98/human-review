@@ -77,7 +77,9 @@
         ev.preventDefault(); ev.stopPropagation();
         jump(entry.pair);
       });
-      where.parentNode.insertBefore(a, where);
+      // Right before the 🎭 when the row has one (trace.js runs first), else before the file
+      // link: ⇥ then 🎭, the order Victor asked for on 19 Oct 2026.
+      where.parentNode.insertBefore(a, row.querySelector('.rm-tv') || where);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', decorate);

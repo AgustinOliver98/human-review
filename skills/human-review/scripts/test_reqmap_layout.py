@@ -157,28 +157,36 @@ def test_the_shield_opens_a_popover_of_the_code_the_test_runs():
     assert "document.getElementById('rm-test-cover')" in js
     assert "run.removeAttribute('data-tip');" in js
     assert "pop.addEventListener('pointerenter', function () { clearTimeout(hideT); });" in js
-    assert "Changed code it runs" in js and "Also runs" in js
+    assert "Changed code it runs" in js
+    # Victor, 19 Oct 2026: the unchanged files a test also runs are noise under the shield.
+    assert "Also runs" not in js
     assert ".rm-covpop{position:fixed;" in css and ".rm-covpop.on{display:block}" in css
 
 
-def test_the_cover_list_puts_changed_files_first_and_caps_the_rest(tmp_path):
+def test_the_cover_list_names_only_changed_files_and_caps_them(tmp_path):
+    """Victor, 19 Oct 2026: drop "Also runs" - the shield answers which changed code."""
     frag = ('<script type="application/json" class="rm-data">'
-            '{"tests":{"t/ATest.java:5":{}}}</script>')
-    hits = {f"src/F{i}.java": [1, 2] for i in range(15)}
+            '{"tests":{"t/ATest.java:5":{},"t/Via.java:3":{}}}</script>')
+    hits = {f"src/F{i}.java": [1, 2] for i in range(15)}       # changed, one line each
     hits["src/Changed.java"] = [7, 8, 9]
-    hits["src/Big.java"] = list(range(1, 50))
-    doc = {"changed": {"src/Changed.java": [8, 9, 30]},
+    hits["src/Big.java"] = list(range(1, 50))                  # ran a lot, changed nothing
+    changed = {f"src/F{i}.java": [2] for i in range(15)}
+    changed["src/Changed.java"] = [8, 9, 30]
+    doc = {"changed": changed,
            "tests": [{"file": "t/ATest.java", "line": 5, "hits": hits},
+                     {"file": "t/Via.java", "line": 3, "hits": {"src/Big.java": [1]}},
                      {"file": "t/Other.java", "line": 1, "hits": {"src/X.java": [1]}}]}
     out = T.test_cover_files(frag, doc, tmp_path)
     assert out.startswith('<script type="application/json" id="rm-test-cover">')
     data = json.loads(out[out.index(">") + 1:-len("</script>")])
-    assert list(data) == ["t/ATest.java:5"]                   # only tests on the card
+    # Only tests on the card, and only those that ran a changed file: Via.java reached the
+    # change through a proxy and keeps its shield's one-line tip.
+    assert list(data) == ["t/ATest.java:5"]
     c = data["t/ATest.java:5"]
-    assert c["files"][0][:3] == ["src/Changed.java", 8, 2]    # changed first, at its first changed line
+    assert c["files"][0][:3] == ["src/Changed.java", 8, 2]    # most changed lines first
     assert c["files"][0][3] == f"vscode://file/{(tmp_path / 'src/Changed.java').resolve()}:8:1"
-    assert c["files"][1][:3] == ["src/Big.java", 1, 0]        # then by how much it ran
-    assert len(c["files"]) == T.TEST_COVER_MAX and c["more"] == 17 - T.TEST_COVER_MAX
+    assert "src/Big.java" not in [f[0] for f in c["files"]]  # no unchanged file
+    assert len(c["files"]) == T.TEST_COVER_MAX and c["more"] == 16 - T.TEST_COVER_MAX
     assert T.test_cover_files(frag, None, tmp_path) == ""
 
 
@@ -189,7 +197,9 @@ def test_a_row_of_the_rest_of_the_run_keeps_every_column_and_opens_nothing():
     js = T.REQMAP_CHAPTERS_JS
     assert '<div class="rm-t rm-other" data-shut="yes"' in js
     assert '<span class="rm-chev" aria-hidden="true">&#9654;</span>' in js
-    assert '<button class="rm-link" type="button" disabled' in js
+    # Not `disabled`: a disabled button takes no pointer, so its "why" could not show.
+    assert '<button class="rm-link" type="button" aria-disabled="true"' in js
+    assert "var NOLINK = 'Paired with no sentence';" in js
     assert '<span class="rm-st rm-st-none" aria-hidden="true">' in js
     assert ".reqmap .rm-st-none{width:15px;height:15px}" in T.REQMAP_CSS
     # Built on the first check, not at load.

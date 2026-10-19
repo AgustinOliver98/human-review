@@ -8,12 +8,20 @@
 // left and still lights the rows a sentence click picks, it just no longer files them.
 //
 // The chapters replace the E2E/API/UNIT filter checkboxes: a chapter that is closed is the
-// filter. In their place, one checkbox: "Show all tests". Off, the card lists what it always
-// did by default. On, it also lists what used to sit behind the fold buttons, and every
-// other test the coverage run executed (`#rm-all-tests`, written by tests.py
+// filter. In their place, one checkbox: "Show all tests". Off, the card lists every test
+// whose own coverage ran a changed line - every row wearing the blue shield. On, it also
+// lists the rows that wear none: the branch's tests no probe measured, the ones it deleted,
+// and every other test the coverage run executed (`#rm-all-tests`, written by tests.py
 // `all_tests_inventory`): name, badge and file link only - no preview to open, so the
 // arrow's slot stays blank and the columns stay put. Those rows are built on the first
 // check, not at load: a big repo runs thousands of tests and nobody asked for them yet.
+//
+// The untouched tests that only run a changed line (semcov's `fold`, "Untouched and
+// unpaired") used to sit behind the checkbox too. They wear the shield - their coverage
+// really ran changed code - so a checked box showed shielded rows the unchecked card had
+// said were not there (Victor, 19 Oct 2026). The fold was semcov's, written for the old
+// sentence-grouped list that stood open and doubled the tab's height; the chapters start
+// closed, so the height is no longer the reason, and the shield and the list agree again.
 //
 // The renderer (reqmap.js) is left to draw the rows; this moves them, after the fact, the
 // same way trace.js and seqlink.js decorate them from the outside.
@@ -72,22 +80,40 @@
     // The caret first, in the column the rows keep for their wire button, so the badge
     // stands over the rows' badges; a blank arrow's width after it, so the subtitle starts
     // where the test names do. The counts close the row, in the column the card title's
-    // own `+42 -12 ✍5` stands in.
+    // own `−12 ✍5 +42` stands in, the chapter's total last with its `+N` right before it -
+    // the Complexity tab's `+1 12` (Victor, 19 Oct 2026).
     sec.innerHTML = '<div class="rm-chh" role="button" tabindex="0" aria-expanded="'
       + (OPEN[c[0]] ? 'true' : 'false') + '">'
       + '<span class="rm-chev rm-chcaret" aria-hidden="true">&#9654;</span>'
       + '<span class="rm-cat" data-cat="' + c[0] + '">' + esc(LABEL[c[0]] || c[0]) + '</span>'
       + '<span class="rm-chev rm-chpad" aria-hidden="true">&#9654;</span>'
-      + '<span class="rm-chsub">' + esc(c[1]) + ' <span class="rm-chn"></span></span>'
+      + '<span class="rm-chsub">' + esc(c[1]) + '</span>'
       + '<span class="rm-chled"></span></div>'
       + '<div class="rm-chb"><div class="rm-cho"></div></div>';
     chapters[c[0]] = sec;
   });
 
+  // A row whose test pins no sentence of the ticket has its wire button disabled, and
+  // hidden (reqmap.css). Every E2E row here is one - traced, paired with nothing - and a
+  // blank slot said nothing about why. So the slot answers a hover, and only a hover: the
+  // button stays out of sight, a click on it does nothing (`NOLINK`, the capture listener
+  // below, keeps it from reqmap.js's `link`), and `disabled` goes because a disabled
+  // button takes no pointer and so could show no tip.
+  var NOLINK = 'Paired with no sentence';
+  function quiet(row) {
+    var b = row.querySelector('.rm-link[disabled]');
+    if (!b) return;
+    b.removeAttribute('disabled');
+    b.setAttribute('aria-disabled', 'true');
+    b.setAttribute('tabindex', '-1');
+    b.setAttribute('data-tip', NOLINK);
+  }
+
   // Stable hooks on every row, for whatever else decorates them from outside (the
   // fixture dot, the replay, the sequence link): the kind, the file, the test's own name.
   function hook(row) {
     var id = (row.dataset.id || '').replace(/@base$/, '');
+    quiet(row);
     if (!row.dataset.cat) row.dataset.cat = catOf(row);
     if (id && !row.dataset.file) row.dataset.file = id.replace(/:\d+$/, '');
     var t = TESTS[row.dataset.id];
@@ -131,7 +157,7 @@
     var label = box.closest('label');
     label.setAttribute('data-tip', total
       ? 'Also list the ' + total + ' other tests that ran: name and file only'
-      : 'Also list the tests folded away: pass-through, unmeasured, deleted');
+      : 'Also list the tests that ran no changed line: unmeasured, deleted');
   }
 
   function otherRow(t) {
@@ -144,7 +170,8 @@
     return '<div class="rm-t rm-other" data-shut="yes" data-open="no" data-cat="' + cat
       + '" data-file="' + esc(file) + '" data-test-name="' + esc(t.title) + '">'
       + '<div class="rm-thead">'
-      + '<button class="rm-link" type="button" disabled tabindex="-1" aria-hidden="true"></button>'
+      + '<button class="rm-link" type="button" aria-disabled="true" tabindex="-1" data-tip="'
+      + NOLINK + '"></button>'
       + '<span class="rm-cat" data-cat="' + cat + '">' + esc(LABEL[cat] || cat) + '</span>'
       + '<span class="rm-chev" aria-hidden="true">&#9654;</span>'
       + '<span class="rm-tt">' + esc(human(t.title)) + '</span>'
@@ -165,17 +192,47 @@
     });
   }
 
+  // Two rows of one chapter with the same name - `getAll` in OwnerTest, PetTest and
+  // VisitTest; "should create" in two component specs - read as one test listed twice,
+  // since a row names its file by extension only. Where a name repeats among the rows on
+  // show, the file link says the file instead: `OwnerTest.java`, `visit-edit….spec.ts` (the
+  // name up to its first dot, then the extension), the whole path on its hover as ever.
+  // Only there, so a card of distinct names keeps its narrow column.
+  function shortFile(file) {
+    var base = String(file || '').split('/').pop(), e = ext(base);
+    var stem = base.slice(0, base.length - e.length), first = stem.split('.')[0];
+    return first + (first.length < stem.length ? '\u2026' : '') + e;
+  }
+  function distinguish(sec, shown) {
+    var by = {};
+    shown.forEach(function (r) {
+      var t = r.querySelector('.rm-tt'), k = t ? t.textContent.trim().toLowerCase() : '';
+      (by[k] = by[k] || []).push(r);
+    });
+    Array.prototype.forEach.call(sec.querySelectorAll('.rm-t'), function (r) {
+      var tw = r.querySelector('.rm-tw');
+      if (!tw || !tw.textContent && !tw.dataset.face) return;
+      if (tw.dataset.face === undefined) tw.dataset.face = tw.textContent;
+      var t = r.querySelector('.rm-tt'), k = t ? t.textContent.trim().toLowerCase() : '';
+      var clash = shown.indexOf(r) >= 0 && (by[k] || []).length > 1;
+      var face = clash ? shortFile(r.dataset.file) : tw.dataset.face;
+      if (tw.textContent !== face) tw.textContent = face;
+    });
+  }
+
+  // Behind the checkbox: only rows without a shield (see the header). `data-fold` rows ran
+  // a changed line, so they are listed whatever the box says.
   function folded(row) {
-    return row.dataset.fold === 'yes' || row.dataset.own === 'yes' || row.dataset.del === 'yes';
+    return row.dataset.own === 'yes' || row.dataset.del === 'yes';
   }
   function count() {
     var all = list.dataset.all === 'yes';
     CH.forEach(function (c) {
-      var sec = chapters[c[0]], n = 0;
+      var sec = chapters[c[0]], n = 0, shown = [];
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t'), function (r) {
-        if (r.classList.contains('rm-other') ? all : (all || !folded(r))) n++;
+        if (r.classList.contains('rm-other') ? all : (all || !folded(r))) { n++; shown.push(r); }
       });
-      sec.querySelector('.rm-chn').textContent = '\u00B7 ' + n;
+      distinguish(sec, shown);
       sec.hidden = !n;
       // What the branch did to this kind's tests: the card title's three counts, for one
       // chapter, off the stamps its rows already wear. Every row is counted, folded or not.
@@ -183,16 +240,20 @@
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t .rm-st[data-st]'), function (s) {
         if (s.dataset.st in st) st[s.dataset.st]++;
       });
-      // Three slots, always, an empty one kept (Victor, 14 Oct 2026: "align in columns"):
-      // a `+`, a `−` and a ✍️ column, so the chapters' counts and the card title's stand
-      // one under the other instead of sliding right whenever a sign is missing.
+      // Four slots, always, an empty one kept (Victor, 14 Oct 2026: "align in columns"):
+      // `−`, ✍️ and `+` columns, then the total, so the chapters' counts and the card title's
+      // stand one under the other instead of sliding right whenever a sign is missing. The
+      // `+N` sits right in front of the total, as the Complexity tab writes `+1 12`.
+      var K = esc(LABEL[c[0]] || c[0].toUpperCase());
       sec.querySelector('.rm-chled').innerHTML =
-        (st.new ? '<span class="added" data-tip="' + st.new + ' new ' + c[0].toUpperCase()
-          + ' test' + (st.new === 1 ? '' : 's') + '">+' + st.new + '</span>' : '<span></span>')
-        + (st.deleted ? '<span class="removed" data-tip="' + st.deleted + ' ' + c[0].toUpperCase()
+        (st.deleted ? '<span class="removed" data-tip="' + st.deleted + ' ' + K
           + ' test' + (st.deleted === 1 ? '' : 's') + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
-        + (st.edited ? '<span class="changed" data-tip="' + st.edited + ' ' + c[0].toUpperCase()
-          + ' test' + (st.edited === 1 ? '' : 's') + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>');
+        + (st.edited ? '<span class="changed" data-tip="' + st.edited + ' ' + K
+          + ' test' + (st.edited === 1 ? '' : 's') + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>')
+        + (st.new ? '<span class="added" data-tip="' + st.new + ' new ' + K
+          + ' test' + (st.new === 1 ? '' : 's') + '">+' + st.new + '</span>' : '<span></span>')
+        + '<span class="rm-chn" data-tip="' + n + ' ' + K + ' test' + (n === 1 ? '' : 's')
+          + ' listed">' + n + '</span>';
     });
   }
   function setAll(on) {
@@ -205,12 +266,19 @@
     if (tipEl) tipEl.setAttribute('data-tip', on
       ? 'All tests, as captured by a coverage probe.'
       : 'Tests that ran a changed line, as captured by a coverage probe.');
-    ['unfold', 'unown', 'undel'].forEach(function (k) { list.dataset[k] = on ? 'yes' : 'no'; });
+    list.dataset.unfold = 'yes';
+    ['unown', 'undel'].forEach(function (k) { list.dataset[k] = on ? 'yes' : 'no'; });
     count();
     window.dispatchEvent(new Event('resize'));       // the wires follow the rows
   }
   if (box) box.addEventListener('change', function () { setAll(box.checked); });
   setAll(!!(box && box.checked));
+
+  list.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.rm-link[aria-disabled=true]')) {
+      e.preventDefault(); e.stopPropagation();
+    }
+  }, true);
 
   // ---- open / close ---------------------------------------------------------------------
   function openCh(sec, on) {
@@ -252,16 +320,17 @@
   // The row's 🛡 used to say "Runs changed code: a.ts:13-15... +6 files", one line, gone
   // the moment the pointer left it. Its question is "what part of the code is this test
   // really covering?", and the answer is a list of files a reader wants to open. So it is
-  // a popover that stays while the pointer travels into it: the changed files first, with
-  // how many changed lines the test ran in each, then the rest; each name is the page's
-  // ordinary `vscode://` link (`#rm-test-cover`, written by tests.py `test_cover_files`).
+  // a popover that stays while the pointer travels into it: the changed files, with how
+  // many changed lines the test ran in each; each name is the page's ordinary `vscode://`
+  // link (`#rm-test-cover`, written by tests.py `test_cover_files`). The unchanged files it
+  // also ran (router-stubs.ts…) went on 19 Oct 2026 (Victor): the shield answers "which
+  // changed code", and the rest of the run was noise under it.
   var COVER = {};
   try { COVER = JSON.parse(document.getElementById('rm-test-cover').textContent) || {}; }
   catch (e) { COVER = {}; }
   var pop = null, popFor = null, showT = 0, hideT = 0;
   function coverHtml(c) {
-    var ch = c.files.filter(function (f) { return f[2] > 0; }),
-        rest = c.files.filter(function (f) { return !f[2]; });
+    var ch = c.files.filter(function (f) { return f[2] > 0; });
     function li(f) {
       var name = f[0].split('/').pop();
       return '<li><a href="' + esc(f[3]) + '" data-path="' + esc(f[0]) + '">' + esc(name) + '</a>'
@@ -270,8 +339,6 @@
     }
     return (ch.length ? '<p class="rm-cph">Changed code it runs</p><ul class="tiplist">'
         + ch.map(li).join('') + '</ul>' : '')
-      + (rest.length ? '<p class="rm-cph">Also runs</p><ul class="tiplist">'
-        + rest.map(li).join('') + '</ul>' : '')
       + (c.more ? '<p class="rm-cpm">+' + c.more + ' more file' + (c.more === 1 ? '' : 's')
         + '</p>' : '');
   }

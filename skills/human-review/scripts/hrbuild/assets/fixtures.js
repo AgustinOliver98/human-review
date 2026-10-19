@@ -1,5 +1,8 @@
-// One coloured dot per DB fixture on each E2E row of the Tests tab whose starting data the
-// build could read off the test's own code (`hrbuild/shared/fixtures.py`). The colours are
+// One coloured dot per DB fixture on each row of the Tests tab whose starting data the
+// build could read off the test's own code (`hrbuild/shared/fixtures.py`): E2E tests, and
+// JVM tests on a Spring context, whose Flyway config says what the database boots with
+// (petclinic's API tests: the seed). A test that touches no database is never in the
+// registry, so a unit row gets nothing. The colours are
 // the project's, from a `fixture-colors.json` beside the fixtures' SQL; the seed is always
 // grey. (The Demo tab's "DB Fixture" card wears the same dots, drawn by the build itself.)
 //
@@ -8,8 +11,8 @@
 // MutationObserver whenever either redraws. Three marks, all in the seed's grey unless a
 // fixture is named:
 //   * a filled dot — the test starts from that fixture, or leans on the seed's rows by name;
-//   * a hollow ring — an E2E test on the seed (nothing resets the DB between tests, so
-//     Default is what it runs on) that makes its own rows and leans on none of the seed's
+//   * a hollow ring — a test on the seed (E2E: nothing resets the DB between tests; JVM:
+//     Flyway loads it at boot) that makes its own rows and leans on none of the seed's
 //     (`free`). Without it, a row with no dot read as "not on Default" (Victor, 9 Oct 2026);
 //   * a dashed ring — a scenario whose suite truncates tables before each one (`empty`).
 // A row the registry does not name at all gets nothing: an unknown start is said by saying
@@ -89,14 +92,12 @@
   function rows() {
     Array.prototype.forEach.call(document.querySelectorAll('.rm-t[data-id]'), function (row) {
       var id = row.getAttribute('data-id') || '';
-      var cat = row.querySelector('.rm-cat');
-      var kind = cat && cat.getAttribute('data-cat');
       var name = tests[id], mark = '';
-      // The suite's own truncation is said on any row it applies to; the rest only on E2E
-      // rows, and the hollow ring only where the row says E2E outright.
+      // On any row the registry names, whatever its badge: the registry only lists tests
+      // whose code it read as starting on a database (an API row was E2E-only until 19 Oct
+      // 2026, so the API chapter never showed what its Spring tests boot with).
       if (empty[id]) { name = 'seed'; mark = 'empty'; }
-      else if (!name && free[id] && kind === 'e2e') { name = 'seed'; mark = 'free'; }
-      else if (kind && kind !== 'e2e') name = '';
+      else if (!name && free[id]) { name = 'seed'; mark = 'free'; }
       var have = row.querySelector('.fx-dot');
       if (have && (have.dataset.mark || '') !== mark) { have.remove(); have = null; }
       if (!name) {

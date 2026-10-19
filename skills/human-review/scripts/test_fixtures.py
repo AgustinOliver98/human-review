@@ -182,3 +182,87 @@ def test_the_script_words_the_tip_like_the_demo_bar_and_opens_the_dataset():
     assert "MutationObserver" in js
     assert "DB Fixture: Default \\u00b7 doesn\\u2019t rely on its rows" in js
     assert "Starts empty (truncated)" in js
+
+
+SPRING_TEST = """package x.rest;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.jdbc.Sql;
+
+@SpringBootTest
+@AutoConfigureEmbeddedDatabase(provider = ZONKY)
+@Transactional
+class VisitTest {
+    @Autowired Repo repo;
+
+    @Test
+    void makesItsOwnRows() {
+        repo.save(new Owner());
+    }
+
+    @Test
+    void readsTheSeededOwner() {
+        assertThat(repo.findAll()).as("the seeded owners").isNotEmpty();
+    }
+
+    // a comment that says seed must not count
+    @Test
+    @Sql({"/db/fixtures/green.sql"
+    })
+    void startsOnGreen() {
+        repo.findAll();
+    }
+
+    @Test
+    @Sql("/somewhere/else.sql")
+    void loadsAScriptThatIsNoFixture() {
+    }
+}
+"""
+
+PLAIN_TEST = """package x;
+class MathTest {
+    @Test
+    void adds() { assertEquals(2, 1 + 1); }
+}
+"""
+
+
+def _jvm_repo(tmp_path: Path, props: str) -> Path:
+    root = repo(tmp_path)
+    for name, text in {
+            "api/src/main/resources/application.properties": props,
+            "api/src/main/resources/db/migration/V1__init.sql": "-- schema",
+            "api/src/main/resources/db/seed/R__seed.sql": "-- seed rows",
+            "api/src/test/java/x/rest/VisitTest.java": SPRING_TEST,
+            "api/src/test/java/x/MathTest.java": PLAIN_TEST}.items():
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(text)
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+    return root
+
+
+def test_a_spring_test_starts_from_what_flyway_loads_at_boot(tmp_path):
+    """Victor, 19 Oct 2026: API rows never showed a fixture dot. A Spring test on a Flyway
+    DB whose locations include the seed starts from it; `@Sql` of a fixture names that
+    one; a test with no Spring context touches no DB. Keyed by the method's declaration
+    line, as testcov keys the Tests tab's rows."""
+    root = _jvm_repo(tmp_path, "spring.flyway.locations=classpath:db/migration,classpath:db/seed\n")
+    reg = fx.fixture_registry(root)
+    f = "api/src/test/java/x/rest/VisitTest.java"
+    assert reg["tests"][f"{f}:18"] == "seed"                 # names the seeded rows
+    assert f"{f}:13" in reg["free"]                          # makes its own: hollow ring
+    assert reg["tests"][f"{f}:26"] == "green"                # @Sql of a fixture
+    assert f"{f}:32" not in reg["tests"] and f"{f}:32" not in reg["free"]   # not ours to name
+    assert not any(k.startswith("api/src/test/java/x/MathTest") for k in
+                   list(reg["tests"]) + reg["free"])         # no Spring, no database
+    assert fx.fixtures_by_test(root)[f"{f}:18"] == "seed"
+    assert f"{f}:13" in fx.fixtures_free(root)
+
+
+def test_a_spring_test_on_a_flyway_without_the_seed_gets_no_seed_mark(tmp_path):
+    root = _jvm_repo(tmp_path, "spring.flyway.locations=classpath:db/migration\n")
+    reg = fx.fixture_registry(root)
+    f = "api/src/test/java/x/rest/VisitTest.java"
+    assert f"{f}:18" not in reg["tests"] and f"{f}:13" not in reg["free"]
+    assert reg["tests"][f"{f}:26"] == "green"                # its own @Sql still says so

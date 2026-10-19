@@ -245,12 +245,14 @@ def render_test_ledger(rows, root: Path) -> tuple[str, int]:
         return (f'<span class="{cls}" data-tip="{html.escape(tip, quote=True)}">'
                 f'{face}{n}</span>') if n else ""
     # Three slots, an empty one kept, so the chapters' counts under it (testchapters.js)
-    # line up with these column by column (Victor, 14 Oct 2026).
-    slots = (count("added", "+", new, "new tests"),
-             count("removed", "−", gone, "tests gone", named=True),
-             count("changed", PENCIL, edited, "tests edited"))
-    moves = (f'<span class="tmoves">{"".join(x or "<span></span>" for x in slots)}</span>'
-             if any(slots) else "")
+    # line up with these column by column (Victor, 14 Oct 2026). `+` last, and a blank
+    # fourth: a chapter writes its total there with its `+N` right in front of it, the
+    # Complexity tab's `+1 12` (Victor, 19 Oct 2026).
+    slots = (count("removed", "−", gone, "tests gone", named=True),
+             count("changed", PENCIL, edited, "tests edited"),
+             count("added", "+", new, "new tests"))
+    moves = (f'<span class="tmoves">{"".join(x or "<span></span>" for x in slots)}'
+             '<span></span></span>' if any(slots) else "")
     stopped = ""
     if off:
         why = f"Still written; never runs: {_names_by_file(off)}"
@@ -977,11 +979,14 @@ def test_cover_files(frag: str, doc: dict | None, root: Path) -> str:
     covering?").
 
     Read off the same per-test probe the card was drawn from (`hits`: file -> lines run).
-    The files the branch changed come first, each with how many of its changed lines the
-    test ran; then the rest by how much of them it ran. Capped at `TEST_COVER_MAX` names
-    with the remainder counted, because an end-to-end run touches half the backend. Each
-    name carries its `vscode://` link at the first line worth opening: the first changed
-    line it ran, or the first line it ran at all. Empty when there was no measurement."""
+    Only the files the branch changed, each with how many of its changed lines the test
+    ran, most first. The unchanged files it also ran were listed under them ("Also runs")
+    until Victor dropped them (19 Oct 2026): an end-to-end run touches half the frontend,
+    and the shield's question is which *changed* code. Capped at `TEST_COVER_MAX` names
+    with the remainder counted. Each name carries its `vscode://` link at the first changed
+    line it ran. A test that reaches the change only through a proxy (`via`) ran no changed
+    file and gets no entry: its shield keeps the one-line tip. Empty when there was no
+    measurement."""
     if not doc:
         return ""
     m = re.search(r'<script type="application/json" class="rm-data">(.*?)</script>', frag, re.S)
@@ -997,14 +1002,13 @@ def test_cover_files(frag: str, doc: dict | None, root: Path) -> str:
             continue
         rows = []
         for f, lines in r["hits"].items():
-            ran = sorted(set(lines))
-            if not ran:
-                continue
-            hit = sorted(set(ran) & changed.get(f, set()))
-            at = hit[0] if hit else ran[0]
-            rows.append((0 if hit else 1, -len(hit), -len(ran), f, at, len(hit)))
+            hit = sorted(set(lines) & changed.get(f, set()))
+            if hit:
+                rows.append((-len(hit), f, hit[0], len(hit)))
+        if not rows:
+            continue
         rows.sort()
-        files = [[f, at, n] for _, _, _, f, at, n in rows[:TEST_COVER_MAX]]
+        files = [[f, at, n] for _, f, at, n in rows[:TEST_COVER_MAX]]
         for item in files:
             item.append(f"vscode://file/{(root / item[0]).resolve()}:{item[1]}:1")
         out[key] = {"files": files, "more": max(0, len(rows) - TEST_COVER_MAX)}
@@ -1388,14 +1392,22 @@ REQMAP_CSS = """
 .reqmap .rm-chh .rm-chpad{visibility:hidden}
 .reqmap .rm-ch[data-open=yes] > .rm-chh .rm-chcaret{transform:rotate(90deg)}
 .reqmap .rm-chsub{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.reqmap .rm-chn{font-weight:400;color:var(--muted,#6b6b6b);font-variant-numeric:tabular-nums}
-/* The counts are a grid of three fixed columns, `+`, `−`, ✍️, right-aligned and empty when
-   zero, here and in the card title's `.tmoves` alike: the numbers stand in columns. */
+/* The counts are a grid of four fixed columns, `−`, ✍️, `+` and the chapter's total,
+   right-aligned and empty when zero, here and in the card title's `.tmoves` alike (whose
+   fourth is blank): the numbers stand in columns. The `+N` right before the total, both in
+   the Complexity tab's faces - `.cx-badge` and `.cx-n`, `+1 12` (Victor, 19 Oct 2026). */
 .reqmap .rm-chled,.reqmap .rm-code > .rm-tkhead .tmoves{flex:0 0 auto;display:inline-grid;
-  grid-template-columns:repeat(3,43px);gap:0;justify-items:end;font-size:13px;font-weight:400;
-  font-variant-numeric:tabular-nums;white-space:nowrap}
+  grid-template-columns:repeat(3,43px) 34px;gap:0;justify-items:end;align-items:baseline;
+  font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
+.reqmap .rm-chled > span{font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.reqmap .rm-chled > .rm-chn{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--fg,#1c1c1c)}
 .reqmap .rm-chled [data-tip]{cursor:help}
 .reqmap .rm-ch[data-open=no] > .rm-chb{display:none}
+/* A wire button whose test pins no sentence (testchapters.js `quiet`): still out of sight,
+   as reqmap.css hides it, but its slot answers a hover with why - a faint fan and a tip. */
+.reqmap .rm-code .rm-link[aria-disabled=true]{visibility:visible;opacity:0;cursor:help}
+.reqmap .rm-code .rm-link[aria-disabled=true]:hover{opacity:.35;color:var(--muted,#6b6b6b)}
 .reqmap .rm-ch:last-child .rm-chb > .rm-t:last-child,
 .reqmap .rm-ch:last-child .rm-cho > .rm-t:last-child{border-bottom:0}
 .reqmap .rm-chb > .rm-t:last-of-type{border-bottom:1px solid var(--line,#e2e2e2)}

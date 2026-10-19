@@ -1,4 +1,4 @@
-"""Which DB fixture each E2E test starts from, and the colour each fixture wears.
+"""Which DB fixture each E2E or Spring test starts from, and the colour each fixture wears.
 
 A fixture is a named set of demo rows the review environment restores *on top of* the
 seed: a ``<name>.sql`` in a folder called ``fixtures`` (petclinic keeps them in
@@ -33,6 +33,14 @@ A Cucumber suite whose JVM glue truncates tables before every scenario (a ``@Bef
 hook running ``TRUNCATE``, petclinic's ``functional/DatabaseHooks.java``) starts each of
 its scenarios with those tables empty; they are listed apart too (``empty``), with the
 tables, unless a scenario names a fixture of its own.
+
+A JVM test on a Spring context (``@SpringBootTest``, ``@DataJpaTest``, Zonky's
+``@AutoConfigureEmbeddedDatabase``…) starts from what Flyway loads at boot: the seed when
+``spring.flyway.locations`` — application.properties, the test resources' copy shadowing
+it, each ``@ActiveProfiles`` file, the annotation's own ``properties`` — names a seed
+location, and then the same filled dot / hollow ring rule as above, read off the method and
+its class. ``@Sql(".../fixtures/<name>.sql")`` (the method's, else the class's) names the
+fixture. A test with no Spring context touches no database and is not listed.
 
 Two fixtures named by one test is the one case left unsaid: not ours to pick.
 
@@ -338,8 +346,246 @@ def _fx_spec_tests(root: Path, rel: str, src: str, known: set[str]) -> dict[str,
     return out
 
 
+# --- JVM (JUnit on Spring) -----------------------------------------------------------------
+#
+# Petclinic's API tests are `@SpringBootTest` + Zonky's embedded Postgres, `@Transactional`:
+# Flyway builds the database at boot from `spring.flyway.locations`, which application.
+# properties points at `db/migration,db/seed`, and each test's writes roll back. So a test
+# starts from the seed — read off the configuration, not assumed — unless it loads a fixture
+# itself with `@Sql(".../fixtures/<name>.sql")`. Then, as for E2E, the seed is a filled dot
+# when its code leans on seeded rows by name, a hollow ring when it makes its own. A test that
+# boots no Spring context touches no database and gets nothing.
+
+_FX_JVM_TEST = re.compile(r"@(?:Test|ParameterizedTest|RepeatedTest|TestFactory|TestTemplate)\b")
+#: A Spring test context, and so a datasource Flyway migrates. `@WebMvcTest` and friends
+#: slice the database away and are not listed.
+_FX_JVM_DB = re.compile(r"@(?:SpringBootTest|DataJpaTest|DataJdbcTest|JdbcTest|"
+                        r"AutoConfigureEmbeddedDatabase|AutoConfigureTestDatabase)\b")
+_FX_JVM_DECL = re.compile(r"(\w+)\s*\(")
+_FX_PROP_FILES = ("application.properties", "application.yml", "application.yaml")
+
+
+def _fx_props(text: str, yaml: bool) -> dict[str, str]:
+    """The two Flyway keys out of a properties or YAML file — just those, by line."""
+    out = {}
+    if not yaml:
+        for line in text.splitlines():
+            m = re.match(r"\s*(spring\.flyway\.(?:locations|enabled))\s*[=:]\s*(.*?)\s*$", line)
+            if m:
+                out[m.group(1)] = m.group(2)
+        return out
+    m = re.search(r"^\s*flyway:\s*\n((?:[ \t]+.*\n?)+)", text, re.M)
+    if m:
+        for key in ("locations", "enabled"):
+            k = re.search(r"^\s*%s:\s*(.+?)\s*$" % key, m.group(1), re.M)
+            if k:
+                out[f"spring.flyway.{key}"] = k.group(1).strip("[]\"' ")
+    return out
+
+
+def _fx_inline_props(header: str) -> dict[str, str]:
+    """`@SpringBootTest(properties = "spring.flyway.locations=…")`, `@TestPropertySource`."""
+    out = {}
+    for m in re.finditer(r"[\"'](spring\.flyway\.(?:locations|enabled))\s*[=:]\s*([^\"']*)[\"']",
+                         header):
+        out[m.group(1)] = m.group(2).strip()
+    return out
+
+
+def _fx_module_props(root: Path, module: str, profiles: list[str]) -> dict[str, str]:
+    """What the test's context reads: `src/test/resources/application.*` shadows the main
+    one on the classpath (the test classes come first), then each active profile's file."""
+    props: dict[str, str] = {}
+    for res in ("src/test/resources", "src/main/resources"):
+        got = None
+        for name in _FX_PROP_FILES:
+            p = root / module / res / name
+            if p.is_file():
+                try:
+                    got = _fx_props(p.read_text(encoding="utf-8"), p.suffix != ".properties")
+                except (OSError, UnicodeDecodeError):
+                    got = {}
+                break
+        if got is not None:
+            props.update(got)
+            break
+    for prof in profiles:
+        for res in ("src/main/resources", "src/test/resources"):
+            for ext in (".properties", ".yml", ".yaml"):
+                p = root / module / res / f"application-{prof}{ext}"
+                if p.is_file():
+                    try:
+                        props.update(_fx_props(p.read_text(encoding="utf-8"), ext != ".properties"))
+                    except (OSError, UnicodeDecodeError):
+                        pass
+    return props
+
+
+def _fx_on_seed(root: Path, module: str, files: list[str], props: dict[str, str]) -> bool:
+    """Whether Flyway, as configured, loads a seed: a location named `seed`, or one holding
+    a `*seed*.sql` (petclinic: `classpath:db/seed` → `R__seed.sql`)."""
+    if props.get("spring.flyway.enabled", "true").strip().lower() == "false":
+        return False
+    locs = props.get("spring.flyway.locations") or "classpath:db/migration"
+    for loc in (x.strip() for x in locs.split(",") if x.strip()):
+        path = re.sub(r"^(?:classpath\*?|filesystem):", "", loc).strip("/")
+        if re.search(r"(?<![a-z])seed", Path(path).name, re.I):
+            return True
+        for res in ("src/main/resources", "src/test/resources"):
+            d = f"{module}/{res}/{path}/"
+            if any(f.startswith(d) and f.endswith(".sql") and "seed" in Path(f).name.lower()
+                   for f in files):
+                return True
+    return False
+
+
+def _fx_brace_end(code: str, start: int) -> int:
+    """End of the `{...}` block opened at the first `{` from `start`."""
+    i = code.find("{", start)
+    if i < 0:
+        return len(code)
+    depth = 0
+    while i < len(code):
+        c = code[i]
+        if c in "'\"":
+            j = i + 1
+            while j < len(code) and code[j] != c:
+                j += 2 if code[j] == "\\" else 1
+            i = j
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    return len(code)
+
+
+def _fx_sql_names(text: str, known: set[str]) -> set[str] | None:
+    """The fixtures `@Sql` loads before the test: a set of names, empty when there is no
+    `@Sql`, None when it runs a script that is not one of the project's fixtures (not ours
+    to name). Cleanup scripts (`AFTER_TEST_…`) say nothing about the start."""
+    names: set[str] = set()
+    for m in re.finditer(r"@Sql\b(?!Config|Group)", text):
+        end = _fx_block_end(text, m.end()) if text[m.end():].lstrip().startswith("(") else m.end()
+        ann = text[m.end():end]
+        if "AFTER_TEST" in ann:
+            continue
+        for s in re.findall(r"[\"']([^\"']+\.sql)[\"']", ann):
+            p = Path(s.split(":", 1)[-1])
+            if p.parent.name == "fixtures" and p.stem in known:
+                names.add(p.stem)
+            else:
+                return None
+    return names
+
+
+def _fx_annotations_above(lines: list[str], idx: int) -> int:
+    """The first line of the annotation block that ends just above line `idx` (0-based)."""
+    start, balance = idx, 0
+    for j in range(idx - 1, -1, -1):
+        s = lines[j].strip()
+        balance += s.count(")") - s.count("(")
+        if s.startswith("@") or balance > 0 or not s:
+            start = j
+            if s.startswith("@") and balance <= 0:
+                balance = 0
+            continue
+        break
+    return start
+
+
+def _fx_jvm_tests(root: Path, rel: str, src: str, files: list[str],
+                  known: set[str]) -> dict[str, str | None]:
+    """``{"<file>:<line of the method's declaration>": verdict}`` for one JUnit class on a
+    Spring context. The line is testcov's (`decl_line`): the first `name(` that is not a
+    comment or an annotation, the key the Tests tab's rows carry."""
+    code = _fx_strip_comments(src)
+    cm = re.search(r"^[ \t]*(?:[\w@().=\", ]+\s)?(?:class|object)\s+\w+", code, re.M)
+    if not cm or not _FX_JVM_TEST.search(code):
+        return {}
+    header = code[:cm.end()]
+    # One level of inheritance: an abstract base class carrying the annotations.
+    ext = re.search(r"\bextends\s+(\w+)", code[cm.start():code.find("{", cm.start())])
+    if ext:
+        module = rel.split("/src/")[0]
+        for f in files:
+            if f.startswith(module + "/") and Path(f).stem == ext.group(1) \
+                    and f.endswith((".java", ".kt")):
+                try:
+                    base = _fx_strip_comments((root / f).read_text(encoding="utf-8"))
+                except (OSError, UnicodeDecodeError):
+                    break
+                bm = re.search(r"\b(?:class|object)\s+\w+", base)
+                header = (base[:bm.end()] if bm else "") + "\n" + header
+                break
+    if not _FX_JVM_DB.search(header):
+        return {}
+    module = rel.split("/src/")[0]
+    profiles = [p for m in re.finditer(r"@ActiveProfiles\s*\(([^)]*)\)", header)
+                for p in re.findall(r"[\"']([^\"']+)[\"']", m.group(1))]
+    props = _fx_module_props(root, module, profiles)
+    props.update(_fx_inline_props(header))
+    on_seed = _fx_on_seed(root, module, files, props)
+    class_sql = _fx_sql_names(header, known)
+
+    lines, src_lines = code.splitlines(), src.splitlines()
+    offsets, at = [], 0
+    for ln in lines:
+        offsets.append(at)
+        at += len(ln) + 1
+    methods = []                                  # (name, annotations start, decl, body end)
+    for i, ln in enumerate(lines):
+        if not _FX_JVM_TEST.search(ln) or not ln.strip().startswith("@"):
+            continue
+        # Down past the annotations (one may span lines: `@Sql({…,\n …})`) to the method.
+        j, balance = i, 0
+        while j < len(lines):
+            s = lines[j].strip()
+            if balance <= 0 and s and not s.startswith("@"):
+                break
+            balance += s.count("(") - s.count(")")
+            j += 1
+        if j >= len(lines):
+            continue
+        m = _FX_JVM_DECL.search(lines[j])
+        if not m or m.group(1) in ("if", "for", "while", "switch", "return", "new"):
+            continue
+        a = _fx_annotations_above(lines, j)
+        methods.append((m.group(1), offsets[a], offsets[j], _fx_brace_end(code, offsets[j])))
+    if not methods:
+        return {}
+    shared, last = [], 0
+    for _, a, _, b in sorted(set(methods), key=lambda t: t[1]):
+        shared.append(code[last:a]); last = max(last, b)
+    shared.append(code[last:])
+    shared_text = "".join(shared)
+    out: dict[str, str | None] = {}
+    for name, a, d, b in methods:
+        rx = re.compile(r"\b" + re.escape(name) + r"\s*\(")
+        line = next((k + 1 for k, t in enumerate(src_lines)
+                     if rx.search(t) and not t.strip().startswith(("//", "*", "@"))), None)
+        if line is None:
+            continue
+        own = _fx_sql_names(code[a:d], known)
+        # A method's own @Sql overrides the class's (Spring's default merge mode).
+        sql = own if own is None or own else class_sql
+        if sql is None:
+            out[f"{rel}:{line}"] = None
+        elif len(sql) == 1:
+            out[f"{rel}:{line}"] = next(iter(sql))
+        elif sql:
+            out[f"{rel}:{line}"] = None              # two fixtures: not ours to pick
+        elif on_seed:
+            v = _fx_verdict("", code[d:b] + "\n" + shared_text, known)
+            out[f"{rel}:{line}"] = v
+    return out
+
+
 def _fx_scan(root: Path, files: list[str], known: set[str]) -> dict[str, str]:
-    """Every E2E test read: ``{id: fixture | "seed" | ""}`` (see `_fx_verdict`)."""
+    """Every E2E test and every JVM test on a Spring context read: ``{id: fixture | "seed" |
+    ""}`` (see `_fx_verdict`)."""
     out: dict[str, str] = {}
     features = [f for f in files if f.endswith(".feature") and "node_modules" not in f]
     defs = _fx_step_defs(root, files) if features else []
@@ -354,12 +600,19 @@ def _fx_scan(root: Path, files: list[str], known: set[str]) -> dict[str, str]:
                 out.update(_fx_spec_tests(root, f, (root / f).read_text(encoding="utf-8"), known))
             except (OSError, UnicodeDecodeError):
                 pass
+    for f in files:
+        if f.endswith((".java", ".kt")) and "/src/" in f and "/src/main/" not in f:
+            try:
+                got = _fx_jvm_tests(root, f, (root / f).read_text(encoding="utf-8"), files, known)
+            except (OSError, UnicodeDecodeError):
+                continue
+            out.update({k: v for k, v in got.items() if v is not None})
     return out
 
 
 def fixtures_by_test(root: Path, files: list[str] | None = None) -> dict[str, str]:
     """``{"<repo-relative file>:<line>": fixture}`` — ``"seed"`` or a fixture's name —
-    for every E2E test whose starting data its code names or leans on. Absent = it leans
+    for every E2E or Spring test whose starting data its code names or leans on. Absent = it leans
     on nothing (see `fixtures_free`) or the answer is not ours to give."""
     root = Path(root)
     files = _fx_ls(root) if files is None else files
@@ -368,7 +621,7 @@ def fixtures_by_test(root: Path, files: list[str] | None = None) -> dict[str, st
 
 
 def fixtures_free(root: Path, files: list[str] | None = None) -> list[str]:
-    """The E2E tests that run on the seed without leaning on any of its rows."""
+    """The E2E and Spring tests that run on the seed without leaning on any of its rows."""
     root = Path(root)
     files = _fx_ls(root) if files is None else files
     known = set(fixture_colors(root, files)["colors"])
