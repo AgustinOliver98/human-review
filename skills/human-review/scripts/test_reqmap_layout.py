@@ -235,7 +235,8 @@ def test_the_panes_scrollbars_take_no_width():
     assert ".reqmap .rm-ovs::-webkit-scrollbar{display:none}" in css
     assert ".reqmap .rm-ovbar{position:absolute;" in css and ".reqmap .rm-ovbar.near{opacity:.3}" in css
     assert "document.querySelectorAll('.reqmap .rm-issue, .reqmap .rm-list')" in T.REQMAP_SCROLL_JS
-    assert T.REQMAP_SCROLL_JS.startswith("<script>") and T.REQMAP_SCROLL_JS.endswith("</script>")
+    assert T.REQMAP_SCROLL_JS.startswith('<script data-hr-swap="rerun">') \
+        and T.REQMAP_SCROLL_JS.endswith("</script>")
 
 
 def test_the_blind_spot_box_moves_under_the_card(tmp_path):

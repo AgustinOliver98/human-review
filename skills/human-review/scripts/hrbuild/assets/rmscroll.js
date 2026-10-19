@@ -8,8 +8,16 @@
 // strength, for a moment after the wheel stops), and draggable like the real one. The
 // wheel, the keys and a trackpad scroll the pane natively, as before.
 (function () {
+  // Run again when a rebuild swaps the Tests tab into an open served page
+  // (`data-hr-swap="rerun"`, tests.py): the panes are new, and the window listeners the
+  // last run left for the old ones are taken off first.
+  if (window.__hrRmScrollOff) { window.__hrRmScrollOff(); window.__hrRmScrollOff = null; }
   var panes = document.querySelectorAll('.reqmap .rm-issue, .reqmap .rm-list');
   if (!panes.length) return;
+  var placers = [];
+  window.__hrRmScrollOff = function () {
+    placers.forEach(function (fn) { window.removeEventListener('resize', fn); });
+  };
   Array.prototype.forEach.call(panes, function (pane) {
     var host = pane.parentNode;
     pane.classList.add('rm-ovs');
@@ -55,6 +63,7 @@
     // The content grows and shrinks under it - a chapter opening, a test's source, the
     // tab being shown at all - and none of that is a scroll event.
     window.addEventListener('resize', place);
+    placers.push(place);
     if (window.ResizeObserver) {
       var ro = new ResizeObserver(place);
       ro.observe(pane);

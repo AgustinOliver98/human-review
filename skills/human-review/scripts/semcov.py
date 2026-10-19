@@ -2339,7 +2339,8 @@ def render(ticket: dict, blocks: list[dict], rows: list[dict], entries: list[dic
     js = (ASSETS / "reqmap.js").read_text(encoding="utf-8")
     return (f'<div class="reqmap" {GENERATED}>\n<style>\n{css}</style>\n'
             f'<script type="application/json" class="rm-data">{blob}</script>\n'
-            f'<div class="rm-body">{text}{side}</div>\n<script>\n{js}</script>\n</div>\n')
+            f'<div class="rm-body">{text}{side}</div>\n<script data-hr-swap="rerun">\n{js}'
+            '</script>\n</div>\n')
 
 
 # --- the whole pass ---------------------------------------------------------------------

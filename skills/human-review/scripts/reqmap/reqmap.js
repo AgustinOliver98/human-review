@@ -5,6 +5,10 @@
 // The only edits are marked `semcov:` - who paired a sentence (the script or a model)
 // travels with each link and is said on the hover and on the blind-spot box.
 (function(){
+  // Run again over a fresh matrix when a rebuild swaps the Tests tab into an open served
+  // page (`data-hr-swap="rerun"`, the review build's panel swap): the two window listeners
+  // the last run left behind are taken off first. Everything else it binds is the matrix.
+  if(window.__hrReqmapOff){window.__hrReqmapOff();window.__hrReqmapOff=null;}
   var root=document.currentScript.closest('.reqmap');
   var D=JSON.parse(root.querySelector('.rm-data').textContent);
   var list=root.querySelector('.rm-list'),gap=root.querySelector('.rm-gap'),cur=null;
@@ -466,6 +470,8 @@
   }
   addEventListener('scroll',redraw,true);   // capture: the card's own scroll does not bubble
   addEventListener('resize',redraw);
+  window.__hrReqmapOff=function(){
+    removeEventListener('scroll',redraw,true);removeEventListener('resize',redraw);};
   if(window.ResizeObserver)new ResizeObserver(redraw).observe(wrap);
   // The accordion animates its height, so the rows under it are still moving after the
   // click: follow them to where they land.

@@ -1627,8 +1627,13 @@ REQMAP_CUT = ".reqmap .rm-tt"
 #: path: the switch is on the row this function draws, and a fragment it declined to
 #: rewrite has no such row.
 REQMAP_SEMCOV_JS = """
-<script>(function () {
-  document.addEventListener('change', function (ev) {
+<script data-hr-swap="rerun">(function () {
+  // Every script the Tests tab carries runs again when a rebuild swaps the tab into an
+  // open served page (`data-hr-swap="rerun"`, `shared/panels.py`): the document-wide
+  // listeners below are registered once, the paint is done again over the new markup.
+  var first = !window.__hrSemcovOn;
+  window.__hrSemcovOn = true;
+  if (first) document.addEventListener('change', function (ev) {
     var box = ev.target;
     if (!box || !box.matches || !box.matches('.rm-semcov input')) return;
     var map = box.closest('.reqmap');
@@ -1651,29 +1656,31 @@ REQMAP_SEMCOV_JS = """
       if (on) b.setAttribute('data-live', ''); else b.removeAttribute('data-live');
     });
   }
-  document.addEventListener('click', function (ev) {
+  if (first) document.addEventListener('click', function (ev) {
     var go = ev.target && ev.target.closest && ev.target.closest('.rm-stale-ai');
     if (go && live()) aiChip().click();
   });
-  document.addEventListener('DOMContentLoaded', function () {
+  function start() {
     paint();
     var c = aiChip();
     if (c && window.MutationObserver)
       new MutationObserver(paint).observe(c, {attributes: true});
     setTimeout(paint, 1500);
-  });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();</script>"""
 
 #: The card split into E2E/API/UNIT chapters, and the "All tests" checkbox that adds the
 #: rest of the run to them (Victor, 7 Oct 2026). A real file, `assets/testchapters.js`,
 #: inlined after the map has drawn its rows: it moves them, the renderer does not know.
-REQMAP_CHAPTERS_JS = ("<script>"
+REQMAP_CHAPTERS_JS = ('<script data-hr-swap="rerun">'
                       + (Path(__file__).resolve().parent.parent / "assets" / "testchapters.js")
                       .read_text(encoding="utf-8") + "</script>")
 
 #: The two panes' scrollbars drawn over the content instead of beside it (Victor, 19 Oct
 #: 2026): `assets/rmscroll.js`, after the chapters so it measures the list they built.
-REQMAP_SCROLL_JS = ("<script>"
+REQMAP_SCROLL_JS = ('<script data-hr-swap="rerun">'
                     + (Path(__file__).resolve().parent.parent / "assets" / "rmscroll.js")
                     .read_text(encoding="utf-8") + "</script>")
 
@@ -1681,8 +1688,12 @@ REQMAP_SCROLL_JS = ("<script>"
 #: 2026): rendered as its own block after the matrix, it floated at the bottom of the left
 #: column, far from the list it summarises.
 REQMAP_LEDGER_JS = """
-<script>document.addEventListener('DOMContentLoaded', function () {
+<script data-hr-swap="rerun">(function (move) {
   // On DOMContentLoaded: the ledger block is rendered after the matrix, below this script.
+  // At once when a rebuild swaps the tab in, which is after the whole panel is there.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', move);
+  else move();
+})(function () {
   var led = document.getElementById('test-ledger');
   var head = document.querySelector('.reqmap .rm-code > .rm-tkhead');
   if (led && head) head.appendChild(led);
@@ -1698,7 +1709,9 @@ REQMAP_LEDGER_JS = """
 #: (the other panels are under it, and the page scrolls anyway); a ResizeObserver on the
 #: matrix fires again the moment the tab is shown, and on the body for the footer.
 REQMAP_FIT_JS = """
-<script>(function () {
+<script data-hr-swap="rerun">(function () {
+  // Run again over a swapped-in tab: the last run's observer and window listeners go first.
+  if (window.__hrRmFitOff) { window.__hrRmFitOff(); window.__hrRmFitOff = null; }
   var body = document.querySelector('.reqmap .rm-body');
   if (!body) return;
   var root = document.documentElement;
@@ -1709,18 +1722,24 @@ REQMAP_FIT_JS = """
     var v = Math.max(0, Math.ceil(tail)) + 'px';
     if (root.style.getPropertyValue('--rm-tail-h') !== v) root.style.setProperty('--rm-tail-h', v);
   }
+  var ro = null;
   if (window.ResizeObserver) {
-    var ro = new ResizeObserver(fit);
+    ro = new ResizeObserver(fit);
     ro.observe(body);
     ro.observe(document.body);
   }
   window.addEventListener('resize', fit);
   window.addEventListener('load', fit);
   document.addEventListener('DOMContentLoaded', fit);
+  if (document.readyState !== 'loading') fit();
+  window.__hrRmFitOff = function () {
+    if (ro) ro.disconnect();
+    window.removeEventListener('resize', fit);
+  };
 })();</script>"""
 
 REQMAP_TIP_JS = """
-<script>(function () {
+<script data-hr-swap="keep">(function () {
   function measure(ev) {
     var el = ev.target && ev.target.closest && ev.target.closest('%s');
     if (!el) return;
@@ -1834,6 +1853,11 @@ def reqmap_layout(frag: str, spec: dict, out_dir: Path, root: Path | None = None
     out = relabel_cats(out)
     at = root if root is not None else out_dir.resolve().parent
     inventory = all_tests_inventory(out, doc, at) + test_cover_files(out, doc, at)
+    # The matrix's own renderer (`reqmap/reqmap.js`) re-renders a fresh matrix and may run
+    # again (`data-hr-swap="rerun"`); semcov.py says so, and a fragment written before it
+    # did is told here.
+    out = re.sub(r"<script>(\s*// The Tests tab's matrix renderer\.)", r'<script data-hr-swap="rerun">\1',
+                 out, count=1)
     return (out + REQMAP_CSS + inventory + REQMAP_FIT_JS + REQMAP_TIP_JS + REQMAP_SEMCOV_JS
             + REQMAP_CHAPTERS_JS + REQMAP_LEDGER_JS + REQMAP_SCROLL_JS)
 

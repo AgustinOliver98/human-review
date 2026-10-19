@@ -48,17 +48,28 @@
 
   // ---- where an element is, in terms that survive the swap ---------------------------
   //
-  // The nearest id above it, then the path of tag-and-index steps down from there. The
-  // new markup is the same build's output for the same content, so an element that is
-  // still there is found again under the same key; one that is not resolves to the closest
-  // ancestor that is (`find(..., true)`).
+  // The nearest id above it, then the path of steps down from there: the tag, the name a
+  // row is known by when it has one (`IDENT` — a sentence's `data-s`, a test's `data-id`),
+  // and the index among the siblings that share both. The new markup is the same build's
+  // output for nearly the same content, so an element that is still there is found again
+  // under the same key even when rows were added above it; one that is not resolves to the
+  // closest ancestor that is (`find(..., true)`).
+  var IDENT = ['data-s', 'data-id', 'data-cx', 'data-fixture', 'data-find', 'data-level',
+               'data-go', 'data-tab', 'data-cat', 'data-ch'];
+  function ident(n) {
+    for (var i = 0; i < IDENT.length; i++) {
+      if (n.hasAttribute(IDENT[i])) return IDENT[i] + '=' + n.getAttribute(IDENT[i]);
+    }
+    return '';
+  }
+  function same(a, b) { return a.tagName === b.tagName && ident(a) === ident(b); }
   function keyOf(el, root) {
     var steps = [];
     for (var n = el; n && n !== root; n = n.parentElement) {
       if (n.id) { steps.unshift('#' + n.id); return steps; }
       var i = 0, s = n;
-      while ((s = s.previousElementSibling)) if (s.tagName === n.tagName) i++;
-      steps.unshift(n.tagName + ':' + i);
+      while ((s = s.previousElementSibling)) if (same(s, n)) i++;
+      steps.unshift(n.tagName + '|' + ident(n) + '|' + i);
     }
     return n === root ? steps : null;
   }
@@ -74,9 +85,11 @@
       if (!n) return nearest ? root : null;
     }
     for (; i < steps.length; i++) {
-      var cut = steps[i].lastIndexOf(':'), tag = steps[i].slice(0, cut), k = +steps[i].slice(cut + 1);
+      var part = steps[i].split('|'), tag = part[0], id = part[1], k = +part[2];
       var hit = null, c = n.firstElementChild;
-      for (; c; c = c.nextElementSibling) if (c.tagName === tag && k-- === 0) { hit = c; break; }
+      for (; c; c = c.nextElementSibling) {
+        if (c.tagName === tag && ident(c) === id && k-- === 0) { hit = c; break; }
+      }
       if (!hit) return nearest ? n : null;
       n = hit;
     }
@@ -84,8 +97,23 @@
   }
 
   // ---- the reader's state in a panel about to be replaced ----------------------------
+  //
+  // What a control says about itself — a picked sentence (`aria-current`), a pressed
+  // toggle (`aria-pressed`), an opened chapter or row (`aria-expanded`) — is put back by
+  // pressing it, not by writing the attribute: the press is what opens the chapter, draws
+  // the wires, fills the source. Never a control that runs or copies something.
+  var PRESSABLE = '[aria-current="true"], [aria-pressed], [aria-expanded]';
+  var NEVER = 'a[href]:not([href="#"]), [data-rerun], [data-action], [data-push], [data-dry],'
+    + ' .copycmd, .cmd-run, .cmd-copy, [disabled], [aria-disabled="true"]';
   function capture(root) {
-    var st = {details: [], fields: [], scrolls: [], focus: null};
+    var st = {details: [], fields: [], scrolls: [], focus: null, aria: []};
+    [].forEach.call(root.querySelectorAll(PRESSABLE), function (el) {
+      if (el.matches(NEVER) || el.tagName === 'DETAILS') return;
+      var cur = el.getAttribute('aria-current') === 'true';
+      st.aria.push([keyOf(el, root), cur ? 'aria-current' : el.hasAttribute('aria-pressed')
+        ? 'aria-pressed' : 'aria-expanded', cur ? 'true' : el.getAttribute(
+          el.hasAttribute('aria-pressed') ? 'aria-pressed' : 'aria-expanded')]);
+    });
     [].forEach.call(root.querySelectorAll('details'), function (d) {
       st.details.push([keyOf(d, root), d.open]);
     });
@@ -123,6 +151,17 @@
       // Through the page's own handlers, so what a box toggles follows the box.
       el.dispatchEvent(new Event('input', {bubbles: true}));
       el.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+    // The pick first — picking a sentence folds the rows shut — then every toggle in page
+    // order, each pressed only if it does not already say what it said.
+    var picks = st.aria.filter(function (a) { return a[1] === 'aria-current'; });
+    var rest = st.aria.filter(function (a) { return a[1] !== 'aria-current'; });
+    picks.concat(rest).forEach(function (a) {
+      var el = find(root, a[0]);
+      if (!el || el.matches(NEVER)) return;
+      var now = a[1] === 'aria-current' ? (el.getAttribute('aria-current') === 'true' ? 'true' : '')
+        : el.getAttribute(a[1]);
+      if (now !== a[2]) el.click();
     });
     st.scrolls.forEach(function (s) {
       var el = find(root, s[0]);
@@ -181,7 +220,7 @@
   // ---- fetching the pieces -----------------------------------------------------------
   function scripts(root, how) {
     return [].map.call(root.querySelectorAll('script[data-hr-swap="' + how + '"]'),
-                       function (s) { return s.textContent; });
+                       function (s) { return (s.getAttribute('src') || '') + '\n' + s.textContent; });
   }
 
   function fetchPiece(t, live) {

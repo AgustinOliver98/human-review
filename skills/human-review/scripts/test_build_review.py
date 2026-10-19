@@ -468,7 +468,8 @@ def test_an_embed_is_pasted_into_a_shadow_root_not_framed(tmp_path):
     assert '<link rel="stylesheet" href="x.css">' in tpl and "body{color:red}" in tpl
     assert '<div id="dv-app">hi</div>' in tpl and "<script" not in tpl and "<title>" not in tpl
     assert "attachShadow({mode:'open'})" in out
-    assert '<script src="https://cdn/x.js" defer></script>' in out
+    # A library is on the page once: a rebuild that swaps the tab in keeps it (`keep`).
+    assert '<script src="https://cdn/x.js" defer data-hr-swap="keep"></script>' in out
     assert '<script data-dv-host="embed-api1">go()</script>' in out
     assert out.index("attachShadow") < out.index("go()"), "the root exists before its script"
 
@@ -3556,7 +3557,7 @@ def test_the_pilelede_carries_a_scroll_spy_that_marks_the_chapter_in_view(tmp_pa
     assert "classList.toggle('here'" in lede
     assert "addEventListener('resize'" in lede
     # It rides only on the one paragraph it belongs beside, never printed on its own.
-    assert lede.count("<script>") == 1
+    assert lede.count('<script data-hr-swap="rerun">') == 1
     # `_lede_above` prints the lede *before* the pile's own heading, so this script's tag
     # lands in the document ahead of `#first`/`#fixed`/`#assumed` — a bare top-level
     # `getElementById` at that point finds none of them and the whole thing would
@@ -5194,7 +5195,8 @@ def test_the_counts_line_is_printed_once_even_when_every_pile_is_empty(tmp_path)
     # line also names the class, as a selector, so that substring alone appears twice
     # even when the line itself renders once.
     assert out.count('<p class="sub counts pilelede">') == 1
-    assert out.count("<script>(function(){") == 1, "the spy script rides along once, not once per pile"
+    assert out.count('<script data-hr-swap="rerun">(function(){') == 1, \
+        "the spy script rides along once, not once per pile"
 
 
 def test_the_review_chip_drops_itself_when_nothing_records_a_review(tmp_path):

@@ -26,6 +26,10 @@
 // The renderer (reqmap.js) is left to draw the rows; this moves them, after the fact, the
 // same way trace.js and seqlink.js decorate them from the outside.
 (function () {
+  // Run again when a rebuild swaps the Tests tab into an open served page
+  // (`data-hr-swap="rerun"`, tests.py): the run before it is taken down first — its
+  // popover sits on <body>, not in the panel that went.
+  if (window.__hrChaptersOff) { window.__hrChaptersOff(); window.__hrChaptersOff = null; }
   var map = document.querySelector('.reqmap');
   if (!map) return;
   var list = map.querySelector('.rm-code .rm-list');
@@ -447,7 +451,13 @@
     if (run && !run.contains(e.relatedTarget)) hideSoon();
   });
   list.addEventListener('scroll', hidePop, {passive: true});
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hidePop(); });
+  function onEsc(e) { if (e.key === 'Escape') hidePop(); }
+  document.addEventListener('keydown', onEsc);
+  window.__hrChaptersOff = function () {
+    hidePop();
+    if (pop) pop.remove();
+    document.removeEventListener('keydown', onEsc);
+  };
   map.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.rm-f')) reveal();
   });

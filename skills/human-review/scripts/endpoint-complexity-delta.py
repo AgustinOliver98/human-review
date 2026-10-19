@@ -701,7 +701,12 @@ def render(rows, base="main", engines=("regex", "regex")) -> str:
 # that needed a file from `hrbuild/assets` would be a tab that only works inside one
 # builder. And with the script absent the `<details>` is still a `<details>`: the row
 # still opens, it just forgets it was open.
-TOGGLE_JS = """<script>
+TOGGLE_JS = """<script data-hr-swap="keep">
+/* Delegated on `document`, every listener — no row is bound by itself. That is what
+   `data-hr-swap="keep"` promises: when a rebuild swaps this tab into an open served page
+   (the review page's panel swap), the listeners registered at load serve the new rows, and
+   this script is not run again. `toggle` does not bubble, so it is heard in the capture
+   phase. */
 (function () {
   document.addEventListener('click', function (e) {
     var head = e.target.closest && e.target.closest('summary.cx-head');
@@ -710,21 +715,24 @@ TOGGLE_JS = """<script>
     setTimeout(function () { row.open = was; }, 0);
   });
   var P = 'cx';
-  var rows = document.querySelectorAll('details.cx-row[data-cx]');
+  function rows() { return document.querySelectorAll('details.cx-row[data-cx]'); }
   function remember() {
     if (!history.replaceState || !window.URLSearchParams) return;
     var q = new URLSearchParams(location.search);
     q.delete(P);
-    Array.prototype.forEach.call(rows, function (r) {
+    Array.prototype.forEach.call(rows(), function (r) {
       if (r.open) q.append(P, r.getAttribute('data-cx'));
     });
     var s = q.toString().replace(/%2F/gi, '/');         /* a path reads as a path */
     history.replaceState(history.state, '', location.pathname + (s ? '?' + s : '') + location.hash);
   }
+  document.addEventListener('toggle', function (e) {
+    var r = e.target;
+    if (r && r.matches && r.matches('details.cx-row[data-cx]')) remember();
+  }, true);
   var wanted = window.URLSearchParams ? new URLSearchParams(location.search).getAll(P) : [];
-  Array.prototype.forEach.call(rows, function (r) {
+  Array.prototype.forEach.call(rows(), function (r) {
     if (wanted.indexOf(r.getAttribute('data-cx')) >= 0) r.open = true;
-    r.addEventListener('toggle', remember);
   });
   /* A box in the call graph is a toggle: it lights up and folds its own lines open. The
      ↗ and every source line inside it are links and keep doing what links do. */

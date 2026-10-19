@@ -155,8 +155,13 @@
   }
   // <<< appenv-pods
 
-  var bar = document.querySelector('.appenv');
-  if (!bar) return;
+  // The row, started over the bar the page loaded with — and started again over the one a
+  // rebuild swaps in with the Demo tab (`hr:swapped`, panels.js, at the bottom). Everything
+  // the row knows is re-derived by a fresh start: the address from localStorage, the app's
+  // state from its health check, a Start still running from the server (`resume`). The
+  // old start's timers are stopped by the function this returns.
+  function start(bar) {
+  if (!bar) return null;
   var pods = appenvPods(bar, heard);
   var state = bar.querySelector('.appenv-state');
   var addr = bar.querySelector('.appenv-url');
@@ -572,6 +577,9 @@
   // two paths cannot drift into doing different things.
   var tmpl = bar.dataset.drive;
   if (tmpl) document.querySelectorAll('.cue-drive').forEach(function (btn) {
+    // Once per button: a second start (a swapped Demo tab) meets only the new ones.
+    if (btn.__hrCue) return;
+    btn.__hrCue = true;
     btn.addEventListener('click', function () {
       if (blocked(btn)) return;
       var was = btn.innerHTML;
@@ -640,5 +648,15 @@
         all.forEach(function (el) { el.disabled = false; });
       }, 1400);
     });
+  });
+  return function () { pods.clear(); untimed(); };
+  }
+
+  var stopRow = start(document.querySelector('.appenv'));
+  document.addEventListener('hr:swapped', function (ev) {
+    var bar = ev.detail && ev.detail.querySelector && ev.detail.querySelector('.appenv');
+    if (!bar) return;
+    if (stopRow) stopRow();
+    stopRow = start(bar);
   });
 })();

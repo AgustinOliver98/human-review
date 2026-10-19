@@ -772,7 +772,11 @@ def scope_chip_face(spec, reviewer: str | None = None) -> str:
 #: decides the mark is a position check across all three: whichever heading is the last
 #: one to have scrolled above the trigger is the section the reader is standing in, and
 #: that stays true for as long as the next heading has not arrived.
-PILELEDE_SPY_JS = """<script>(function(){
+PILELEDE_SPY_JS = """<script data-hr-swap="rerun">(function(){
+// `data-hr-swap="rerun"`: when a rebuild swaps the Review tab into an open served page
+// (`hrbuild/shared/panels.py`) this runs again over the new lede. The run before it is
+// taken down first (`__hrPileSpy`): its observer watched headings that are gone, and its
+// two window listeners would paint them twice.
 // The row prints above its own tab's first heading (`_lede_above` puts the lede before
 // the head, on purpose — the line describes the whole list, not the pile under it), so
 // this script's own tag sits in the document *before* `#first`/`#fixed`/
@@ -789,6 +793,7 @@ function whenReady(fn){
   }
 }
 whenReady(function(){
+if(window.__hrPileSpy){window.__hrPileSpy();window.__hrPileSpy=null;}
 var lede=document.querySelector('.pilelede');
 if(!lede||!('IntersectionObserver' in window))return;
 var links={};
@@ -849,6 +854,11 @@ window.addEventListener('resize',setup);
 // straight past. Unknown to a browser (`scrollend` is recent), `addEventListener`
 // silently ignores the event name and the band above is what carries the behaviour.
 window.addEventListener('scrollend', paint, {passive:true});
+window.__hrPileSpy=function(){
+  if(io)io.disconnect();
+  window.removeEventListener('resize',setup);
+  window.removeEventListener('scrollend',paint);
+};
 });
 })();</script>"""
 
@@ -3949,7 +3959,12 @@ PR_RESULT_TAG = "::hr-push-result::"
 # Written so it can also be dropped into a page built before it (a live patch): it
 # rebuilds the dialog's inside and the message slot when they are the old ones, and swaps
 # the button for a clone, which sheds the old click handler.
-PR_PUSH_JS = """<script>(function () {
+PR_PUSH_JS = """<script data-hr-swap="rerun">(function () {
+  // `data-hr-swap="rerun"`: when a rebuild swaps the Review tab into an open served page
+  // this runs again, over the new button and dialog (below). The document-wide listener
+  // here is the one thing that must not be registered twice.
+  if (window.__hrPrVsc) return;
+  window.__hrPrVsc = true;
   // *in VS Code*: bring the window on this checkout forward first (served), then hand the
   // OS the extension's URI — VS Code gives a URI to the window used last. In the capture
   // phase, ahead of editor.js, which takes every vscode: link for a file reference.
@@ -3977,7 +3992,11 @@ function hrVscPr(url) {
   var m = /^(https:\\/\\/github\\.com\\/[^\\/#?]+\\/[^\\/#?]+\\/pull\\/\\d+)/.exec(url || '');
   return m ? HR_VSC_PR + encodeURIComponent(m[1]) : null;
 }
-document.addEventListener('DOMContentLoaded', function(){
+(function (init) {
+  // At load after DOMContentLoaded, for `window.HR`; run again by a swap, at once.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})(function(){
   var old = document.querySelector('.pr-push');
   if (!old || !window.HR) return;
   var b = old.cloneNode(true); old.replaceWith(b);

@@ -367,8 +367,10 @@ def dataset_html(root: Path | None) -> str:
     # The rules are the Demo tab's (`css/demo.css`); the script is the tab's alone, so it
     # rides here with its data rather than on every page the build writes.
     js = (_ASSETS / "dataset-view.js").read_text(encoding="utf-8")
+    # `rerun`: a rebuild that swaps the Demo tab into an open served page (`shared/panels.py`)
+    # runs it again over the new card — it binds the card, not the document.
     return (f'<script type="application/json" id="dsv-data">{blob}</script>'
-            f"<script>\n{js}</script>")
+            f'<script data-hr-swap="rerun">\n{js}</script>')
 
 
 if __name__ == "__main__":  # python3 dataset_view.py <repo> — the blob, for a look

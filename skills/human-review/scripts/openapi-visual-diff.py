@@ -1432,9 +1432,12 @@ TEMPLATE = r"""<!doctype html>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui-bundle.js"></script>
-<script>
+<script data-hr-swap="rerun">
 // One function scope for all of it: embedded, this script runs in the host page's global
 // scope, where a top-level `const root` or `function apply` would clash with the page's own.
+// And everything it binds is bound on its own root, never on the host page's document, so
+// it may run again over a fresh copy of itself: `data-hr-swap="rerun"` says so to the
+// review page, which swaps its API tab in place when a rebuild changes it.
 (() => {
 // Standalone, this page is the document. Embedded (the review's API tab), the markup and
 // the styles above were moved into a shadow root on a host element, and this script tag

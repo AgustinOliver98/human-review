@@ -539,7 +539,8 @@ def test_the_script_runs_against_its_own_root_so_it_can_live_in_a_shadow_root():
                  "location.hash", "window."):
         assert call not in js, f"{call} reaches past the root"
     assert "domNode: root.getElementById('swagger-ui')" in t and "dom_id:" not in js
-    assert "<script>\n// One function scope for all of it" in t
+    # And may run twice over a fresh copy (the review page's in-place panel swap).
+    assert '<script data-hr-swap="rerun">\n// One function scope for all of it' in t
     assert t.rstrip().endswith("})();\n</script>\n</body>\n</html>")
     # The stylesheet answers to a shadow host as well as to a document.
     assert ":root, :host {" in t and ':host([data-theme="dark"])' in t

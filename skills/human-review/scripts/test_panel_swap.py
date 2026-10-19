@@ -386,3 +386,134 @@ def test_a_served_page_swaps_the_tab_a_rebuild_changed_and_keeps_the_reader_s_pl
             except OSError:
                 pass
     assert errors == []
+
+
+# --------------------------------------------------------------------------- #
+# the two tabs that run the most of their own script: Tests and Review
+# --------------------------------------------------------------------------- #
+
+def _tests_and_review_repo(tmp_path, version=1):
+    """A repository with a real requirements matrix (semcov's own test project), a Review
+    tab whose finding carries a fold, and the two tabs the swap is about."""
+    sem = _load("test_semcov_for_panels", "test_semcov.py")
+    root = tmp_path / "repo"
+    if not root.is_dir():
+        root, review = sem._repo(tmp_path)
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t",
+                   GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t")
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "base"], cwd=root, check=True, env=env)
+        spec = json.loads((review / "content.json").read_text(encoding="utf-8"))
+        g, entries, frag, _ = sem._render(tmp_path)
+        (review / "assets" / "requirements-map.v1.html").write_text(frag, encoding="utf-8")
+        (review / "content.base.json").write_text(json.dumps(spec), encoding="utf-8")
+    review = root / ".human-review"
+    frag = (review / "assets" / "requirements-map.v1.html").read_text(encoding="utf-8")
+    if version > 1:
+        frag += f'<p class="tests-probe">rebuilt {version}</p>'
+    (review / "assets" / "requirements-map.html").write_text(frag, encoding="utf-8")
+    spec = json.loads((review / "content.base.json").read_text(encoding="utf-8"))
+    spec.update({
+        "title": "panel swap, tests", "summary": "<p>x</p>",
+        "verdict": {"score": 5, "label": "x", "bullets": ["y"]},
+        "scope": [{"label": "files", "value": "1", "href": "https://example.invalid"}],
+        "findings": [{"title": "The vet is not checked", "severity": "high",
+                      "body": f"<p>Seen in build {version}, at <a class='srcref' "
+                              f"href='vscode://file/{root}/src/Visit.java:3'>Visit.java:3</a>."
+                              "</p><details id='ffold'>"
+                              "<summary>Why</summary><p>Because.</p></details>"}],
+        "autofixes": [{"title": "a"}],
+        "sections": [{"id": "requirements-map", "title": "",
+                      "includeHtml": "assets/requirements-map.html", "includeFirst": True}],
+        "tabs": [{"id": "review", "label": "Review", "count": True,
+                  "blocks": [{"type": "findings"}, {"type": "autofixes"}]},
+                 {"id": "requirements", "label": "Tests",
+                  "blocks": [{"type": "section", "id": "requirements-map"}]}],
+    })
+    (review / "content.json").write_text(json.dumps(spec), encoding="utf-8")
+    proc = subprocess.run([sys.executable, str(HERE / "build-review-html.py"),
+                           ".human-review/content.json", "--out", ".human-review/review.html"],
+                          cwd=root, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    return root, review
+
+
+def test_the_tests_and_review_tabs_swap_with_the_reader_s_state(tmp_path):
+    """A picked sentence and its wires, an open chapter, Show all, the overlay scrollbars,
+    an open finding fold and the clickable finding titles all survive a rebuild that
+    changes both tabs — re-derived by the tabs' own scripts, run again over the new markup."""
+    sync = pytest.importorskip("playwright.sync_api")
+    root, review = _tests_and_review_repo(tmp_path)
+    m = P.read_panels_manifest(review)
+    assert all(t["swappable"] for t in m["tabs"]), [t.get("blockers") for t in m["tabs"]]
+    port = _free_port()
+    started = subprocess.run([sys.executable, str(HERE / "serve-review.py"), str(review),
+                              "--port", str(port), "--no-open", "--idle-minutes", "5"],
+                             capture_output=True, text=True, timeout=30)
+    assert started.returncode == 0, started.stderr
+    url = started.stdout.strip()
+    pid = (sr.probe(port) or {}).get("pid")
+    errors = []
+    STATE = """() => {
+      var q = s => document.querySelector(s), all = s => document.querySelectorAll(s);
+      var pick = q('#requirements .rm-f[aria-current="true"]');
+      var box = q('#requirements .rm-tkhead input[type=checkbox]');
+      return {
+        pick: pick ? pick.dataset.s : null,
+        hits: all('#requirements .rm-t[data-hit="yes"]').length,
+        wired: (q('#requirements [data-wired]') || {dataset: {}}).dataset.wired || null,
+        chapters: [].map.call(all('#requirements .rm-chh'), h => h.getAttribute('aria-expanded')).join(','),
+        showAll: box ? box.checked : null,
+        rows: all('#requirements .rm-t').length,
+        bars: all('#requirements .rm-ovbar').length,
+        pops: all('.rm-covpop').length,
+        fold: q('#ffold') ? q('#ffold').open : null,
+        opens: all('#review .f-title.opens').length,
+      };
+    }"""
+    try:
+        with sync.sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page(viewport={"width": 1300, "height": 850})
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto(url + "#review")
+            page.wait_for_function("window.HR && window.HR.caps && window.HR.caps()")
+            page.evaluate("window.__kept = 'still here'")
+            page.evaluate("document.getElementById('ffold').open = true")
+            page.click("#tabbtn-requirements")
+            page.wait_for_timeout(300)
+            # A sentence some test covers, then the chapter it is in, then Show all.
+            page.evaluate("""() => {
+              var f = [].find.call(document.querySelectorAll('#requirements .rm-f[data-s]'),
+                                   x => !x.closest('.rm-legend'));
+              f.click(); }""")
+            page.evaluate("document.querySelector('#requirements .rm-chh').click()")
+            page.evaluate("""() => { var b = document.querySelector(
+                '#requirements .rm-tkhead input[type=checkbox]');
+                b.checked = true; b.dispatchEvent(new Event('change', {bubbles: true})); }""")
+            page.wait_for_timeout(300)
+            before = page.evaluate(STATE)
+            assert before["pick"] and before["chapters"].startswith("true") and before["showAll"]
+            assert before["fold"] is True and before["bars"] == 2 and before["opens"] == 1
+            assert before["wired"] == "yes" and before["hits"] >= 1
+
+            _tests_and_review_repo(tmp_path, version=2)
+            page.wait_for_function(
+                "window.HR.lastCatchUp && window.HR.lastCatchUp.how === 'swapped in place'"
+                " && window.HR.lastCatchUp.tabs.indexOf('requirements') >= 0"
+                " && window.HR.lastCatchUp.tabs.indexOf('review') >= 0", timeout=90000)
+            page.wait_for_timeout(300)
+            assert page.evaluate("window.__kept") == "still here", "the page reloaded"
+            assert page.locator("#requirements .tests-probe").count() == 1
+            assert "Seen in build 2" in page.text_content("#review")
+            after = page.evaluate(STATE)
+            assert after == before, (before, after)
+            browser.close()
+    finally:
+        if pid:
+            try:
+                os.kill(pid, 15)
+            except OSError:
+                pass
+    assert errors == []

@@ -419,7 +419,11 @@ def embed_html(s, out_dir: Path) -> str:
     script_re = re.compile(r'<script\b([^>]*)>(.*?)</script\s*>', re.S | re.I)
     # Attaches the shadow root and moves the report's styles and markup into it, before the
     # report's own scripts run. `__ID__` is the host's id; the template is the next sibling.
-    attach = ("<script>(function(){var h=document.getElementById('__ID__'),"
+    # `data-hr-swap="rerun"`: a rebuild that swaps this tab into an open served page
+    # (`shared/panels.py`) runs it again over the new host. A library the report loads by
+    # `src` is `keep` — it is on the page already — and the report's own inline script
+    # says for itself whether it may run twice (openapi-visual-diff.py's does).
+    attach = ("<script data-hr-swap=\"rerun\">(function(){var h=document.getElementById('__ID__'),"
               "t=document.getElementById('__ID__-tpl');if(!h||!t)return;"
               "(h.shadowRoot||h.attachShadow({mode:'open'})).appendChild(t.content);"
               "t.remove();})();</script>")
@@ -432,6 +436,8 @@ def embed_html(s, out_dir: Path) -> str:
         if re.search(r'\bsrc=', attrs):
             if not re.search(r'\b(?:defer|async)\b', attrs):
                 attrs += " defer"
+            if "data-hr-swap" not in attrs:
+                attrs += ' data-hr-swap="keep"'
             scripts.append(f"<script{attrs}></script>")
         else:
             scripts.append(f'<script{attrs} data-dv-host="{hid}">{sm.group(2)}</script>')

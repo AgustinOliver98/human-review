@@ -481,7 +481,7 @@ def test_the_fold_needs_nothing_the_fragment_does_not_carry():
     """The page pastes this fragment into a tab whole. A stylesheet or a script it had to
     fetch from `hrbuild/assets` would be a tab that only works inside one builder."""
     page = delta.render([_row(why=[])], "main")
-    assert "<script>" in page and "cx-head" in page
+    assert '<script data-hr-swap="keep">' in page and "cx-head" in page
     assert "src=" not in page and "hrbuild" not in page
     for name in ("cx-why", "cx-why-line", "cx-why-inc", "cx-head"):
         assert f".{name}" in delta.CSS, f"{name} is emitted but never styled"
@@ -822,7 +822,10 @@ def test_the_open_rows_are_named_in_the_address_bar():
     assert "history.replaceState" in js, "the page's one way of writing the address"
     assert "location.hash" in js and "location.search" in js, "the hash is left as it was"
     assert "getAll(P)" in js and "q.append(P" in js and "var P = 'cx'" in js
-    assert "addEventListener('toggle', remember)" in js, "closing one takes it out again"
+    # Heard on `document` in the capture phase (`toggle` does not bubble), so a row swapped
+    # in by a rebuild (`data-hr-swap="keep"`) is remembered without re-running the script.
+    assert "document.addEventListener('toggle'" in js, "closing one takes it out again"
+    assert 'data-hr-swap="keep"' in js
     # A deleted entry point opens onto nothing, so it has nothing to remember.
     assert "data-cx" not in delta.render_row(_row(gone=True, why=[]), 12, "main")
 

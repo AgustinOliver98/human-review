@@ -646,10 +646,13 @@
     return (!online && li.querySelector(':scope > a.f-vsc'))
       || li.querySelector('a.srcref[href^="vscode:"], a.srcref[href^="http"]');
   }
-  [].forEach.call(document.querySelectorAll('ol.findings > li > .f-title'), function (t) {
-    if (!titleAim(t)) return;
-    t.classList.add('opens');
-  });
+  function markTitles(root) {
+    [].forEach.call(root.querySelectorAll('ol.findings > li > .f-title'), function (t) {
+      if (!titleAim(t)) return;
+      t.classList.add('opens');
+    });
+  }
+  markTitles(document);
   // Its tip, worded for what the click will do now (`paintIde` calls it on every change).
   function titleTips() {
     var on = ide();
@@ -659,6 +662,13 @@
                     function (t) { t.setAttribute('data-tip', say); });
   }
   titleTips();
+  // And the Review tab swapped in by a rebuild (`hr:swapped`, panels.js): its titles arrive
+  // unmarked, so they are marked and worded again.
+  document.addEventListener('hr:swapped', function (ev) {
+    if (!ev.detail || !ev.detail.querySelectorAll) return;
+    markTitles(ev.detail);
+    titleTips();
+  });
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest && ev.target.closest('.f-title.opens');
     if (!t || ev.target.closest('a') || ev.button !== 0) return;
