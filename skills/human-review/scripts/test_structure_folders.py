@@ -208,7 +208,7 @@ def test_the_endpoint_says_so_when_no_window_has_the_checkout(server, repo, monk
     monkeypatch.setattr(srv, "ROOT", repo)
     monkeypatch.setattr(srv, "reveal_folder", lambda *a: None)
     status, payload = _call(server, "POST", srv.REVEAL_FOLDER, {"path": "shop-api"})
-    assert status == 409 and "VSC badge" in payload
+    assert status == 409 and "logo in the header" in payload
 
 
 def _bridge(tmp_path, monkeypatch, folder: Path, reveal_ok: bool):

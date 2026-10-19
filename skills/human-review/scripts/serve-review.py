@@ -2177,8 +2177,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 done = reveal_folder(*found, app)
             if done is None:
                 self.reply_text(f"No {IDES[app]} window has {ROOT} open: press the "
-                                f"{'VSC' if app == 'vscode' else IDES[app]} badge "
-                                "to open one, then click the box again", 409)
+                                f"red {IDES[app]} logo in the header to connect it, "
+                                "then click the box again", 409)
                 return
             self.reply_json({"revealed": str(found[1]), **done,
                              **({"ide": app, "fallback": fell} if ide else {})})
