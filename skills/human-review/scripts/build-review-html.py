@@ -161,11 +161,10 @@ from hrbuild.shared.diagrams import (
     _PROV_CODE, _PROV_SOURCES, _WRITES, _TEST_PATH, _prov_source, _mentions,
     CM_LEGEND_NEW, CM_LEGEND_TODO, DEFAULT_FOCUS, DGM_SRC_ANCHOR, dgm_views_html, DRAWIO_TOKEN,
     drawio_unchanged, drawio_unchanged_at, drawio_widget_html, expand_drawio,
-    find_diagram_source, read_manifest, render_diagrams, render_puml, schema_unseen_note,
+    find_diagram_source, read_manifest, render_diagrams, render_puml,
     select_rows, shorten_dgm_src, unchanged_row, UNCHANGED, UNCHANGED_BADGE, VIEW_WORDS,
     _context_svg, _diagram_views, _drawio_unchanged_card, _focus_views, _provenance,
-    _source_link, _sql_shape, _SQL_ALTER, _SQL_COLLATE, _SQL_COLUMN, _SQL_CONSTRAINT, _SQL_FK,
-    _SQL_INDEX, _SQL_TABLE, _undrawn,
+    _source_link,
     _unchanged_body, _why_not_drawn, trace_legend
 )
 from hrbuild.shared.c4 import C4_DIR, C4_MIN_SCALE, C4_SCALE, C4_VIEWBOX, render_c4, _c4_badge, _c4_body, \
@@ -988,15 +987,7 @@ def _main(argv=None) -> int:
                 else:
                     print(f"[review] diagrams block names {name!r}: no manifest row and no "
                           f"{name}.puml in the repository — nothing to show", file=sys.stderr)
-            # What the picture cannot say. An ERD drawn from a schema dump is blind to an
-            # index or a collation, so a schema that changed only there reads UNCHANGED;
-            # the line under the card names it, and the card then counts as a change.
-            merge_base = page_rev
-            for r in rows:
-                if r.get("kind") == "structural":
-                    r["_unseen"] = schema_unseen_note(r["source"], root, merge_base,
-                                                      columns=r["status"] == UNCHANGED)
-            changed = sum(1 for r in rows if r["status"] != UNCHANGED or r.get("_unseen"))
+            changed = sum(1 for r in rows if r["status"] != UNCHANGED)
             # Nothing of this family changed. A block that names a `context` diagram
             # (the Packages case: no delta, but the current package shape is still
             # worth showing) falls back to rendering it from source — exactly like a

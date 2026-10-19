@@ -125,9 +125,9 @@
 .cmlegend .new { color:var(--dgm-diff-add); }
 .cmlegend .todo { color:#d7263d; }
 .cmlegend b { color:var(--fg); font-weight:600; }
-/* A card's other closing captions (the C2 note, the ERD's unseen-schema line) are read at
-   the legend's size: two captions under two pictures side by side, one size. */
-.diagram p.sub.dgm-stale, .diagram p.sub.dgm-unseen { font-size:.78rem; line-height:1.6; }
+/* A card's other closing caption (the C2 note) is read at the legend's size: two
+   captions under two pictures side by side, one size. */
+.diagram p.sub.dgm-stale { font-size:.78rem; line-height:1.6; }
 @media (prefers-color-scheme:dark) { .cmlegend .todo { color:#ff9090; } }
 /* A drawing laid over the traces (`drawio-diff.py --traces`): weight is "a test walked
    it", grey "none did", red dashes "the traces called it and nobody drew it". The swatch

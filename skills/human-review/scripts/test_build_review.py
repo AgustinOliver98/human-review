@@ -6236,12 +6236,11 @@ def test_the_build_drops_a_pr_payload_pinned_to_another_branch(tmp_path, capsys)
 # the Data tab: every diagram the block names is on it, changed or not
 # --------------------------------------------------------------------------- #
 
-def test_the_data_tab_shows_every_named_diagram_and_says_what_the_erd_cannot(tmp_path):
+def test_the_data_tab_shows_every_named_diagram_changed_or_not(tmp_path):
     """hr-try-4: `only: ["DomainModel", "DB"]`, the Domain Model's .puml moved only its
     link line numbers (filed `unchanged` by `puml-diff.sh`), and DB.puml did not move at
     all because the migration only added an index — so the tab showed an empty delta and
-    no DB. Both are on it now, as plain UNCHANGED cards, and the index is named under the
-    DB card, which is what keeps the tab from being struck through."""
+    no DB. Both are on it now, as plain UNCHANGED cards."""
     import os
     run = lambda *a: subprocess.run(["git", "-C", str(tmp_path), *a], check=True,
                                     capture_output=True)
@@ -6252,12 +6251,9 @@ def test_the_data_tab_shows_every_named_diagram_and_says_what_the_erd_cannot(tmp
     docs.mkdir()
     (docs / "DomainModel.puml").write_text("@startuml\nclass Owner {\n}\n@enduml\n")
     (docs / "DB.puml").write_text("@startuml\nentity owners {\n}\n@enduml\n")
-    (docs / "DB.sql").write_text("CREATE TABLE public.owners (\n    id integer\n);\n")
     run("add", "-A")
     run("commit", "-qm", "base")
     run("update-ref", "refs/remotes/origin/main", "HEAD")
-    (docs / "DB.sql").write_text("CREATE TABLE public.owners (\n    id integer\n);\n\n"
-                                 "CREATE INDEX owners_id_idx ON public.owners USING btree (id);\n")
     review = tmp_path / ".human-review"
     dg = review / "assets" / "diagrams"
     dg.mkdir(parents=True)
@@ -6290,15 +6286,11 @@ def test_the_data_tab_shows_every_named_diagram_and_says_what_the_erd_cannot(tmp
     page = (review / "review.html").read_text(encoding="utf-8")
     panel = page.split('id="data"', 1)[1].split("</section>", 1)[0]
     assert panel.index("<b>Domain Model</b>") < panel.index("<b>Database</b>"), "the asked order"
-    # The Domain Model is UNCHANGED; the DB picture is too, over a schema that did change —
-    # eval run 5's judges read UNCHANGED beside "DB.sql changed" as a contradiction, so
-    # that card wears its own word.
+    # Both pictures are UNCHANGED, each with its own badge.
     assert panel.count('<span class="badge sev-info">unchanged</span>') == 2
     assert ">schema only</span>" not in panel
     assert "domain picture" in panel and "erd picture" in panel
     assert "domain delta" not in panel and "dgmviews" not in panel
-    assert "indexes added on owners (id)" in panel
-    assert '<button type="button" class="tab quiet" role="tab" id="tabbtn-data"' not in page
 
 
 # ── eval run 11: the Review tab, for a reviewer who is busy and stressed ────────────

@@ -672,118 +672,6 @@ def unchanged_row(name: str, rel: str) -> dict:
             "diff_puml": "", "svg": "", "focus": "", "new_svg": "", "old_svg": ""}
 
 
-_SQL_TABLE = re.compile(r"^CREATE TABLE (?:\w+\.)?(?P<t>\w+) \($")
-_SQL_COLUMN = re.compile(r"^\s+(?P<c>\w+) (?P<d>.+?),?$")
-_SQL_INDEX = re.compile(r"^CREATE (?P<u>UNIQUE )?INDEX (?P<n>\w+) ON (?:ONLY )?(?:\w+\.)?"
-                        r"(?P<t>\w+)(?: USING \w+)? (?P<cols>\(.*\));?$")
-_SQL_COLLATE = re.compile(r"\s+COLLATE\s+\S+")
-# pg_dump writes every constraint it did not inline as two lines:
-#   ALTER TABLE ONLY public.visits
-#       ADD CONSTRAINT visits_vet_id_fkey FOREIGN KEY (vet_id) REFERENCES public.vets(id) ON DELETE SET NULL;
-_SQL_ALTER = re.compile(r"^ALTER TABLE (?:ONLY )?(?:\w+\.)?(?P<t>\w+)$")
-_SQL_CONSTRAINT = re.compile(r"^\s+ADD CONSTRAINT (?P<n>\w+) (?P<body>.+?);?$")
-_SQL_FK = re.compile(r"^FOREIGN KEY (?P<cols>\(.*?\)) REFERENCES (?:\w+\.)?(?P<ref>\w+)"
-                     r"\(.*?\)(?P<rule>(?: ON (?:DELETE|UPDATE) [A-Z ]+?)*)\s*$")
-
-
-def _sql_shape(text: str):
-    """`{table.column: definition}`, `{index: "table (columns)"}` and
-    `{constraint: (table, definition)}` out of a pg_dump."""
-    cols, idx, cons, table, altered = {}, {}, {}, None, None
-    for line in text.splitlines():
-        m = _SQL_ALTER.match(line)
-        if m:
-            altered = m["t"]
-            continue
-        m = _SQL_CONSTRAINT.match(line) if altered else None
-        if m:
-            cons[m["n"]] = (altered, m["body"])
-        altered = None
-        m = _SQL_TABLE.match(line)
-        if m:
-            table = m["t"]
-            continue
-        if table:
-            if line.startswith(")"):
-                table = None
-                continue
-            m = _SQL_COLUMN.match(line)
-            if m and m["c"].upper() != "CONSTRAINT":
-                cols[f'{table}.{m["c"]}'] = m["d"]
-            continue
-        m = _SQL_INDEX.match(line)
-        if m:
-            idx[m["n"]] = f'{"unique " if m["u"] else ""}{m["t"]} {m["cols"]}'
-    return cols, idx, cons
-
-
-def _undrawn(table: str, body: str) -> str | None:
-    """What the ERD cannot show of one constraint, in words — or None when it shows it all.
-
-    A primary key and a plain foreign key are drawn: `<<PK>>`, `<<FK>>` and the edge. What
-    a foreign key does when its target row goes (`ON DELETE SET NULL`) is not, nor is a
-    UNIQUE or CHECK constraint, and those decide what the data can become."""
-    fk = _SQL_FK.match(body)
-    if fk:
-        rule = " ".join(fk["rule"].split())
-        return f'{table} {fk["cols"]} → {fk["ref"]} {rule}' if rule else None
-    if body.startswith(("UNIQUE", "CHECK", "EXCLUDE")):
-        return f"{table} {body}"
-    return None
-
-
-def schema_unseen_note(rel: str, root: Path, merge_base: str | None,
-                       columns: bool = True) -> str:
-    """What changed in the schema dump an ERD is drawn from that the ERD cannot show.
-
-    An ERD `.puml` converted from a dump (`DB.sql` beside `DB.puml`) draws tables,
-    columns and keys; an index or a column's collation lives only in the dump. So a
-    migration that adds indexes leaves the picture byte-identical, and the card would say
-    UNCHANGED about a schema that did change. Read the dump at the merge-base and in the
-    work tree, and name the difference in one line under the card. `columns` is off for a
-    diagram that changed: a column whose type moved is already drawn in its delta.
-
-    Empty when there is no sibling dump, no base, or nothing the picture misses."""
-    sql = Path(rel).with_suffix(".sql")
-    if not merge_base or not (root / sql).is_file():
-        return ""
-    base = subprocess.run(["git", "show", f"{merge_base}:{sql.as_posix()}"], cwd=root,
-                          capture_output=True, text=True)
-    if base.returncode != 0:
-        return ""
-    old_cols, old_idx, old_cons = _sql_shape(base.stdout)
-    new_cols, new_idx, new_cons = _sql_shape((root / sql).read_text(encoding="utf-8"))
-    said = []
-    added = [new_idx[n] for n in sorted(new_idx) if n not in old_idx]
-    gone = [old_idx[n] for n in sorted(old_idx) if n not in new_idx]
-    if added:
-        said.append("indexes added on " + ", ".join(added))
-    if gone:
-        said.append("indexes dropped on " + ", ".join(gone))
-    # Constraints regardless of `columns`: a changed diagram draws a new FK's edge, never
-    # its delete rule — the half of the constraint that decides what a delete does.
-    cons_added = [w for n in sorted(new_cons) if old_cons.get(n) != new_cons[n]
-                  for w in [_undrawn(*new_cons[n])] if w]
-    cons_gone = [w for n in sorted(old_cons) if n not in new_cons
-                 for w in [_undrawn(*old_cons[n])] if w]
-    if cons_added:
-        said.append("constraints added on " + ", ".join(cons_added))
-    if cons_gone:
-        said.append("constraints dropped on " + ", ".join(cons_gone))
-    if columns:
-        moved = [c for c in new_cols if c in old_cols and new_cols[c] != old_cols[c]]
-        collation = [c for c in moved
-                     if _SQL_COLLATE.sub("", new_cols[c]) == _SQL_COLLATE.sub("", old_cols[c])]
-        other = [c for c in moved if c not in collation]
-        if collation:
-            said.append("collation changed on " + ", ".join(collation))
-        if other:
-            said.append("definition changed on " + ", ".join(other))
-    if not said:
-        return ""
-    return "Also changed, not drawn: " + "; ".join(said) + "."
-
-
 def render_diagrams(spec, root: Path, out_dir: Path, rows=None, bare: str = "") -> str:
     """`bare` is the test file a pair's heading already names.
 
@@ -849,8 +737,6 @@ def render_diagrams(spec, root: Path, out_dir: Path, rows=None, bare: str = "") 
             + ("" if r["status"] == UNCHANGED
                else genseq_details_at_base(r, manifest.parent, root))
             + body
-            + (f'<p class="sub dgm-unseen">{html.escape(r["_unseen"])}</p>'
-               if r.get("_unseen") else "")
             # A producer's own line about the row (the C2 projection: "projected from the
             # committed sequences, not re-traced"). Text, escaped: a manifest is not HTML.
             + (f'<p class="sub dgm-stale">{html.escape(r["note"])}</p>'

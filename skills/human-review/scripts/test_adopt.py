@@ -73,7 +73,7 @@ def test_a_diagram_cards_i_sits_beside_its_pill_not_in_its_header():
 
 def test_each_data_card_gets_its_own_button_inside_its_border_with_its_own_prompt():
     body = (_card("Domain Model", "DomainModel.puml")
-            + _card("DB", "DB.puml", '<p class="sub dgm-unseen">Also changed</p>')
+            + _card("DB", "DB.puml", '<p class="sub dgm-stale">Also changed</p>')
             + _card("Conceptual Model", "ConceptualModel.drawio.png"))
     out = place_prompts("data", body)
     cards = out.split('<div class="diagram">')[1:]
@@ -83,7 +83,7 @@ def test_each_data_card_gets_its_own_button_inside_its_border_with_its_own_promp
         assert card.rstrip().endswith("</button></div></div>") or card.rstrip().endswith(
             "</button></div></div></div>"), "the button closes the card"
     # A card that ends on a caption line gives that line the pill, not a row under it.
-    assert '<div class="adoptfoot"><p class="sub dgm-unseen">Also changed</p>' \
+    assert '<div class="adoptfoot"><p class="sub dgm-stale">Also changed</p>' \
            '<div class="adoptline adopt-title">' in cards[1]
     assert "adoptfoot" not in cards[0] + cards[2]
     first = [p.split(" into this repository")[0] for p in _prompts(out)]
@@ -91,7 +91,7 @@ def test_each_data_card_gets_its_own_button_inside_its_border_with_its_own_promp
         "Get the domain-model class diagram generated from your domain classes by Java "
         "reflection, committed as PlantUML and diffed base against branch",
         "Get the ERD generated from your DB migration scripts, committed as PlantUML and "
-        "diffed base against branch, with the schema changes it cannot draw listed under it",
+        "diffed base against branch",
         "Get the hand-drawn draw.io Conceptual Model diagram, checked against the code by a "
         "test and diffed base against branch"]
 
@@ -222,7 +222,7 @@ def test_tab_title_pills_say_page_and_smaller_areas_keep_the_short_label():
     api = place_prompts("api", '<div class="apiverdict ok">v</div>')
     assert "Prompt to get this page</button>" in api
     card = place_prompts("data", _card("Domain Model", "DomainModel.puml",
-                                       '<p class="sub dgm-unseen">Also changed</p>'))
+                                       '<p class="sub dgm-stale">Also changed</p>'))
     assert "adopt-title" in card and "Prompt to get this</button>" in card
     assert "this page" not in card
     cost = place_prompts("review", '<h2 id="assumed">A</h2><p class="pileround">r</p>')

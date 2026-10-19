@@ -82,7 +82,7 @@ PIECES: dict[str, tuple[str, str]] = {
         "puml-diff/puml_diff.py"),
     "diagram.db": (
         "the ERD generated from your DB migration scripts, committed as PlantUML and "
-        "diffed base against branch, with the schema changes it cannot draw listed under it",
+        "diffed base against branch",
         PETCLINIC + "docs/scripts/db/db_schema_to_puml.py, scripts/puml-diff.sh, "
         "puml-diff/puml_diff.py, scripts/hrbuild/shared/diagrams.py"),
     "diagram.drawio": (
@@ -222,7 +222,6 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             'The real tables: the migrations run on an empty DB, then read back.',
             'Green = added by this PR.',
-            "Indexes and constraints it can't draw are listed under the title.",
             'Look for a new FK without an index, or NOT NULL on a table that has rows.',
             '<b>✓ Generated from …</b> beside <b>changed</b>: its source; click for the generator.',
         ],
@@ -450,7 +449,7 @@ def _close(doc: str, start: int) -> tuple[int, int] | None:
 
 
 #: The one-line captions a diagram card can end on: its legend, or a producer's note.
-_CAPTION = re.compile(r'<p class="(?:cmlegend|sub dgm-(?:stale|unseen))\b[^"]*"')
+_CAPTION = re.compile(r'<p class="(?:cmlegend|sub dgm-stale)\b[^"]*"')
 
 
 def _last_caption(doc: str, start: int, end: int) -> int | None:

@@ -1437,94 +1437,20 @@ def test_no_verdict_is_not_unchanged():
                                    "red": []})
 
 
-# ── what an ERD cannot draw ──────────────────────────────────────────────────────────
-
-BASE_SQL = """CREATE TABLE public.owners (
-    id integer NOT NULL,
-    first_name text,
-    city text
-);
-
-CREATE INDEX pets_name_idx ON public.pets USING btree (name);
-"""
-
-WORK_SQL = """CREATE TABLE public.owners (
-    id integer NOT NULL,
-    first_name text COLLATE pg_catalog."und-x-icu",
-    city text
-);
-
-CREATE INDEX owners_city_id_idx ON public.owners USING btree (city, id);
-
-CREATE INDEX pets_name_idx ON public.pets USING btree (name);
-"""
-
+# ── a diagram the branch did not touch is found by name ──────────────────────────────
 
 def _schema_repo(tmp_path):
-    run = lambda *a: subprocess.run(["git", "-C", str(tmp_path), *a], check=True,
-                                    capture_output=True, text=True).stdout.strip()
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    run("config", "user.email", "t@t.t")
-    run("config", "user.name", "t")
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "DB.puml").write_text("@startuml\nentity owners {\n}\n@enduml\n")
-    (docs / "DB.sql").write_text(BASE_SQL)
-    run("add", "-A")
-    run("commit", "-qm", "base")
-    base = run("rev-parse", "HEAD")
-    (docs / "DB.sql").write_text(WORK_SQL)
-    return base
-
-
-def test_an_index_and_a_collation_the_erd_cannot_draw_are_named_under_it(tmp_path):
-    """hr-try-4: V4 added three indexes and an ICU collation. DB.puml came out
-    byte-identical, so the card says UNCHANGED — and the one line under it says what the
-    schema dump shows that the picture cannot."""
-    base = _schema_repo(tmp_path)
-    note = build.schema_unseen_note("docs/DB.puml", tmp_path, base)
-    assert note.startswith("Also changed, not drawn: ")
-    assert "indexes added on owners (city, id)" in note
-    assert "collation changed on owners.first_name" in note
-    assert "owners.city" not in note and "pets" not in note
-    # A diagram that changed draws its own column changes; only the indexes are unseen.
-    assert "collation" not in build.schema_unseen_note("docs/DB.puml", tmp_path, base,
-                                                       columns=False)
-
-
-def test_a_schema_dump_that_did_not_move_says_nothing(tmp_path):
-    base = _schema_repo(tmp_path)
-    (tmp_path / "docs" / "DB.sql").write_text(BASE_SQL)
-    assert build.schema_unseen_note("docs/DB.puml", tmp_path, base) == ""
-    assert build.schema_unseen_note("docs/DB.puml", tmp_path, None) == ""
-    assert build.schema_unseen_note("docs/Other.puml", tmp_path, base) == ""
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-A"], check=True)
 
 
 def test_a_diagram_named_in_only_is_found_by_its_file_name(tmp_path):
     _schema_repo(tmp_path)
     assert build.find_diagram_source("DB", tmp_path) == "docs/DB.puml"
     assert build.find_diagram_source("Nope", tmp_path) is None
-
-
-# ── an unchanged picture over a schema that did change ───────────────────────────────
-
-def test_a_picture_unchanged_over_a_schema_that_changed_wears_its_own_badge(tmp_path):
-    """Eval run 5: DB wore UNCHANGED, and the line under it said `DB.sql changed: indexes
-    added` — read by two judges as the page contradicting itself. The picture is still the
-    plain card; the badge says which half changed."""
-    row = dict(build.unchanged_row("DB", "docs/DB.puml"),
-               new_svg=_svg(tmp_path / "db.new.svg", "whole current picture"),
-               _unseen="Also changed, not drawn: indexes added on owners.")
-    (tmp_path / "M.tsv").write_text("")
-    out = build.render_diagrams({"manifest": "M.tsv"}, tmp_path, tmp_path, [row])
-    assert '<span class="badge sev-info">unchanged</span>' in out
-    assert ">schema only</span>" not in out and "Also changed, not drawn" in out
-    assert "indexes added on owners" in out
-    assert 'class="dgmviews"' not in out, "still the plain card: there is no delta to switch"
-    # Without the line, it is the ordinary UNCHANGED card.
-    row.pop("_unseen")
-    assert '<span class="badge sev-info">unchanged</span>' in build.render_diagrams(
-        {"manifest": "M.tsv"}, tmp_path, tmp_path, [row])
 
 
 def test_a_producers_line_about_its_row_is_printed_under_the_card_as_text(tmp_path):
@@ -1678,18 +1604,3 @@ def test_a_traced_diagram_with_undrawn_calls_is_not_the_unchanged_card(tmp_path)
         assert word in out
     assert "Load changes" not in out
     assert "drawio-redraw:conceptual" in build.ACTIONS
-
-
-def test_a_foreign_keys_delete_rule_the_erd_cannot_draw_is_named_under_it(tmp_path):
-    """PR #49 added `visits.vet_id` with `ON DELETE SET NULL`. The ERD draws the edge and
-    not what a deleted vet does to the visits, so that half is named under the card —
-    even on a diagram that changed (`columns=False`), since no delta draws a rule."""
-    base = _schema_repo(tmp_path)
-    fk = ("\nALTER TABLE ONLY public.pets\n"
-          "    ADD CONSTRAINT pets_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.owners(id);\n")
-    rule = ("\nALTER TABLE ONLY public.visits\n    ADD CONSTRAINT visits_vet_id_fkey FOREIGN KEY "
-            "(vet_id) REFERENCES public.vets(id) ON DELETE SET NULL;\n")
-    (tmp_path / "docs" / "DB.sql").write_text(BASE_SQL + fk + rule)
-    note = build.schema_unseen_note("docs/DB.puml", tmp_path, base, columns=False)
-    assert "visits (vet_id) → vets ON DELETE SET NULL" in note, note
-    assert "pets_owner" not in note and "pets (owner_id)" not in note   # drawn whole
