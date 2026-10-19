@@ -83,17 +83,25 @@ def repo(tmp_path: Path, colours=None) -> Path:
     return tmp_path
 
 
-def test_unconfigured_fixtures_take_the_palette_in_folder_order(tmp_path):
+def test_an_unconfigured_fixture_wears_the_colour_its_name_hashes_to(tmp_path):
     reg = fx.fixture_colors(repo(tmp_path))
     assert reg["seed"] == fx.FIXTURE_SEED
-    assert reg["colors"] == {"blue": fx.FIXTURE_PALETTE[0], "green": fx.FIXTURE_PALETTE[1]}
+    assert reg["colors"] == {n: fx.fixture_hue(n, fx.FIXTURE_PALETTE) for n in ("blue", "green")}
+
+
+def test_the_hash_is_stable_across_processes():
+    # `hash()` would differ per run (PYTHONHASHSEED); fixtures.js mirrors this arithmetic.
+    h = 0
+    for c in "minimal":
+        h = (h * 31 + ord(c)) & 0xFFFFFFFF
+    assert fx.fixture_hue("minimal", fx.FIXTURE_PALETTE) == fx.FIXTURE_PALETTE[h % 7]
 
 
 def test_configured_colour_wins_and_the_palette_skips_it(tmp_path):
     reg = fx.fixture_colors(repo(tmp_path, {"green": fx.FIXTURE_PALETTE[0], "seed": "#777777"}))
     assert reg["seed"] == "#777777"
     assert reg["colors"]["green"] == fx.FIXTURE_PALETTE[0]
-    assert reg["colors"]["blue"] == fx.FIXTURE_PALETTE[1]
+    assert reg["colors"]["blue"] == fx.fixture_hue("blue", fx.FIXTURE_PALETTE[1:])
 
 
 def test_a_colour_that_is_not_one_is_ignored(tmp_path):

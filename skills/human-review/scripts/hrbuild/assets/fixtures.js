@@ -24,10 +24,13 @@
   var palette = reg.palette && reg.palette.length ? reg.palette : ['#3b82f6'];
 
   // A fixture the build never saw (added to the project after this page was made) still
-  // gets a colour: the next of the palette.
-  function colourOf(name, i) {
+  // gets a colour: the one its name hashes to, as `fixture_hue` does in fixtures.py.
+  function colourOf(name) {
     if (!name || name === 'seed') return reg.seed || '#8b929c';
-    return colors[name] || palette[i % palette.length];
+    if (colors[name]) return colors[name];
+    var h = 0;
+    for (var k = 0; k < name.length; k++) h = (Math.imul(h, 31) + name.charCodeAt(k)) >>> 0;
+    return palette[h % palette.length];
   }
   function dot(colour, tip, kind) {
     var d = document.createElement('span');
@@ -107,7 +110,7 @@
       var head = tw ? tw.parentNode : row.querySelector('.rm-thead');
       if (!head) return;
       if (!have) {
-        have = dot(colourOf(name, 0), said(name, mark, id), mark);
+        have = dot(colourOf(name), said(name, mark, id), mark);
         have.dataset.mark = mark;
         have.setAttribute('role', 'button');
         have.setAttribute('tabindex', '0');

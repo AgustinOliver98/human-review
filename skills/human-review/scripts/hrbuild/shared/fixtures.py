@@ -6,12 +6,14 @@ seed: a ``<name>.sql`` in a folder called ``fixtures`` (petclinic keeps them in
 and its reset sidecar draws one Demo-tab button per file). The colours are the
 project's to choose, in a ``fixture-colors.json`` beside those files::
 
-    {"green": "#2fa84f"}
+    {"minimal": "#2fa84f"}
 
 Beside the SQL and not in ``.human-review/``: whoever adds ``blue.sql`` is standing in
 that folder, and the reset sidecar only ever reads ``*.sql`` from it, so the map rides
-along harmlessly. A fixture the map does not name takes the next free colour of
-``FIXTURE_PALETTE`` by its order in the folder, and the seed is always ``FIXTURE_SEED`` grey.
+along harmlessly. The map is optional: a fixture it does not name takes a free colour of
+``FIXTURE_PALETTE`` picked by a hash of its name (`fixture_hue`), so it wears the same
+colour on every build and on every page, whatever else the folder holds. The seed is
+always ``FIXTURE_SEED`` grey.
 
 Per test the answer is read off the test's own code, never guessed from its name:
 
@@ -66,6 +68,15 @@ def _fx_ls(root: Path) -> list[str]:
             if p.is_file() and "node_modules" not in p.parts and ".git" not in p.parts]
 
 
+def fixture_hue(name: str, palette) -> str:
+    """The palette colour a fixture's name hashes to. Spelt out rather than ``hash()``, which
+    Python salts per process, and mirrored by ``fixtures.js`` for a name the build never saw."""
+    h = 0
+    for c in name:
+        h = (h * 31 + ord(c)) & 0xFFFFFFFF
+    return palette[h % len(palette)]
+
+
 def fixture_dirs(files: list[str]) -> list[str]:
     return sorted({str(Path(f).parent) for f in files
                    if Path(f).parent.name == "fixtures" and f.endswith(".sql")})
@@ -74,8 +85,8 @@ def fixture_dirs(files: list[str]) -> list[str]:
 def fixture_colors(root: Path, files: list[str] | None = None) -> dict:
     """``{"seed": grey, "colors": {name: colour}}`` for every fixture in the project.
 
-    Configured colours first; the rest take the palette in folder order, skipping any
-    colour the configuration already spent, so a fallback never repeats a chosen one."""
+    Configured colours first; the rest hash their name onto the palette, minus any colour
+    the configuration already spent, so a fallback never repeats a chosen one."""
     files = _fx_ls(root) if files is None else files
     names, chosen = [], {}
     for d in fixture_dirs(files):
@@ -94,13 +105,7 @@ def fixture_colors(root: Path, files: list[str] | None = None) -> dict:
     seed = chosen.pop("seed", None) or chosen.pop("default", None) or FIXTURE_SEED
     free = [c for c in FIXTURE_PALETTE if c.lower() not in {v.lower() for v in chosen.values()}]
     free = free or list(FIXTURE_PALETTE)
-    colors, i = {}, 0
-    for n in names:
-        if n in chosen:
-            colors[n] = chosen[n]
-        else:
-            colors[n] = free[i % len(free)]
-            i += 1
+    colors = {n: chosen.get(n) or fixture_hue(n, free) for n in names}
     for n, c in chosen.items():
         colors.setdefault(n, c)
     return {"seed": seed, "colors": colors, "palette": free}
@@ -111,7 +116,7 @@ def demo_fixtures(root: Path | None, files: list[str] | None = None) -> list[tup
     ``<name>.sql`` the project's fixtures folders hold, in folder order — the Demo tab's
     "DB Fixture:" row. Read off the files at build time, never off the running app: the
     row is on screen with the app down, and an instance started from an older image must
-    not shrink the list (8 Oct 2026: :7655 listed only Default while green.sql was there).
+    not shrink the list (8 Oct 2026: :7655 listed only Default while green.sql, now minimal.sql, was there).
     A name only ``fixture-colors.json`` mentions has no SQL to load and is not listed."""
     if root is None:
         return [("", FIXTURE_SEED)]
