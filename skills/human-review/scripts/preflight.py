@@ -48,7 +48,7 @@ Usage:
   preflight.py --base origin/main
   preflight.py --base origin/main --workflow ci.yml
   preflight.py --no-gate          # local experiment; the guide must say the gate was skipped
-  preflight.py --sonar-only       # re-read Sonar off the recorded run; no push, no wipe
+  preflight.py --ci-only          # re-read Sonar, and CI on the branch head; no push, no wipe
 """
 from __future__ import annotations
 
@@ -142,11 +142,12 @@ def auto_detect(workflows: list[dict]) -> list[str]:
     return hits if len(hits) == 1 else []
 
 
-def latest_runs(sha: str, workflow: str | None) -> tuple[list[dict] | None, str]:
+def latest_runs(sha: str, workflow: str | None,
+                fields: str = RUN_FIELDS) -> tuple[list[dict] | None, str]:
     """Runs for exactly `sha` (optionally of one workflow), newest first. None + the reason
     when GitHub could not be asked."""
     sel = f' --workflow "{workflow}"' if workflow else ""
-    r = run(f'gh run list --commit "{sha}"{sel} --limit 50 --json {RUN_FIELDS}')
+    r = run(f'gh run list --commit "{sha}"{sel} --limit 50 --json {fields}')
     if r.returncode != 0:
         return None, ((r.stderr or "") + (r.stdout or "")).strip()
     try:
@@ -370,10 +371,91 @@ def sonar_evidence(evidence: dict, root: Path = Path(".")) -> dict | None:
     return None
 
 
-def refresh_sonar() -> int:
-    """`--sonar-only`: re-read the Sonar steps of the run `.gate.json` already names, and
-    write them back into it. No push, no gate, no wipe — the recorded verdict, SHA and run
-    stand; only the `sonar` entry is replaced (or dropped when that run has no Sonar)."""
+#: What the head lookup asks of each run: the branch and the attempt, on top of the gate's.
+HEAD_RUN_FIELDS = RUN_FIELDS + ",headBranch,attempt"
+#: Conclusions that built nothing: a duplicate concluding one of these does not speak for
+#: the commit when another run of the same workflow on it did conclude.
+NO_BUILD = {"skipped", "cancelled"}
+
+
+def pick_head_run(runs: list[dict], branch: str | None) -> dict | None:
+    """The one run of a workflow that speaks for the head commit.
+
+    A run that concluded beats a skipped or cancelled duplicate (petclinic: the push run
+    failed while its pull_request twin was skipped by an `if:`), and a run still going beats
+    nothing. Among those, the push run on the branch, else the pull_request one, else the
+    newest. `gh run list` already reports each run's latest attempt."""
+    def concluded(r):
+        return r.get("status") == "completed" and \
+            (r.get("conclusion") or "").lower() not in NO_BUILD
+    pool = ([r for r in runs if concluded(r)]
+            or [r for r in runs if r.get("status") != "completed"] or list(runs))
+    push = [r for r in pool if r.get("event") == "push"
+            and (not branch or r.get("headBranch") in (None, branch))]
+    pr = [r for r in pool if str(r.get("event") or "").startswith("pull_request")]
+    return (push or pr or pool or [None])[0]
+
+
+def head_evidence(sha: str, branch: str | None, workflows: list[str]) -> dict:
+    """What CI says *now* about `sha`, the branch's head, without waiting and without
+    pushing: one entry per authoritative workflow (`"*"`: every workflow that ran), and an
+    overall verdict — `green`, the first non-green one, or `discovery-failed`."""
+    out: dict = {"sha": sha, "branch": branch, "workflows": []}
+    picked: list[tuple[str, dict | None]] = []
+    for wf in workflows or ["*"]:
+        runs, err = latest_runs(sha, None if wf == "*" else wf, HEAD_RUN_FIELDS)
+        if runs is None:
+            out["workflows"].append(_evidence(wf, sha, None, "discovery-failed", err))
+            continue
+        if wf == "*":
+            names: dict[str, list] = {}
+            for x in runs:
+                names.setdefault(x.get("workflowName") or "?", []).append(x)
+            picked += [(n, pick_head_run(rs, branch)) for n, rs in names.items()]
+            if not runs:
+                picked.append((wf, None))
+        else:
+            picked.append((wf, pick_head_run(runs, branch)))
+    for wf, one in picked:
+        if one is None:
+            v = "not-found"
+        elif one.get("status") != "completed":
+            v = "pending"
+        else:
+            v = _verdict(one)
+        e = _evidence(wf, sha, one, v)
+        if one and one.get("attempt"):
+            e["attempt"] = one["attempt"]
+        out["workflows"].append(e)
+    bad = [e["verdict"] for e in out["workflows"] if e["verdict"] != "success"]
+    out["verdict"] = ("failure" if "failure" in bad else bad[0]) if bad else "green"
+    sonar = sonar_evidence(out)
+    if sonar:
+        out["sonar"] = sonar
+    return out
+
+
+def branch_head() -> tuple[str | None, str | None]:
+    """`(branch, sha)` of the branch as pushed — the PR as it stands — else the local HEAD."""
+    branch = run("git rev-parse --abbrev-ref HEAD").stdout.strip() or None
+    if branch == "HEAD":
+        branch = None
+    remote = run(f"git ls-remote origin refs/heads/{shlex.quote(branch)}").stdout.split() \
+        if branch else []
+    sha = remote[0] if remote and re.fullmatch(r"[0-9a-f]{40}", remote[0]) \
+        else run("git rev-parse HEAD").stdout.strip() or None
+    return branch, sha
+
+
+def refresh_ci() -> int:
+    """`--ci-only`: re-read what CI says, into the `.gate.json` already there. No push, no
+    gate, no wipe — the recorded verdict, SHA and run stand.
+
+    Two things move: `sonar`, re-read off the recorded run, and `head` — CI on the branch's
+    head when it is not the reviewed commit. The gate proves the commit that was reviewed;
+    the PR moves on, and a page saying "CI green" over a head whose build is red (petclinic,
+    20 Oct 2026: 39346ec5 failed its architecture check under a green be762955) answers a
+    question the reader did not ask. No head entry when the head is the reviewed commit."""
     path = HR / ".gate.json"
     try:
         evidence = json.loads(path.read_text(encoding="utf-8"))
@@ -381,9 +463,15 @@ def refresh_sonar() -> int:
         print(f"[preflight] no readable {path} — run the gate first", file=sys.stderr)
         return 2
     evidence.pop("sonar", None)
+    evidence.pop("head", None)
     found = sonar_evidence(evidence)
     if found:
         evidence["sonar"] = found
+    branch, head = branch_head()
+    if head and evidence.get("sha") and head != evidence["sha"]:
+        wfs = [w.get("workflow") for w in evidence.get("workflows") or []
+               if isinstance(w, dict) and w.get("workflow")]
+        evidence["head"] = head_evidence(head, branch, list(dict.fromkeys(wfs)))
     write_evidence(evidence)
     return 0
 
@@ -648,13 +736,14 @@ def main(argv=None) -> int:
                          "workflow named like ci/build, else every run on the SHA")
     ap.add_argument("--config", default="human-review.json")
     ap.add_argument("--session", default=os.environ.get("CLAUDE_CODE_SESSION_ID", ""))
-    ap.add_argument("--sonar-only", action="store_true",
-                    help="re-read the Sonar steps of the run .gate.json already names into "
-                         "it; no push, no gate, no wipe")
+    ap.add_argument("--ci-only", "--sonar-only", dest="ci_only", action="store_true",
+                    help="re-read into .gate.json the Sonar steps of the run it names, and "
+                         "CI on the branch's head when that is not the reviewed commit; no "
+                         "push, no gate, no wipe")
     args = ap.parse_args(argv)
 
-    if args.sonar_only:
-        return refresh_sonar()
+    if args.ci_only:
+        return refresh_ci()
 
     caveat = ""
     if args.no_gate:

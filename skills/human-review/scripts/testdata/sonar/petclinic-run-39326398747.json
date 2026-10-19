@@ -1,0 +1,278 @@
+{
+ "event": "push",
+ "headBranch": "test-pr",
+ "jobs": [
+  {
+   "name": "build",
+   "conclusion": "failure",
+   "status": "completed",
+   "url": "https://github.com/victorrentea/petclinic/actions/runs/39326398747/job/118352396715",
+   "steps": [
+    {
+     "completedAt": "2026-10-19T22:53:44Z",
+     "conclusion": "success",
+     "name": "Set up job",
+     "number": 1,
+     "startedAt": "2026-10-19T22:53:41Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:47Z",
+     "conclusion": "success",
+     "name": "Checkout",
+     "number": 2,
+     "startedAt": "2026-10-19T22:53:44Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:48Z",
+     "conclusion": "success",
+     "name": "Install gitleaks",
+     "number": 3,
+     "startedAt": "2026-10-19T22:53:47Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:49Z",
+     "conclusion": "success",
+     "name": "Secret scan (gitleaks) \u2014 backstops the pre-commit hook",
+     "number": 4,
+     "startedAt": "2026-10-19T22:53:48Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:49Z",
+     "conclusion": "success",
+     "name": "Line length < 120 chars \u2014 backstops the pre-push hook",
+     "number": 5,
+     "startedAt": "2026-10-19T22:53:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:49Z",
+     "conclusion": "success",
+     "name": "Guard \u2014 DB.puml must be in sync with DB.sql",
+     "number": 6,
+     "startedAt": "2026-10-19T22:53:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:53:54Z",
+     "conclusion": "success",
+     "name": "Set up Java 21",
+     "number": 7,
+     "startedAt": "2026-10-19T22:53:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:54:03Z",
+     "conclusion": "success",
+     "name": "Set up Node 20",
+     "number": 8,
+     "startedAt": "2026-10-19T22:53:54Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:54:08Z",
+     "conclusion": "success",
+     "name": "Cache SonarCloud packages",
+     "number": 9,
+     "startedAt": "2026-10-19T22:54:03Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:19Z",
+     "conclusion": "success",
+     "name": "Install frontend dependencies",
+     "number": 10,
+     "startedAt": "2026-10-19T22:54:08Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:26Z",
+     "conclusion": "success",
+     "name": "Install PostgreSQL 16 client (pg_dump for DbSchemaSyncTest)",
+     "number": 11,
+     "startedAt": "2026-10-19T22:55:19Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:36Z",
+     "conclusion": "success",
+     "name": "Install petclinic-commons",
+     "number": 12,
+     "startedAt": "2026-10-19T22:55:26Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:42Z",
+     "conclusion": "success",
+     "name": "Test notification-service",
+     "number": 13,
+     "startedAt": "2026-10-19T22:55:36Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:46Z",
+     "conclusion": "success",
+     "name": "Verify Java formatting (Spotless) \u2014 backstops the pre-commit hook",
+     "number": 14,
+     "startedAt": "2026-10-19T22:55:42Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:55:48Z",
+     "conclusion": "success",
+     "name": "Structural lint (ast-grep) \u2014 backstops the pre-commit hook",
+     "number": 15,
+     "startedAt": "2026-10-19T22:55:46Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:36Z",
+     "conclusion": "success",
+     "name": "Run backend tests (+ JaCoCo report)",
+     "number": 16,
+     "startedAt": "2026-10-19T22:55:48Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:41Z",
+     "conclusion": "success",
+     "name": "Verify Javadoc",
+     "number": 17,
+     "startedAt": "2026-10-19T22:56:36Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:48Z",
+     "conclusion": "success",
+     "name": "Compile chatbot module (OpenAI tests skip without the key)",
+     "number": 18,
+     "startedAt": "2026-10-19T22:56:41Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:48Z",
+     "conclusion": "success",
+     "name": "Regenerate TS types from openapi.yaml",
+     "number": 19,
+     "startedAt": "2026-10-19T22:56:48Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "success",
+     "name": "Lint openapi.yaml (Spectral) \u2014 backstops the pre-push hook",
+     "number": 20,
+     "startedAt": "2026-10-19T22:56:48Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "failure",
+     "name": "Frontend logical architecture (imports adhere to docs/frontend-packages.puml)",
+     "number": 21,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Run frontend tests (Karma + ChromeHeadlessCI)",
+     "number": 22,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Strict frontend build (fails on any webpack warning)",
+     "number": 23,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Detect drift in regenerated artifacts",
+     "number": 24,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Fail fork PRs that have drift",
+     "number": 25,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Auto-commit regenerated artifacts",
+     "number": 26,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "SonarCloud Scan",
+     "number": 27,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "SonarCloud Quality Gate check",
+     "number": 28,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Post Cache SonarCloud packages",
+     "number": 53,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "skipped",
+     "name": "Post Set up Node 20",
+     "number": 54,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:49Z",
+     "conclusion": "success",
+     "name": "Post Set up Java 21",
+     "number": 55,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:50Z",
+     "conclusion": "success",
+     "name": "Post Checkout",
+     "number": 56,
+     "startedAt": "2026-10-19T22:56:49Z",
+     "status": "completed"
+    },
+    {
+     "completedAt": "2026-10-19T22:56:50Z",
+     "conclusion": "success",
+     "name": "Complete job",
+     "number": 57,
+     "startedAt": "2026-10-19T22:56:50Z",
+     "status": "completed"
+    }
+   ]
+  }
+ ]
+}

@@ -148,22 +148,33 @@ def test_the_api_unreachable_is_silence_not_a_failure(project, monkeypatch):
     assert s["verdict"] == "success" and "api" not in s
 
 
-def _stub_gh(tmp_path: Path, view: dict | None) -> dict:
-    """A `gh` whose `run view` answers with `view` (or fails), and whose `run list` /
-    `workflow list` describe one green CI run on HEAD; `git push` is a no-op."""
+def _stub_gh(tmp_path: Path, view: dict | None, head_runs: list | None = None,
+             head_view: dict | None = None, reviewed: str = "") -> dict:
+    """A `gh` whose `run list` describes one green CI run — or, for any commit but
+    `reviewed` when `head_runs` is given, those — and whose `run view` answers with `view`
+    (`head_view` for a run of `head_runs`), or fails on None; `git push` is a no-op."""
     bindir = tmp_path / "bin"
     bindir.mkdir()
+    green = [{"databaseId": 37347327883, "status": "completed", "conclusion": "success",
+              "workflowName": "CI", "event": "push", "url": RUN_URL}]
     (bindir / "gh").write_text(
         "#!/usr/bin/env python3\nimport sys, json\n"
         f"VIEW = json.loads({json.dumps(json.dumps(view))})\n"
+        f"HEAD_VIEW = json.loads({json.dumps(json.dumps(head_view))})\n"
+        f"GREEN = json.loads({json.dumps(json.dumps(green))})\n"
+        f"HEAD_RUNS = json.loads({json.dumps(json.dumps(head_runs))})\n"
+        f"REVIEWED = {reviewed!r}\n"
         "a = sys.argv[1:]\n"
+        "opt = lambda k: a[a.index(k) + 1] if k in a else None\n"
         "if a[:2] == ['run', 'view']:\n"
-        "    if VIEW is None: sys.exit(1)\n"
-        "    print(json.dumps(VIEW))\n"
+        "    ids = {str(r['databaseId']) for r in HEAD_RUNS or []}\n"
+        "    v = HEAD_VIEW if a[2] in ids else VIEW\n"
+        "    if v is None: sys.exit(1)\n"
+        "    print(json.dumps(v))\n"
         "elif a[:2] == ['run', 'list']:\n"
-        "    print(json.dumps([{'databaseId': 37347327883, 'status': 'completed',\n"
-        "        'conclusion': 'success', 'workflowName': 'CI', 'event': 'push',\n"
-        f"        'url': {RUN_URL!r}}}]))\n"
+        "    sha = opt('--commit')\n"
+        "    runs = HEAD_RUNS if HEAD_RUNS is not None and sha != REVIEWED else GREEN\n"
+        "    print(json.dumps([dict(r, headSha=sha) for r in runs]))\n"
         "elif a[:2] == ['workflow', 'list']:\n"
         "    print(json.dumps([{'id': 1, 'name': 'CI', 'path': '.github/workflows/ci.yml',\n"
         "        'state': 'active'}]))\n"
@@ -176,16 +187,33 @@ def _stub_gh(tmp_path: Path, view: dict | None) -> dict:
                 **{preflight.SONAR_API_ENV: "0"})
 
 
+def _sh(repo: Path, cmd: str) -> str:
+    return subprocess.run(cmd, shell=True, cwd=repo, check=True, capture_output=True,
+                          text=True).stdout.strip()
+
+
 def _repo(tmp_path: Path) -> Path:
     r = tmp_path / "repo"
     r.mkdir()
-    sh = lambda c: subprocess.run(c, shell=True, cwd=r, check=True, capture_output=True)
-    sh("git init -q -b test-pr && git config user.email t@t && git config user.name t")
+    _sh(r, "git init -q -b test-pr && git config user.email t@t && git config user.name t")
     (r / "sonar-project.properties").write_text("sonar.projectKey=victorrentea_petclinic\n")
-    sh("git add -A && git commit -qm one")
+    _sh(r, "git add -A && git commit -qm one")
     (r / ".human-review" / "assets").mkdir(parents=True)
     (r / ".human-review" / "assets" / "old.svg").write_text("<svg/>")
     return r
+
+
+def _recorded(sha: str) -> dict:
+    return {"sha": sha, "verdict": "green", "caveat": "green: CI (run 37347327883)",
+            "workflows": [{"workflow": "ci.yml", "name": "CI", "runId": 37347327883,
+                           "url": RUN_URL, "status": "completed", "verdict": "success"}]}
+
+
+def _ci_only(repo: Path, env: dict) -> dict:
+    p = subprocess.run([sys.executable, str(HERE / "preflight.py"), "--ci-only"],
+                       cwd=repo, env=env, text=True, capture_output=True, timeout=60)
+    assert p.returncode == 0, p.stderr
+    return json.loads((repo / ".human-review" / ".gate.json").read_text())
 
 
 def test_the_gate_writes_sonar_into_gate_json(tmp_path):
@@ -194,22 +222,18 @@ def test_the_gate_writes_sonar_into_gate_json(tmp_path):
                        text=True, capture_output=True, timeout=60)
     assert p.returncode == 0, p.stderr
     gate = json.loads((repo / ".human-review" / ".gate.json").read_text())
-    assert gate["verdict"] == "green"
+    assert gate["verdict"] == "green" and "head" not in gate
     assert gate["sonar"]["verdict"] == "success" and gate["sonar"]["url"] == DASH
     assert gate["sonar"]["runId"] == 37347327883
 
 
-def test_sonar_only_rereads_the_recorded_run_and_touches_nothing_else(tmp_path):
-    """The cheap re-run: no push, no gate, no wipe — only `sonar` in `.gate.json` moves."""
+def test_ci_only_rereads_the_recorded_run_and_touches_nothing_else(tmp_path):
+    """The cheap re-run: no push, no gate, no wipe — only `sonar` in `.gate.json` moves,
+    and no `head` while the head is the reviewed commit."""
     repo, env = _repo(tmp_path), _stub_gh(tmp_path, RUN)
-    recorded = {"sha": SHA, "verdict": "green", "caveat": "green: CI (run 37347327883)",
-                "workflows": [{"name": "CI", "runId": 37347327883, "url": RUN_URL,
-                               "status": "completed", "verdict": "success"}]}
+    recorded = _recorded(_sh(repo, "git rev-parse HEAD"))
     (repo / ".human-review" / ".gate.json").write_text(json.dumps(recorded))
-    p = subprocess.run([sys.executable, str(HERE / "preflight.py"), "--sonar-only"],
-                       cwd=repo, env=env, text=True, capture_output=True, timeout=60)
-    assert p.returncode == 0, p.stderr
-    gate = json.loads((repo / ".human-review" / ".gate.json").read_text())
+    gate = _ci_only(repo, env)
     assert {k: v for k, v in gate.items() if k != "sonar"} == recorded
     assert gate["sonar"]["url"] == DASH
     assert (repo / ".human-review" / "assets" / "old.svg").is_file()
@@ -224,9 +248,63 @@ def test_gh_failing_on_run_view_records_no_sonar(tmp_path):
     assert "sonar" not in json.loads((repo / ".human-review" / ".gate.json").read_text())
 
 
+# ── CI on the branch's head ───────────────────────────────────────────────────────────
+
+#: Petclinic's 39346ec5, recorded: the push run failed on attempt 2 ("Frontend logical
+#: architecture"), its pull_request twin was skipped by an `if:`, Sonar never ran.
+HEAD_RUNS = json.loads((DATA / "petclinic-head-39346ec5-runs.json").read_text())
+HEAD_VIEW = json.loads((DATA / "petclinic-run-39326398747.json").read_text())
+
+
+def test_the_head_run_is_the_one_that_concluded_not_its_skipped_twin():
+    one = preflight.pick_head_run(HEAD_RUNS, "test-pr")
+    assert (one["databaseId"], one["event"], one["attempt"]) == (39326398747, "push", 2)
+
+
+@pytest.mark.parametrize("runs,want", [
+    # A cancelled push (concurrency) beside a pull_request run that concluded.
+    ([{"databaseId": 1, "event": "push", "status": "completed", "conclusion": "cancelled"},
+      {"databaseId": 2, "event": "pull_request", "status": "completed",
+       "conclusion": "success"}], 2),
+    # Both concluded: the push run on the branch.
+    ([{"databaseId": 2, "event": "pull_request", "status": "completed",
+       "conclusion": "success"},
+      {"databaseId": 1, "event": "push", "status": "completed", "conclusion": "failure",
+       "headBranch": "test-pr"}], 1),
+    # Nothing concluded, one still running: that one.
+    ([{"databaseId": 1, "event": "push", "status": "completed", "conclusion": "cancelled"},
+      {"databaseId": 3, "event": "pull_request", "status": "in_progress"}], 3),
+    # Only a skipped run: it is all there is.
+    ([{"databaseId": 4, "event": "pull_request", "status": "completed",
+       "conclusion": "skipped"}], 4),
+])
+def test_picking_the_head_run(runs, want):
+    assert preflight.pick_head_run(runs, "test-pr")["databaseId"] == want
+
+
+def test_ci_only_records_a_red_head_beside_the_reviewed_commit(tmp_path):
+    repo = _repo(tmp_path)
+    reviewed = _sh(repo, "git rev-parse HEAD")
+    (repo / "b.txt").write_text("e2e\n")
+    _sh(repo, "git add b.txt && git commit -qm two")
+    head = _sh(repo, "git rev-parse HEAD")
+    env = _stub_gh(tmp_path, RUN, HEAD_RUNS, HEAD_VIEW, reviewed)
+    (repo / ".human-review" / ".gate.json").write_text(json.dumps(_recorded(reviewed)))
+    gate = _ci_only(repo, env)
+    assert gate["sha"] == reviewed and gate["verdict"] == "green"   # the gate stands
+    h = gate["head"]
+    assert (h["sha"], h["branch"], h["verdict"]) == (head, "test-pr", "failure")
+    [w] = h["workflows"]
+    assert (w["runId"], w["event"], w["attempt"], w["verdict"]) == \
+        (39326398747, "push", 2, "failure")
+    assert w["url"] == "https://github.com/victorrentea/petclinic/actions/runs/39326398747"
+    assert h["sonar"]["verdict"] == "skipped" and h["sonar"]["runId"] == 39326398747
+
+
 # ── the grade panel ───────────────────────────────────────────────────────────────────
 
-def _panel(tmp_path, sonar: dict | None, score: int = 9) -> tuple[str, dict]:
+def _panel(tmp_path, sonar: dict | None, score: int = 9,
+           head: dict | None = None) -> tuple[str, dict]:
     out = tmp_path / ".human-review"
     out.mkdir()
     gate = {"sha": SHA, "verdict": "green", "caveat": "green",
@@ -234,6 +312,8 @@ def _panel(tmp_path, sonar: dict | None, score: int = 9) -> tuple[str, dict]:
                            "verdict": "success"}]}
     if sonar is not None:
         gate["sonar"] = sonar
+    if head is not None:
+        gate["head"] = head
     (out / ".gate.json").write_text(json.dumps(gate))
     spec = {"verdict": {"score": score}}
     build.grade_signals(spec, out, root=None)
@@ -278,3 +358,55 @@ def test_no_sonar_or_a_skipped_one_leaves_the_ci_bullet_as_it_was(tmp_path, sona
 def test_sonar_green_without_a_dashboard_url_links_only_ci(tmp_path):
     panel, _ = _panel(tmp_path, {"verdict": "success", "url": "javascript:alert(1)"})
     assert f'<li>✅ {_a(RUN_URL, "CI")} and Sonar green on be762955</li>' in panel
+
+
+HEAD = "39346ec541cac0bc8b4a1c207e5507fb4f98bd83"
+HEAD_RUN_URL = "https://github.com/victorrentea/petclinic/actions/runs/39326398747"
+GREEN_SONAR = {"verdict": "success", "gate": "success", "url": DASH}
+
+
+def _head(verdict: str, sonar: dict | None = None, run_verdict: str | None = None) -> dict:
+    h = {"sha": HEAD, "branch": "test-pr", "verdict": verdict,
+         "workflows": [{"workflow": "ci.yml", "name": "CI", "runId": 39326398747,
+                        "url": HEAD_RUN_URL, "attempt": 2,
+                        "verdict": run_verdict or ("success" if verdict == "green"
+                                                   else verdict)}]}
+    if sonar:
+        h["sonar"] = sonar
+    return h
+
+
+def test_a_red_head_is_its_own_bullet_and_caps_like_a_red_build(tmp_path):
+    """Petclinic, 20 Oct 2026: "✅ CI and Sonar green" on be762955 while 39346ec5 was red."""
+    panel, spec = _panel(tmp_path, GREEN_SONAR,
+                         head=_head("failure", {"verdict": "skipped", "url": DASH}))
+    assert (f'<li>\u2705 {_a(RUN_URL, "CI")} and {_a(html_amp(DASH), "Sonar")} '
+            'green on be762955 (reviewed)</li>') in panel
+    assert (f'\u274c {_a(HEAD_RUN_URL, "CI")} failed on 39346ec5 (latest), Sonar skipped '
+            '(caps the grade at 4)</li>') in panel
+    assert "CI (run 39326398747, attempt 2) concluded failure" in panel
+    assert spec["verdict"] == {"score": 4, "modelScore": 9}
+    assert [s["key"] for s in spec["_gradeSignals"]][:2] == ["ci-green", "ci-head-failed"]
+
+
+def test_a_green_head_with_sonar_reads_like_the_reviewed_one_with_latest(tmp_path):
+    panel, spec = _panel(tmp_path, GREEN_SONAR, head=_head("green", GREEN_SONAR))
+    assert (f'<li>\u2705 {_a(HEAD_RUN_URL, "CI")} and {_a(html_amp(DASH), "Sonar")} '
+            'green on 39346ec5 (latest)</li>') in panel
+    assert spec["verdict"] == {"score": 9}
+
+
+@pytest.mark.parametrize("verdict,why", [("pending", "is still running"),
+                                         ("cancelled", "was cancelled")])
+def test_a_head_no_build_proved_says_so_and_caps_like_an_unproven_one(tmp_path, verdict, why):
+    panel, spec = _panel(tmp_path, None, head=_head(verdict))
+    assert f'<li>\u2705 {_a(RUN_URL, "CI")} green on be762955 (reviewed)</li>' in panel
+    assert (f'No {_a(HEAD_RUN_URL, "build")} proved 39346ec5 (latest) '
+            '(caps the grade at 6)</li>') in panel
+    assert why in panel and spec["verdict"] == {"score": 6, "modelScore": 9}
+
+
+def test_a_head_that_is_the_reviewed_commit_changes_nothing(tmp_path):
+    panel, spec = _panel(tmp_path, None, head=dict(_head("failure"), sha=SHA))
+    assert f'<li>\u2705 {_a(RUN_URL, "CI")} green on be762955</li>' in panel
+    assert "latest" not in panel and spec["verdict"] == {"score": 9}

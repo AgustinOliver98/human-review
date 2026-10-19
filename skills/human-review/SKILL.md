@@ -102,7 +102,8 @@ workflow named like ci/build, else every run on the SHA. A green Pages deploy ne
 gate. Cancelled, never-picked-up (runner outage) and GitHub-unreachable are reported as such,
 not as a red build; the verdict (workflow, run id, SHA) is in `.human-review/.gate.json`,
 with `sonar` (steps' verdict, quality gate, dashboard URL) when that run has Sonar steps —
-`preflight.py --sonar-only` re-reads it off the recorded run, with no push and no wipe.
+`preflight.py --ci-only` re-reads it off the recorded run, and adds `head` (CI on the
+branch's pushed head when it is not the reviewed commit), with no push and no wipe.
 
 If `.human-review/review.html` already exists, ask what changed first — see *Iterating*.
 

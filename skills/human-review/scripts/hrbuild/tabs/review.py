@@ -939,6 +939,13 @@ GRADE_CAPS = {
     # quality problem on the new code (coverage, duplication, new issues) the project itself
     # set as a bar: like a breaking API change, it keeps the page out of the green 8+ band.
     "ci-sonar-failed": 7,
+    # The branch's head is not the reviewed commit, and CI on it is red: the PR as it stands
+    # does not build, whatever the reviewed commit proved — the same ceiling as `ci-failed`,
+    # because a merge takes the head, not the commit the review read.
+    "ci-head-failed": 4,
+    # …or no run proved the head (cancelled, skipped, still running, none): the same ceiling
+    # as `ci-unproven`. Pending flips on the next refresh; until then it is not proven.
+    "ci-head-unproven": 6,
     "open-high": 5,         # an open review issue the reviewer filed as `high`
     "api-breaking": 7,      # the REST contract breaks a client
     "no-evidence": 7,       # one tab carries a reason instead of this run's evidence
@@ -987,6 +994,10 @@ def _ci_signal(out_dir: Path) -> dict | None:
     if not isinstance(gate, dict) or not gate.get("verdict"):
         return None
     sha = str(gate.get("sha") or "")[:8]
+    # Beside a bullet about the branch's head, this one says which commit it is about.
+    moved = _head(gate) is not None
+    if sha and moved:
+        sha += " (reviewed)"
     caveat = _plain_text(str(gate.get("caveat") or ""))
     runs = [w for w in gate.get("workflows") or [] if isinstance(w, dict)]
     def linked(sig: dict, run: dict, word: str = "CI") -> dict:
@@ -1018,7 +1029,8 @@ def _ci_signal(out_dir: Path) -> dict | None:
                               caveat or "a CI workflow concluded failure on the reviewed commit",
                               GRADE_CAPS["ci-failed"]), run)
     # Pending or skipped: the run that has not proved it yet, if there is one, on "build".
-    return linked(_signal("ci-unproven", "No build proved this commit",
+    return linked(_signal("ci-unproven", "No build proved the reviewed commit" if moved
+                          else "No build proved this commit",
                           caveat or f"the CI gate says {gate['verdict']!r}, not green",
                           GRADE_CAPS["ci-unproven"]),
                   next((w for w in runs if w.get("url")), {}), "build")
@@ -1032,6 +1044,77 @@ def _sonar(gate: dict) -> dict | None:
         return None
     url = str(sonar.get("url") or "")
     return dict(sonar, url=url if url.startswith(("https://", "http://")) else "")
+
+
+def _head(gate) -> dict | None:
+    """`.gate.json`'s `head` — CI on the branch's head — when that head is not the reviewed
+    commit; None otherwise (or on a gate from before `--ci-only`)."""
+    head = gate.get("head") if isinstance(gate, dict) else None
+    if not isinstance(head, dict) or not head.get("sha") or not head.get("verdict"):
+        return None
+    return None if head["sha"] == gate.get("sha") else head
+
+
+#: What a head run that proved nothing was, in the hover.
+_HEAD_UNPROVEN = {"cancelled": "was cancelled", "skipped": "was skipped",
+                  "pending": "is still running", "not-found": "never ran",
+                  "timed-out": "timed out", "startup-failure": "never started",
+                  "discovery-failed": "could not be asked about"}
+
+
+def _head_signal(out_dir: Path) -> dict | None:
+    """CI on the branch's head, when the PR moved on after the reviewed commit.
+
+    The gate proves the commit the review read; a merge takes the head. Petclinic, 20 Oct
+    2026: "✅ CI and Sonar green" on be762955 while the head, 39346ec5, failed its build —
+    the page answered for a commit nobody would merge. Its own bullet, `(latest)`, with the
+    run linked and Sonar's word on that run when it has one."""
+    gate = _read_json(Path(out_dir) / GATE_JSON)
+    head = _head(gate)
+    if head is None:
+        return None
+    hs = f"{str(head['sha'])[:8]} (latest)"
+    runs = [w for w in head.get("workflows") or [] if isinstance(w, dict)]
+    sonar = _sonar(head)
+    v = head["verdict"]
+    def ci_url(run: dict) -> str:
+        url = str(run.get("url") or "")
+        return url if url.startswith(("https://", "http://")) else ""
+    def sig(key: str, short: str, full: str, cap, run: dict, word: str = "CI") -> dict:
+        out = _signal(key, short, full, cap)
+        links = [(ci_url(run), word)] if ci_url(run) else []
+        if sonar and sonar.get("url") and sonar["verdict"] != "skipped" and "Sonar" in short:
+            links.append((sonar["url"], "Sonar"))
+        if links:
+            out.update(href=links[0][0], linkText=links[0][1], linkInline=True)
+            if len(links) > 1:
+                out["links"] = links
+        return out
+    if v == "green":
+        run = next((w for w in runs if w.get("runId")), {})
+        if sonar and sonar["verdict"] == "success":
+            return sig("ci-head-green", f"CI and Sonar green on {hs}", "", None, run)
+        if sonar and sonar["verdict"] == "failure":
+            return sig("ci-head-green", f"CI green on {hs}, Sonar quality gate failed",
+                       "the build of the branch's head is green, its Sonar quality gate red",
+                       GRADE_CAPS["ci-sonar-failed"], run)
+        return sig("ci-head-green", f"CI green on {hs}", "", None, run)
+    if v == "failure":
+        run = next((w for w in runs if w.get("verdict") == "failure"), None) \
+            or next((w for w in runs if w.get("runId")), {})
+        said = {"success": ", Sonar green", "failure": ", Sonar failed",
+                "skipped": ", Sonar skipped"}.get((sonar or {}).get("verdict"), "")
+        attempt = f", attempt {run['attempt']}" if (run.get("attempt") or 1) > 1 else ""
+        what = f"{run.get('name') or 'CI'} (run {run.get('runId')}{attempt})" \
+            if run.get("runId") else "CI"
+        return sig("ci-head-failed", f"CI failed on {hs}{said}",
+                   f"{what} concluded failure on the branch's head — the PR as it stands "
+                   "does not build", GRADE_CAPS["ci-head-failed"], run)
+    run = next((w for w in runs if w.get("verdict") != "success" and w.get("url")), None) \
+        or next((w for w in runs if w.get("url")), {})
+    return sig("ci-head-unproven", f"No build proved {hs}",
+               f"CI on the branch's head {_HEAD_UNPROVEN.get(v, f'says {v!r}')}",
+               GRADE_CAPS["ci-head-unproven"], run, "build")
 
 
 def _sonar_signal(out_dir: Path) -> dict | None:
@@ -1378,7 +1461,7 @@ def grade_signals(spec, out_dir: Path, root: Path | None = None) -> list[dict]:
     root = root if root is not None else _git_root(out_dir)
     base_ref = _base_ref(spec, root) if root else None
     out = []
-    for sig in (_ci_signal(out_dir), _sonar_signal(out_dir)):
+    for sig in (_ci_signal(out_dir), _sonar_signal(out_dir), _head_signal(out_dir)):
         if sig:
             out.append(sig)
     out.extend(_pile_signals(spec))
@@ -1823,9 +1906,13 @@ def grade_reasons_html(spec) -> str:
             full = full[len(head):].lstrip(" .:;,—–-")
         return "" if full.rstrip(" .") == short.rstrip(" .") else full
 
-    # Good news gets a tick: green CI is the one bullet that is not a worry. Red or pending
-    # keep the plain wording.
-    good = lambda short: "\u2705 " if re.match(r"CI (?:and Sonar )?green\b", short) else ""
+    # Good news gets a tick: green CI is the one bullet that is not a worry. A red build
+    # gets a cross, on the reviewed commit and on the branch's head alike; pending keeps
+    # the plain wording.
+    good = lambda short: (
+        "\u2705 " if re.match(r"CI (?:and Sonar )?green on \S+(?: \((?:reviewed|latest)\))?$",
+                               short)
+        else "\u274c " if short.startswith("CI failed") else "")
     items = "".join(
         f'<li data-tip="{html.escape(rest(short, full), quote=True)}">{good(short)}{bullet(short, at)}</li>'
         if full and rest(short, full) else f"<li>{good(short)}{bullet(short, at)}</li>"
