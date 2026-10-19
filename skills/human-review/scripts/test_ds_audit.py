@@ -761,12 +761,21 @@ def test_only_what_the_branch_changed_is_said_as_signed_deltas():
     assert gap.startswith('<span class="dsa-gap"'), "the one warning, in the warning's yellow"
 
 
+def test_the_component_tip_says_it_counts_uses_and_over_which_screens():
+    """The header said `3 → 4 design-system components`, a screen `0 → 1`: both count uses
+    (two combos on a screen are 2), over different scopes, and neither said either."""
+    comp, = ds.delta_parts(_counts(4, 3), long=True)
+    assert 'data-tip="Design-system component uses, all screens: 3 → 4"' in comp
+    comp, = ds.delta_parts(_counts(1, 0))
+    assert 'data-tip="Design-system component uses, this screen: 0 → 1"' in comp
+
+
 def test_a_changed_screen_with_nothing_to_judge_says_so_and_folds():
     """A list that grew a column: the DOM changed, so the screen is on the page, but no
-    control on it is in a role the design system covers — no gap, so the same clean
-    verdict a screen with every control migrated gets. `0 gaps · 0 components` used to
-    read as a verdict of its own; now there is exactly one clean verdict, and this screen
-    gets it same as any other, folded shut like every row."""
+    control on it is in a role the design system covers. `0 gaps · 0 components` used to
+    read as a verdict of its own; so did the ✅ that replaced it, which reads "audited and
+    fine" on a screen nothing was audited on. It wears a neutral mark and says why, in the
+    same muted tail a judged screen's deltas use, folded shut like every row."""
     reg, screen = _screen_from_capture()
     sc = copy.deepcopy(screen)
     sc["summary"]["new"] = dict(sc["summary"]["new"], bare=0, ds=0)
@@ -778,9 +787,10 @@ def test_a_changed_screen_with_nothing_to_judge_says_so_and_folds():
     row = frag[frag.index('<details class="dsa-screen"'):]
     summary = row[:row.index("</summary>")]
     assert " open>" not in row.split("</summary>", 1)[0]
-    assert "✅" in summary and "⚠" not in summary
+    assert "⚪" in summary and "✅" not in summary and "⚠" not in summary
     assert "all controls from the design system" not in summary, "said nothing; gone"
-    assert "dsa-sumtail" not in summary, "nothing changed for the design system: no tail"
+    tail = summary[summary.index('<span class="dsa-sumtail">'):]
+    assert re.sub("<[^>]+>", "", tail).strip() == "\u00b7 nothing to judge"
     assert "elements" not in summary and "no control the design system covers" not in summary
     assert "0 gaps" not in summary
 
@@ -1331,13 +1341,19 @@ def test_the_change_frame_is_labelled_and_its_colour_is_in_the_legend():
 
 
 def test_several_frames_are_numbered_and_the_caption_is_keyed_by_number():
+    """Only a frame with a verdict in it is numbered: the number keys a row of the table.
+    One with nothing judged in it (Book A Visit's new table header) keeps its caption and
+    gets no number — numbered, it read as a finding with its row missing."""
     reg, screen = _owners_screen()
-    screen["frames"] = {"new": [{"x": 52, "y": 240, "w": 600, "h": 100, "insert": False},
+    screen["frames"] = {"new": [{"x": 52, "y": 240, "w": 1176, "h": 300, "insert": False},
+                                {"x": 52, "y": 900, "w": 600, "h": 100, "insert": False},
                                 {"x": 52, "y": 700, "w": 600, "h": 100, "insert": False}],
                         "old": []}
     frag = ds.render(ds.build_result([screen], reg), "")
     assert '<b class="dsa-fnum">1</b>' in frag and '<b class="dsa-fnum">2</b>' in frag
+    assert '<b class="dsa-fnum">3</b>' not in frag
     assert '<span class="dsa-fcap"><i></i>2 <b>' in frag
+    assert '<span class="dsa-fcap"><i></i><b>changed — nothing here to judge</b>' in frag
     assert ".dsa:has(.dsa-frameon:not(:checked)) .dsa-framecap" in ds.CSS
 
 

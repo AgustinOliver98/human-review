@@ -507,7 +507,7 @@ def test_a_simpler_flow_says_so_in_words_and_is_never_drawn_in_alarm_red():
     `simpler` beside a real minus sign."""
     row = delta.render_row(_row(now=6, was=11, delta=-5, why=[]), 12, "main")
     assert 'class="cx-row cx-down"' in row
-    assert '<span class="cx-badge">−5<small> simpler</small></span>' in row
+    assert '>−5<small> simpler</small></span>' in row
     assert "made the flow simpler" in row and "11 → 6" in row
     for block in re.findall(r"--cx-removed:(#[0-9a-fA-F]{6})", delta.CSS):
         r, g, b = (int(block[i:i + 2], 16) for i in (1, 3, 5))
@@ -757,7 +757,9 @@ def test_the_group_header_names_the_two_numbers_over_their_own_columns():
     last two — the same variables, not a copy that drifts the day one is widened."""
     page = delta.render([_row(why=[])], "main")
     assert ('<div class="cx-kind cx-kind-cols"><span>REST APIs <span class="cx-count">1</span>'
-            '</span><span class="cx-colh cx-colh-added">added</span><span class="cx-colh cx-colh-total">total</span></div>'
+            '</span><span class="cx-colh cx-colh-added" data-tip="Complexity this branch added to '
+            'the flow">added</span><span class="cx-colh cx-colh-total" data-tip="Complexity of the '
+            'whole flow, on this branch">total</span></div>'
             in page)
     head, kind = _columns(".cx-head"), _columns(".cx-kind-cols")
     assert kind[-2:] == head[-2:] and len(kind) == 3
@@ -824,3 +826,19 @@ def test_the_open_rows_are_named_in_the_address_bar():
     # A deleted entry point opens onto nothing, so it has nothing to remember.
     assert "data-cx" not in delta.render_row(_row(gone=True, why=[]), 12, "main")
 
+
+
+def test_every_number_at_a_row_s_end_says_on_hover_what_it_counts():
+    """The bar and the path had a tip; `+1`, `12` and the two column heads did not, and a
+    reviewer left to guess what a bare number counts guesses wrong (CLAUDE.md: a tip that
+    shows numbers says in its first line what they mean)."""
+    up = delta.render_row(_row(now=12, was=11, delta=1, why=[]), 20, "main")
+    assert '<span class="cx-badge" data-tip="Complexity this branch added (11 → 12)">+1</span>' in up
+    assert '<span class="cx-n" data-tip="Complexity of the whole flow: 12">12</span>' in up
+    down = delta.render_row(_row(now=6, was=11, delta=-5, why=[]), 20, "main")
+    assert re.search(r'<span class="cx-badge" data-tip="−5: this branch made the flow simpler', down)
+    new = delta.render_row(_row(now=4, was=None, delta=None, why=[]), 20, "main")
+    assert '<span class="cx-badge" data-tip="New on this branch (4)">new</span>' in new
+    same = delta.render_row(_row(now=7, was=7, delta=0, why=[]), 20, "main")
+    assert '<span class="cx-badge"></span>' in same, "nothing to explain on an empty badge"
+    assert 'data-tip="Complexity of the whole flow: 7"' in same

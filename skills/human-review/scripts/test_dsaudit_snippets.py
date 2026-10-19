@@ -378,10 +378,19 @@ def test_a_verdict_inside_a_frame_takes_the_frame_s_number():
               "old": [{"x": 0, "y": 0, "w": 50, "h": 0, "insert": True},
                       {"x": 0, "y": 100, "w": 50, "h": 50, "insert": False}]}
     nums, numbered = ds.number_findings(findings, frames)
-    assert nums == {"new:a": (1, True), "new:b": (3, False), "old:b": (3, False)}
-    assert numbered
-    # A frame keeps its place in the list on both sides: Old's only box is still `2`.
-    old = ds.shot_html("o.png", {"w": 100, "h": 400}, [], frames["old"], numbered=True)
+    # The second frame holds no verdict on either side: no number, so the orphan is `2`.
+    assert nums == {"new:a": (1, True), "new:b": (2, False), "old:b": (2, False)}
+    assert numbered and ds.frame_numbers(findings, frames) == {0: 1}
+    old = ds.shot_html("o.png", {"w": 100, "h": 400}, [], frames["old"], numbered=True,
+                       fnums=ds.frame_numbers(findings, frames))
+    assert "dsa-fnum" not in old, "a frame with nothing judged in it has no row to key"
+    # A frame keeps its place in the list on both sides: with a verdict in Old's only box,
+    # that box is `2`, not `1`.
+    findings[2]["box"] = {"x": 10, "y": 110, "w": 10, "h": 10}
+    nums, _ = ds.number_findings(findings, frames)
+    assert nums == {"new:a": (1, True), "old:b": (2, True), "new:b": (3, False)}
+    old = ds.shot_html("o.png", {"w": 100, "h": 400}, [], frames["old"], numbered=True,
+                       fnums=ds.frame_numbers(findings, frames))
     assert '<b class="dsa-fnum">2</b>' in old and '<b class="dsa-fnum">1</b>' not in old
     lone, single = ds.number_findings(findings[:1], {"new": frames["new"][:1], "old": []})
     assert lone == {"new:a": (1, True)} and not single, "one thing on the picture: no key"

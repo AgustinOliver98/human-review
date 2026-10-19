@@ -1699,7 +1699,8 @@ def _pct(v, total):
 
 
 def shot_html(png_rel: str, page: dict, marks: list[dict],
-              frames: list[dict] | None = None, numbered: bool | None = None) -> str:
+              frames: list[dict] | None = None, numbered: bool | None = None,
+              fnums: dict[int, int] | None = None) -> str:
     """A screenshot with boxes over it, positioned in percentages so the picture stays
     responsive — the report is read on a laptop and on a projector. `frames` are the
     change frames (`change_frames`), drawn under the marks so a badge stays readable.
@@ -1709,7 +1710,12 @@ def shot_html(png_rel: str, page: dict, marks: list[dict],
     than one frame. A frame's number is its place in the list, which every frame's twin
     on the other side shares — so `2` is the same change in New and in Old even where the
     other side's `1` is only an insertion line. A mark outside every frame carries its
-    own number (`num`), the one its row in the table carries."""
+    own number (`num`), the one its row in the table carries.
+
+    `fnums` (`frame_numbers`) maps a frame's place in the list to its number. A frame
+    that holds no verdict is not in it and carries no number: a number is a key into the
+    table, and a frame with nothing judged in it has no row to key. Left out, every frame
+    is numbered by its place."""
     w, h = max(page["w"], 1), max(page["h"], 1)
     out = [f'<div class="dsa-shot"><img src="{html.escape(png_rel)}" alt="" loading="lazy">']
     # A frame's words go UNDER the picture, never on it. The chip used to ride the frame's
@@ -1727,9 +1733,9 @@ def shot_html(png_rel: str, page: dict, marks: list[dict],
         tip = "Inserted here" if fr.get("insert") else label
         chip = ""
         if not fr.get("insert"):
-            n = i + 1
+            n = (i + 1) if fnums is None else fnums.get(i)
             caps.append((n, label))
-            chip = f'<b class="dsa-fnum">{n}</b>' if numbered else ""
+            chip = f'<b class="dsa-fnum">{n}</b>' if numbered and n else ""
         out.append(f'<div class="dsa-frame{" insert" if fr.get("insert") else ""}" '
                    f'style="{style}" data-tip="{html.escape(tip)}">{chip}</div>')
     for m in marks:
@@ -1745,7 +1751,7 @@ def shot_html(png_rel: str, page: dict, marks: list[dict],
     out.append("</div>")
     if caps:
         out.append('<p class="dsa-framecap">' + "".join(
-            f'<span class="dsa-fcap"><i></i>{f"{n} " if numbered else ""}'
+            f'<span class="dsa-fcap"><i></i>{f"{n} " if numbered and n else ""}'
             f'<b>{html.escape(label)}</b></span>' for n, label in caps) + "</p>")
     return "".join(out)
 
@@ -1754,6 +1760,24 @@ def _centre_in(box: dict, frame: dict) -> bool:
     cx, cy = box["x"] + box["w"] / 2, box["y"] + box["h"] / 2
     return (frame["x"] <= cx <= frame["x"] + frame["w"]
             and frame["y"] <= cy <= frame["y"] + frame["h"])
+
+
+def _drawn_in_frame(f: dict, frames: dict) -> int | None:
+    """The place in its side's frame list of the frame a drawn verdict sits in, or None."""
+    return next((i for i, fr in enumerate(frames.get(f["side"]) or [])
+                 if not fr.get("insert") and _centre_in(f["box"], fr)), None)
+
+
+def frame_numbers(findings: list[dict], frames: dict) -> dict[int, int]:
+    """`{place in the frame list: number}` for the frames that hold a drawn verdict, on
+    either side (a frame and its twin share a place), numbered 1, 2, … in list order.
+
+    A frame with nothing judged in it — a column header the branch added to a list —
+    gets no number. The number keys the picture to a row of the table, and that frame has
+    no row; numbered, it read as a finding nobody wrote down (Book A Visit's `2`)."""
+    held = sorted({i for f in findings if f["verdict"] in DRAWN
+                   for i in [_drawn_in_frame(f, frames)] if i is not None})
+    return {i: n + 1 for n, i in enumerate(held)}
 
 
 def number_findings(findings: list[dict], frames: dict) -> tuple[dict, bool]:
@@ -1765,18 +1789,18 @@ def number_findings(findings: list[dict], frames: dict) -> tuple[dict, bool]:
     every frame (a gap the base already had, on a screen the branch changed elsewhere)
     gets the next number after the frames, keyed on the field, so the same field is the
     same number in New and in Old. Numbers are drawn only when there is more than one of
-    them: a single frame around a single control needs no key."""
-    count = max(len(frames.get("new") or []), len(frames.get("old") or []))
-    on_picture = {i + 1 for side in ("new", "old")
-                  for i, fr in enumerate(frames.get(side) or []) if not fr.get("insert")}
+    them: a single frame around a single control needs no key. A frame with no verdict in
+    it is not numbered at all (`frame_numbers`)."""
+    fnums = frame_numbers(findings, frames)
+    count = len(fnums)
+    on_picture = set(fnums.values())
     nums, orphans = {}, {}
     drawn = sorted((f for f in findings if f["verdict"] in DRAWN),
                    key=lambda f: (f["side"] != "new", f["box"]["y"], f["box"]["x"]))
     for f in drawn:
-        hit = next((i + 1 for i, fr in enumerate(frames.get(f["side"]) or [])
-                    if not fr.get("insert") and _centre_in(f["box"], fr)), None)
-        if hit:
-            nums[f["id"]] = (hit, True)
+        hit = _drawn_in_frame(f, frames)
+        if hit is not None:
+            nums[f["id"]] = (fnums[hit], True)
             continue
         el = f["element"]
         key = el.get("id") or el.get("name") or el.get("label") or el["sig"]
@@ -2060,7 +2084,10 @@ def delta_parts(counts: dict, *, long: bool = False, gap_tip: str = "") -> list[
     if d:
         sign = "+" if d > 0 else "\u2212"
         what = "design-system component" if long else "component"
-        tip = f'{counts["old"]["ds"]} → {counts["new"]["ds"]} design-system components'
+        # Uses, not kinds: two combos on one screen are 2. The header sums every screen.
+        scope = "all screens" if long else "this screen"
+        tip = (f'Design-system component uses, {scope}: '
+               f'{counts["old"]["ds"]} → {counts["new"]["ds"]}')
         parts.append(f'<span class="dsa-comp" data-tip="{html.escape(tip, quote=True)}">'
                      f'{sign}{_n(abs(d), what)}</span>')
     if fixed:
@@ -2094,6 +2121,9 @@ def screen_has_nothing_to_judge(screen: dict) -> bool:
     return not any(c[side].get(k) for side in ("new", "old") for k in ("bare", "ds", "foreign"))
 
 
+NOTHING_TIP = "Changed, but no control on it is, or should be, a design-system component"
+
+
 def render_screen(screen: dict, assets_prefix: str, build, registry: dict | None = None,
                   root: Path | None = None, base: str | None = None) -> str:
     findings = screen["findings"]
@@ -2102,13 +2132,14 @@ def render_screen(screen: dict, assets_prefix: str, build, registry: dict | None
 
     frames = screen.get("frames") or {}
     nums, numbered = number_findings(findings, frames)
+    fnums = frame_numbers(findings, frames)
 
     def annotated(side):
         marks = [dict(m, num=nums.get(m["id"], (None, False))[0],
                       in_frame=nums.get(m["id"], (None, False))[1])
                  for m in _marks_for(findings, side)]
         return LEGEND + shot_html(f"{stem}-{side}.png", pages[side], marks,
-                                  frames.get(side), numbered)
+                                  frames.get(side), numbered, fnums)
 
     # The delta pane: the pixel mask over the new shot, with the elements the DOM says
     # are new or changed outlined on top of it. Neither half is enough on its own.
@@ -2126,7 +2157,7 @@ def render_screen(screen: dict, assets_prefix: str, build, registry: dict | None
     # one *opens* is a separate question, and here the answer is New — see the call to
     # `dgm_views_html` at the bottom of this function.
     panes = [("diff", DIFF_LEGEND + shot_html(f"{stem}-delta.png", pages["new"], delta_marks,
-                                                      frames.get("new"), numbered)),
+                                                      frames.get("new"), numbered, fnums)),
              ("new", annotated("new")), ("old", annotated("old"))]
 
     rows = []
@@ -2169,13 +2200,17 @@ def render_screen(screen: dict, assets_prefix: str, build, registry: dict | None
     # counts that used to sit on lines of their own under it. Opening it is what "pictures
     # and findings" used to be a second fold for.
     gaps = counts["new"]["bare"] + counts["new"].get("foreign", 0)
-    icon = "\u26a0\ufe0f" if gaps else "\u2705"
+    # ✅ reads "audited and fine". A screen with no control the audit judges was not
+    # audited at all, only found changed, so it wears a neutral mark and says why.
+    blank = screen_has_nothing_to_judge(screen)
+    icon = "\u26a0\ufe0f" if gaps else ("\u26aa" if blank else "\u2705")
     route = screen.get("route")
     route_html = (f' <span class="dsa-route">({html.escape(route)})</span>' if route else "")
     # Only what the branch changed, as signed deltas (`delta_parts`); a screen with none
     # gets no tail at all rather than `all controls from the design system`, which read
     # as a claim and said nothing.
-    parts = delta_parts(counts)
+    parts = delta_parts(counts) or ([f'<span class="dsa-pre" data-tip="{NOTHING_TIP}">'
+                                     "nothing to judge</span>"] if blank else [])
     tail = (f' <span class="dsa-sumtail">\u00b7 {" \u00b7 ".join(parts)}</span>'
             if parts else "")
     summary = (f'{icon} {html.escape(_title_case(screen["screen"]))}{route_html}{tail}')

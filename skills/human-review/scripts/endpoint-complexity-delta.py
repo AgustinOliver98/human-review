@@ -505,6 +505,11 @@ TIP_BAR = "{baseline} on {base} → {total} here"
 TIP_SAME = "Unchanged ({total})"
 TIP_NEW = "New on this branch ({total})"
 TIP_GONE = "Removed by this branch (was {baseline})"
+# The two numbers at the row's end and their column heads. First line: what it counts.
+TIP_COL_ADDED = "Complexity this branch added to the flow"
+TIP_COL_TOTAL = "Complexity of the whole flow, on this branch"
+TIP_TOTAL = "Complexity of the whole flow: {total}"
+TIP_BADGE_UP = "Complexity this branch added ({baseline} → {total})"
 
 
 def _tip(attr: str) -> str:
@@ -541,8 +546,8 @@ def render_row(r, peak, base) -> str:
             f'<s>{_path_cell(r)}</s>'
             f'<span class="cx-bar"{_tip(gone_tip)}>'
             f'<u style="width:{100.0 * was / peak:.1f}%"></u></span>'
-            f'<span class="cx-badge">gone</span>'
-            f'<span class="cx-n">0</span>',
+            f'<span class="cx-badge"{_tip(gone_tip)}>gone</span>'
+            f'<span class="cx-n"{_tip(TIP_TOTAL.format(total=0))}>0</span>',
             "",
         )
     if r["delta"] is None:
@@ -582,6 +587,8 @@ def render_row(r, peak, base) -> str:
         # and the whole bar answers with the one fact there is.
         bar_tip = TIP_SAME.format(total=total, base=base)
         grey_tip = delta_tip = ""
+    badge_tip = (TIP_BADGE_UP.format(baseline=baseline, total=total)
+                 if r["delta"] is not None and delta > 0 else delta_tip)
     return _row(
         cls,
         f'<span class="cx-verb cx-{r["method"].lower()}">{html.escape(r["method"])}</span>'
@@ -589,8 +596,8 @@ def render_row(r, peak, base) -> str:
         f'<span class="cx-bar"{_tip(bar_tip)}>'
         f'<i{_tip(grey_tip) if grey_tip else ""} style="width:{kept_pct:.1f}%"></i>'
         f'<u{_tip(delta_tip) if delta_tip else ""} style="width:{delta_pct:.1f}%"></u></span>'
-        f'<span class="cx-badge">{badge}</span>'
-        f'<span class="cx-n">{r["now"]}</span>',
+        f'<span class="cx-badge"{_tip(badge_tip) if badge_tip else ""}>{badge}</span>'
+        f'<span class="cx-n"{_tip(TIP_TOTAL.format(total=total))}>{r["now"]}</span>',
         _why_panel(r),
         f'{r["method"]} {r["path"]}',
     )
@@ -669,7 +676,8 @@ def render(rows, base="main", engines=("regex", "regex")) -> str:
         out.append(
             f'<div class="cx-kind cx-kind-cols"><span>{html.escape(title)} '
             f'<span class="cx-count">{len(of_kind)}</span></span>'
-            '<span class="cx-colh cx-colh-added">added</span><span class="cx-colh cx-colh-total">total</span></div>'
+            f'<span class="cx-colh cx-colh-added"{_tip(TIP_COL_ADDED)}>added</span>'
+            f'<span class="cx-colh cx-colh-total"{_tip(TIP_COL_TOTAL)}>total</span></div>'
         )
         out.append('<div class="cx-list">')
         out.extend(render_row(r, peak, base) for r in of_kind)
