@@ -11,7 +11,6 @@ from pathlib import Path
 from ..shared.adopt import adopt_html
 from ..shared.commands import _app_anchor, fixtures_row_html, runtime_html
 from ..shared.fixtures import demo_fixtures
-from .cost import FISH_PRICE_PER_M_BYTES, _cost_money, voice_money
 from dataset_view import dataset_html, fixtures_panel_html
 
 def _link_captions(cues, links, drive=False):
@@ -380,86 +379,8 @@ def video_html(s, out_dir: Path) -> str:
     # but which voice narrates is a fact about the film, not about the app (Victor, 7 Oct).
     return (head + video_verdict_html(rel, out_dir)
             + f'<div class="vidwrap">{player}<div class="vidside">'
-            f'<div class="vidhead"><h2 class="tabtitle">&#127916; Intro video</h2>{switch}'
-            f'{film_cost_token(rel)}</div>'
+            f'<div class="vidhead"><h2 class="tabtitle">&#127916; Intro</h2>{switch}</div>'
             f'<ol class="transcript">{items}</ol></div></div>')
-
-
-#: Where the film's price goes in its heading row. The section is rendered before the cost
-#: ledger is measured (one subprocess for the whole page, after every block), so the card
-#: leaves this mark and the orchestrator swaps in `film_cost_html` once the ledger is in.
-FILM_COST_MARK = re.compile(r"<!--hr:film-cost:([^>]*?)-->")
-DEMO_TAB_IDS = ("behaviour", "demo", "video")
-
-
-def film_cost_token(rel: str) -> str:
-    return f"<!--hr:film-cost:{html.escape(rel, quote=True)}-->"
-
-
-def _filming_seconds(out_dir: Path) -> float | None:
-    """How long the recorder ran, off the step ledger's own window for the film."""
-    try:
-        steps = json.loads((out_dir / ".steps.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
-    import datetime as dt
-    for st in steps if isinstance(steps, list) else []:
-        if not (isinstance(st, dict) and set(st.get("tabs") or []) & set(DEMO_TAB_IDS)):
-            continue
-        try:
-            a = dt.datetime.fromisoformat(str(st["start"]).replace("Z", "+00:00"))
-            b = dt.datetime.fromisoformat(str(st["end"]).replace("Z", "+00:00"))
-        except (KeyError, ValueError):
-            continue
-        return (b - a).total_seconds()
-    return None
-
-
-def film_cost_html(rel: str, out_dir: Path, led: dict | None, voices: dict | None) -> str:
-    """What this film cost to make, as one chip in its heading row; its hover splits it.
-
-    Three parts, each read off what the run recorded, never re-measured here: the script
-    (the ledger's entry for the Demo tab — a model step's turns, or `rerun-film.py`'s runs),
-    the filming (the step ledger's window: Playwright and ffmpeg on this machine, no model)
-    and the voices (`voices_cost`: the macOS one is free, a cloned one is Fish Audio)."""
-    tabs = ((led or {}).get("tabs") or {}).get("tabs") or {}
-    tab = next((tabs[t] for t in DEMO_TAB_IDS if t in tabs), None)
-    rows, total = [], 0.0
-
-    def row(what: str, money: str, why: str) -> None:
-        rows.append(f"<b>{what}</b> {html.escape(money)} &middot; {html.escape(why)}")
-
-    if tab and tab.get("measured") and tab.get("cost"):
-        total += tab["cost"]
-        row("script", _cost_money(tab["cost"]), str(tab.get("tip") or "model turns"))
-    elif tab and tab.get("measured"):
-        row("script", "$0.00", "no model turn of this page's run wrote it")
-    else:
-        row("script", "?", "not measured: " + str((tab or {}).get("tip")
-                                                  or "the cost ledger is missing"))
-    secs = _filming_seconds(out_dir)
-    took = f"{int(secs // 60)}m {int(secs % 60):02d}s" if secs is not None else "time unknown"
-    row("filming", "$0.00", f"{took} of Playwright and ffmpeg on this machine, no model")
-    log = out_dir / rel.replace(".webm", ".run.log")
-    said = re.search(r'voice "([^"]+)"', log.read_text(encoding="utf-8", errors="replace")
-                     ) if log.is_file() else None
-    row("base voice", "$0.00", f"macOS{f' {said.group(1)}' if said else ''}, on device")
-    if voices:
-        total += voices["usd"]
-        n, model = voices["voices"], " / ".join(voices["models"])
-        paid = voices["bytes"] * FISH_PRICE_PER_M_BYTES["s2.1-pro"] / 1e6
-        row(f"{n} cloned voice{'s' if n != 1 else ''}", voice_money(voices["usd"]),
-            f"Fish Audio {model}, {voices['bytes']:,} bytes of text"
-            + (f"; the paid model would be {voice_money(paid)}" if voices["usd"] <= 0 else "")
-            + ("; estimated" if voices.get("estimated") else ""))
-    tip = "What making this film cost, at API list price:<br>" + "<br>".join(rows)
-    return (f'<span class="filmcost" data-tip-html="{html.escape(tip, quote=True)}">'
-            f'&#128178; {html.escape(_cost_money(total))}</span>')
-
-
-def place_film_cost(doc: str, out_dir: Path, led: dict | None, voices: dict | None) -> str:
-    return FILM_COST_MARK.sub(
-        lambda m: film_cost_html(html.unescape(m.group(1)), out_dir, led, voices), doc)
 
 
 def embed_html(s, out_dir: Path) -> str:

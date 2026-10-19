@@ -360,7 +360,7 @@ def test_each_voice_the_recorder_cut_is_a_radio_button_under_the_player(tmp_path
     assert '<label data-tip="Standard voice"><input' in out
     assert 'value="discovery" data-src="assets/f.voice-discovery.webm" aria-label="Discovery"' in out
     head = out[out.index('<div class="vidhead">'):out.index('<ol class="transcript"')]
-    assert head.index("Intro video</h2>") < head.index('class="voice-switch"'), \
+    assert head.index("Intro</h2>") < head.index('class="voice-switch"'), \
         "the voices follow the title (and the presses placed at its end)"
     assert out.index("<video") < out.index('class="voice-switch"') < out.index("transcript")
     assert re.search(r'value=""[^>]* checked>', out), "the standard voice is the one playing"
@@ -383,11 +383,13 @@ def test_the_film_title_heads_the_transcript_column_not_a_row_above_the_player(t
     s = _video_dir(tmp_path, filmed=True)
     out = build.video_html(s, tmp_path)
     side = out[out.index('<div class="vidside">'):]
-    assert side.index('<h2 class="tabtitle">&#127916; Intro video</h2>') < side.index('<ol class="transcript"')
+    assert side.index('<h2 class="tabtitle">&#127916; Intro</h2>') < side.index('<ol class="transcript"')
     assert out.index("<video") < out.index('<div class="vidside">'), "the player first, then the column"
     assert ".vidwrap > .vidside { display:flex;" in build.CSS and "contain:size" in build.CSS
     placed = build.place_tab_reruns("behaviour", "Demo", out, '<span class="tabre"></span>')
-    assert 'Intro video<span class="tabre"></span></h2>' in placed
+    assert 'Intro<span class="tabre"></span></h2>' in placed
+    # Victor, 19 Oct 2026: "I don't need the 'video' word here, nor the price."
+    assert "Intro video" not in out and "filmcost" not in out and "&#128178;" not in out
 
 
 def test_with_a_deployed_app_row_the_voices_still_sit_in_the_film_title_row(tmp_path):
@@ -410,6 +412,7 @@ def test_with_a_deployed_app_row_the_voices_still_sit_in_the_film_title_row(tmp_
     assert "gap:3px" in rule[:rule.index("}")], "the pills 3px apart"
     head = build.CSS[build.CSS.index(".vidside > .vidhead"):]
     assert "column-gap:.6rem" in head[:head.index("}")], ".6rem after the presses"
+    assert "margin:0 0 0 auto" in rule[:rule.index("}")], "the voices at the row's right end"
     # caption.js finds the group by the film it switches, not as a child of the wrap.
     assert "wrap.querySelectorAll('.voice-switch" not in build.CAPTION_JS
 

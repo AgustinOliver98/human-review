@@ -295,9 +295,7 @@ from hrbuild.tabs.tests import (
 from hrbuild.tabs.demo import (
     VOICE_TIPS, voice_films, voice_switch, embed_html, VERDICT_FACE, video_html, VIDEO_VERDICT,
     video_verdict_html, VOICE_EMOJI, STANDARD_VOICE_TIP, voice_face,
-    _link_captions, derived_app_links, derived_runtime, _project_root, _screen_changed,
-    FILM_COST_MARK, DEMO_TAB_IDS, film_cost_token, _filming_seconds, film_cost_html,
-    place_film_cost
+    _link_captions, derived_app_links, derived_runtime, _project_root, _screen_changed
 )
 from hrbuild.tabs.city import (
     CITY_HEADING, CITY_TAB, declare_city_run_tests
@@ -1210,11 +1208,7 @@ def _main(argv=None) -> int:
                                  page_rev or (spec.get("pr") or {}).get("base") or "origin/main",
                                  out_dir)
         costs = (led or {}).get("tabs")
-        # The film's price sits in its own heading row, and the section was rendered
-        # before the ledger existed: it left a mark, filled in here.
         voices = voices_cost(out_dir)
-        sections = [place_film_cost(x, out_dir, led, voices) for x in sections]
-        by_id = {k: place_film_cost(v, out_dir, led, voices) for k, v in by_id.items()}
         strip, panels, dropped, quiet, emitted = [], [], [], [], []
         for tab in tabs:
             body, weight, changes = "", 0, 0

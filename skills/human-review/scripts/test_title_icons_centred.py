@@ -43,7 +43,7 @@ PAGE = f"""<!doctype html><html><head><meta charset="utf-8"><style>{assets.CSS}<
 <section class="panel" id="sequence" style="display:block"><h2 class="tabtitle" data-case="tab title">Sequence diagrams{GROUP}</h2></section>
 <section class="panel" id="data" style="display:block"><div class="diagram"><div class="head" data-case="data card"><b>Domain Model</b>{GROUP}</div></div></section>
 <section class="panel" id="behaviour" style="display:block"><div class="vidwrap"><video></video>
-<div class="vidside"><div class="vidhead" data-case="intro video"><h2 class="tabtitle">Intro video{GROUP}</h2>{VOICES}</div></div></div></section>
+<div class="vidside"><div class="vidhead" data-case="intro"><h2 class="tabtitle">Intro{GROUP}</h2>{VOICES}</div></div></div></section>
 </div></body></html>"""
 
 MEASURE = """() => {
@@ -85,7 +85,7 @@ def rows(tmp_path_factory):
             browser.close()
 
 
-@pytest.mark.parametrize("case", ["tab title", "data card", "intro video"])
+@pytest.mark.parametrize("case", ["tab title", "data card", "intro"])
 def test_the_rings_sit_on_the_middle_of_the_titles_capitals(rows, case):
     rings = rows[case]["rings"]
     assert len(rings) == 2
@@ -94,9 +94,9 @@ def test_the_rings_sit_on_the_middle_of_the_titles_capitals(rows, case):
 
 
 def test_each_voice_is_one_pill_on_the_title_row_centred_on_its_capitals(rows):
-    voices = rows["intro video"]["voices"]
+    voices = rows["intro"]["voices"]
     assert len(voices) == 3
     for v in voices:
         assert v["border"] == "1px" and v["radius"] != "0px", "a radio and its face in one pill"
         assert abs(v["dy"]) <= .5, f"voice pill centre {v['dy']:+.2f}px off the capitals' middle"
-        assert v["top"] < rows["intro video"]["titleTop"] + 20, "the voices wrapped under the title"
+        assert v["top"] < rows["intro"]["titleTop"] + 20, "the voices wrapped under the title"

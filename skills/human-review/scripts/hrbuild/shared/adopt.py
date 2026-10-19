@@ -183,7 +183,6 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Check it does what the ticket asked.',
             'Click a transcript line to jump there.',
             '<b>Running app</b>: this build in Docker, to try yourself; Start says which step it is on.',
-            '<b>&#128178;</b> is what making the film cost; hover it for script, filming, voices.',
         ],
     },
     'behaviour.seed': {
