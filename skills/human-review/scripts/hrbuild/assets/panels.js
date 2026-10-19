@@ -148,8 +148,18 @@
 
   function anchorNow(swapped) {
     var x = Math.round(window.innerWidth / 2), y = Math.min(window.innerHeight - 1, pinned() + 12);
-    var el = document.elementFromPoint(x, y);
-    while (el && el !== document.body && getComputedStyle(el).position === 'fixed') el = el.parentElement;
+    // The topmost thing in the page's flow at that point, not something pinned over it —
+    // the frozen sequence heads (`#seqheads`), a tooltip: everything stacked there is
+    // listed, and the first one with no fixed box around it is what the reader is reading.
+    var stack = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [document.elementFromPoint(x, y)];
+    var el = null;
+    for (var s = 0; s < stack.length && !el; s++) {
+      var fixed = false;
+      for (var n = stack[s]; n && n !== document.body; n = n.parentElement) {
+        if (getComputedStyle(n).position === 'fixed') { fixed = true; break; }
+      }
+      if (!fixed) el = stack[s];
+    }
     if (!el || el === document.body || el === ROOT) return null;
     var top = el.getBoundingClientRect().top;
     for (var i = 0; i < swapped.length; i++) {
