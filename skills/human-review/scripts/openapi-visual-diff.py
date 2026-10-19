@@ -1377,7 +1377,10 @@ TEMPLATE = r"""<!doctype html>
   .swagger-ui .responses-table .response-col_description__inner { padding: 4px 8px !important; border-radius: 0 6px 6px 0; }
   .swagger-ui .responses-table tr.response[data-code^="2"] :is(td.response-col_status, .response-col_description__inner) { background: rgba(46,160,67,.14); }
   .swagger-ui .responses-table tr.response:is([data-code^="4"], [data-code^="5"]) :is(td.response-col_status, .response-col_description__inner) { background: rgba(248,81,73,.14); }
-  .swagger-ui .responses-table tr.response > td.response-col_description { padding-left: 0 !important; }
+  /* No vertical padding on the description cell: its tinted box then spans the same
+     band as the status cell's, so `200` and `OK` sit on one line, one block (Victor,
+     20 Oct 2026: "not vertically centred to each other, a rupture in between"). */
+  .swagger-ui .responses-table tr.response > td.response-col_description { padding: 0 !important; }
   .swagger-ui .responses-table td.response-col_status::before,
   .swagger-ui .opblock-tag .expand-operation::before,
   .swagger-ui .opblock-control-arrow::before,
