@@ -422,5 +422,9 @@
    "gap": "Out of scope, per the ticket — nothing to cover.",
    "gapKind": "requirement"
   }
- ]
+ ],
+ "stale": {
+  "why": "test-mapping.json (14 Oct 11:29) is older than test-coverage.json (19 Oct 09:53)",
+  "command": "rerun-model.py"
+ }
 }

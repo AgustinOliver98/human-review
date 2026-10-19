@@ -19,3 +19,13 @@
     $ git show --numstat --format= 10d7ced178746ad377c81e79184b580338c39bee
     $ git show --numstat --format= 4384ff57451e55405d4ed83f49a1f55598d5fde7
     $ git show --numstat --format= 5448526f5f3f9e48ebc9d0e8d92764d2eed095da
+    $ git show --numstat --format= 014a6f1eba47c3a15d0b56ddc3604d5676c294e4
+    $ git show --numstat --format= 53c1b7c193bc1519e9464b77be35eda8c60dc838
+    $ git show --numstat --format= e006175ba57f9fb58e44e39e41d4c92b27c750e5
+    $ git show --numstat --format= 7518be26ac9320c514b90e42f0e9745401eccbb0
+    $ git show --numstat --format= cdfb429f95dad0f9de51dd6026fcf08919847e15
+    $ git show --numstat --format= adbcb0c587151d2325fcb6548e7193fed155b91e
+    $ git show --numstat --format= a6baee9dcd8b3821cc98e783844cb7a3f87a0fa1
+    $ git show --numstat --format= 618255dd6d5f2334a3f04fc572df8c517d852883
+    $ git show --numstat --format= 07472b141d538957832aa61f2cd35fa44ed8dfe9
+    $ git show --numstat --format= b5bf415337633e550d0d6885398cbf353265ce80

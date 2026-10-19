@@ -1,8 +1,8 @@
 {
- "base": "5970eab8bee9018f22adbb708d1d3f2116b14572",
+ "base": "4ee969ff497fc3b700e82504d7b1e243bcc27d0e",
  "head": "HEAD",
  "points_file": "review-points.md",
- "commits": 84,
+ "commits": 94,
  "implementation": "1bcf74d4f14a165cabaaa7e9cd1cc5faaa3311b1",
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "session": "82329d0a-55d2-448f-aff5-0363cf80b32f",
@@ -25,7 +25,17 @@
   "37aa569cc272355e72c4eed73d92c1e81d4bc474",
   "10d7ced178746ad377c81e79184b580338c39bee",
   "4384ff57451e55405d4ed83f49a1f55598d5fde7",
-  "5448526f5f3f9e48ebc9d0e8d92764d2eed095da"
+  "5448526f5f3f9e48ebc9d0e8d92764d2eed095da",
+  "014a6f1eba47c3a15d0b56ddc3604d5676c294e4",
+  "53c1b7c193bc1519e9464b77be35eda8c60dc838",
+  "e006175ba57f9fb58e44e39e41d4c92b27c750e5",
+  "7518be26ac9320c514b90e42f0e9745401eccbb0",
+  "cdfb429f95dad0f9de51dd6026fcf08919847e15",
+  "adbcb0c587151d2325fcb6548e7193fed155b91e",
+  "a6baee9dcd8b3821cc98e783844cb7a3f87a0fa1",
+  "618255dd6d5f2334a3f04fc572df8c517d852883",
+  "07472b141d538957832aa61f2cd35fa44ed8dfe9",
+  "b5bf415337633e550d0d6885398cbf353265ce80"
  ],
  "after_detail": [
   {
@@ -134,6 +144,66 @@
    "sha": "5448526f5f3f9e48ebc9d0e8d92764d2eed095da",
    "when": "2026-10-10T01:50:04+03:00",
    "subject": "review-points: base moves to 316a8065 after merging main",
+   "auto_fix": false
+  },
+  {
+   "sha": "014a6f1eba47c3a15d0b56ddc3604d5676c294e4",
+   "when": "2026-10-10T02:37:14+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "53c1b7c193bc1519e9464b77be35eda8c60dc838",
+   "when": "2026-10-10T02:37:47+03:00",
+   "subject": "review-points: base moves to d99781fb after merging main",
+   "auto_fix": false
+  },
+  {
+   "sha": "e006175ba57f9fb58e44e39e41d4c92b27c750e5",
+   "when": "2026-10-10T17:10:25+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "7518be26ac9320c514b90e42f0e9745401eccbb0",
+   "when": "2026-10-10T17:11:08+03:00",
+   "subject": "review-points: base moves to the merge base past the empty-DB green fixture",
+   "auto_fix": false
+  },
+  {
+   "sha": "cdfb429f95dad0f9de51dd6026fcf08919847e15",
+   "when": "2026-10-12T19:14:40+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "adbcb0c587151d2325fcb6548e7193fed155b91e",
+   "when": "2026-10-12T19:14:47+03:00",
+   "subject": "review-points: base moves to the merge base past the ArchUnit caption link",
+   "auto_fix": false
+  },
+  {
+   "sha": "a6baee9dcd8b3821cc98e783844cb7a3f87a0fa1",
+   "when": "2026-10-12T19:15:55+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "618255dd6d5f2334a3f04fc572df8c517d852883",
+   "when": "2026-10-12T19:16:02+03:00",
+   "subject": "review-points: base moves to the merge base past the \"Test: \" diagram titles",
+   "auto_fix": false
+  },
+  {
+   "sha": "07472b141d538957832aa61f2cd35fa44ed8dfe9",
+   "when": "2026-10-19T05:32:35+02:00",
+   "subject": "Merge main: fixture green \u2192 minimal, Deployment label fonts",
+   "auto_fix": false
+  },
+  {
+   "sha": "b5bf415337633e550d0d6885398cbf353265ce80",
+   "when": "2026-10-19T05:33:48+02:00",
+   "subject": "review-points: base moves to the merge with main (4ee969ff)",
    "auto_fix": false
   }
  ],
