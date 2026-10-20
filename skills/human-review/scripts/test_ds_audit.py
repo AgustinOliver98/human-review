@@ -35,6 +35,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import html
 import re
 import subprocess
 import sys
@@ -1021,8 +1022,75 @@ def test_the_overlay_is_positioned_in_percentages_so_the_picture_can_scale():
 
 def test_a_badge_names_the_component_that_should_have_been_used():
     frag = ds.render(_result_from_capture(), "")
-    badge = re.search(r'class="dsa-mark bad"[^>]*><b>([^<]+)</b>', frag).group(1)
+    badge = re.search(r'class="dsa-mark bad"[^>]*><b>(.*?)</b>', frag).group(1)
     assert "select" in badge and "combo" in badge
+    # The fixture's combo is mounted on a <div>: named by its marker, on the chip's green end.
+    assert '<i class="dsa-want">&lt;div data-ds=&quot;combo&quot;&gt;</i>' in badge
+
+
+def _app_combo_gap():
+    """A rendered <app-combo> teaches the registry its tag; a plain select beside it is
+    the gap — the Edit a Visit screen's Vet field."""
+    nodes = [node("h", "app-combo", ds="combo", name="petType"),
+             control("h>s", ds_host="combo", ds_host_sig="h"),
+             control("select#vet", id="vet", name="vetId", label="Vet")]
+    reg = registry_of(nodes)
+    findings = [dict(f, delta={"status": "added"})
+                for f in ds.audit_side(snap(*nodes), reg, "new")]
+    return findings, reg
+
+
+def test_a_gap_tip_shows_the_found_tag_against_the_tag_that_should_be():
+    """Victor, 20 Oct 2026: "what should have appeared in the HTML? put a tag". The bubble
+    is two tags, the one there (red, struck) and the design system's own (green), with
+    the field's name on both so they differ in the tag alone."""
+    findings, reg = _app_combo_gap()
+    bad, = [m for m in ds._marks_for(findings, "new", reg) if m["cls"] == "bad"]
+    tip = bad["tip_html"]
+    assert '<span class="dsa-vsk bad">\u2717 found</span>' in tip
+    assert '<code class="bad">&lt;select name=&quot;vetId&quot;&gt;</code>' in tip
+    assert '<span class="dsa-vsk good">\u2713 should be</span>' in tip
+    assert '<code class="good">&lt;app-combo name=&quot;vetId&quot;&gt;</code>' in tip
+    assert "the design system\u2019s combo belongs" in tip
+    assert bad["badge"] == "\u2717 new plain <select> \u2014 should be <app-combo>"
+    assert bad["badge_html"].endswith('<i class="dsa-want">&lt;app-combo&gt;</i>')
+
+
+def test_the_mark_carries_the_pair_as_markup_for_the_bubble():
+    findings, reg = _app_combo_gap()
+    shot = ds.shot_html("x.png", {"w": 1200, "h": 800},
+                        ds._marks_for(findings, "new", reg))
+    bad = re.search(r'<div class="dsa-mark bad"[^>]*>', shot).group(0)
+    tip = html.unescape(re.search(r'data-tip-html="([^"]*)"', bad).group(1))
+    assert '<code class="good">&lt;app-combo name=&quot;vetId&quot;&gt;</code>' in tip
+    assert "data-tip=" not in bad, "the markup tip replaces the plain one"
+
+
+def test_a_component_tip_shows_its_own_tag_in_green():
+    findings, reg = _app_combo_gap()
+    ok, = [m for m in ds._marks_for(findings, "new", reg) if m["cls"] == "ok"]
+    assert '<code class="good">&lt;app-combo name=&quot;petType&quot;&gt;</code>' in ok["tip_html"]
+    assert "bad" not in ok["tip_html"]
+
+
+def test_a_foreign_tip_says_there_is_no_tag_to_want():
+    """A kit control with no design-system counterpart: the found tag, and in the
+    should-be row the fact that the design system has none — not an invented tag."""
+    pag = node("mat-paginator", "mat-paginator", role="paginator", kit="mat-paginator",
+               label="Select page")
+    f, = ds.audit_side(snap(pag), _combo_registry(), "new")
+    assert f["verdict"] == "foreign"
+    m, = ds._marks_for([f], "new", _combo_registry())
+    assert '<code class="bad">&lt;mat-paginator&gt;</code>' in m["tip_html"]
+    assert "nothing \u2014 the design system has no paginator component" in m["tip_html"]
+    assert "An Angular Material paginator, from outside the design system." in m["tip_html"]
+
+
+def test_the_bubble_pair_uses_fixed_hues_for_the_always_dark_bubble():
+    """tip.js draws the bubble near-black in both schemes; a --dsa-* token flips to the
+    light palette's dark red on it and goes unreadable in light mode."""
+    rules = re.findall(r"\.tip \.dsa-v[^{]*\{([^}]*)\}", ds.CSS)
+    assert rules and not any("var(--dsa" in r for r in rules)
 
 
 def test_the_rows_put_the_gaps_first():

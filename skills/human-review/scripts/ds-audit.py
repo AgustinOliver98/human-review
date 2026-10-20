@@ -1487,6 +1487,27 @@ CSS = """/* ds-audit — the annotated screenshots and the findings table, and n
 .dsa-mark.bad b { background: var(--dsa-bad); }
 .dsa-mark.new b { background: var(--dsa-new); }
 .dsa-mark.hot { outline: 3px solid var(--dsa-hot); outline-offset: 3px; }
+/* The wanted tag on a gap's chip: its right end, in the verdict-ok hue, so the red half
+   says what is there and the green half what should be (`badge_html`). */
+.dsa-mark b i.dsa-want { font-style: normal; display: inline-block; background: var(--dsa-ok);
+  margin: 0 -.35rem 0 .15rem; padding: 0 .35rem; border-radius: 0 .2rem .2rem 0; }
+/* The hover bubble's found/should-be pair (`mark_tip_html`). tip.js draws the bubble the
+   same near-black in both schemes, so these hues are fixed for that ground and do not
+   follow the page's --dsa-* tokens, which flip with the scheme. */
+.tip .dsa-vs { display: grid; grid-template-columns: max-content auto; gap: .35rem .6rem;
+  align-items: center; }
+.tip .dsa-vsk { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.tip .dsa-vsk.bad { color: #ff8f8f; }
+.tip .dsa-vsk.good { color: #7fe0a7; }
+.tip .dsa-vs code { font: 600 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: .05rem .4rem; border-radius: .25rem; white-space: nowrap; }
+.tip .dsa-vs code.bad { color: #ffc2c2; background: rgba(255, 92, 92, .2);
+  box-shadow: inset 0 0 0 1px rgba(255, 107, 107, .6); text-decoration: line-through;
+  text-decoration-color: #ff8f8f; }
+.tip .dsa-vs code.good { color: #b4f5cf; background: rgba(70, 192, 122, .22);
+  box-shadow: inset 0 0 0 1px rgba(70, 192, 122, .65); }
+.tip .dsa-vsnone { font-size: 13px; font-style: italic; opacity: .8; }
+.tip .dsa-vsor { font-size: 12px; opacity: .7; margin: 0 .2rem; }
 .dsa-legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin: .5rem 0 .3rem;
   font-size: .82rem; align-items: center; }
 .dsa-legend i { width: .85rem; height: .85rem; border-radius: .2rem; display: inline-block;
@@ -1747,10 +1768,15 @@ def shot_html(png_rel: str, page: dict, marks: list[dict],
                  f'width:{_pct(b["w"], w)};height:{_pct(b["h"], h)}')
         num = (f'<b class="dsa-mnum">{m["num"]}</b>'
                if numbered and m.get("num") and not m.get("in_frame") else "")
+        # `data-tip-html` when the mark has one (tip.js prefers it): the found/should-be
+        # pair. Plain `data-tip` for the rest, the Diff pane's marks among them.
+        tip = (f'data-tip-html="{html.escape(m["tip_html"])}"' if m.get("tip_html")
+               else f'data-tip="{html.escape(m["tip"])}"')
+        badge = m.get("badge_html") or html.escape(m["badge"])
         out.append(
             f'<div class="dsa-mark {m["cls"]}" style="{style}" '
-            f'data-find="{html.escape(m["id"])}" data-tip="{html.escape(m["tip"])}">'
-            f'<b>{html.escape(m["badge"])}</b>{num}</div>')
+            f'data-find="{html.escape(m["id"])}" {tip}>'
+            f'<b>{badge}</b>{num}</div>')
     out.append("</div>")
     if caps:
         out.append('<p class="dsa-framecap">' + "".join(
@@ -1956,7 +1982,77 @@ def _plain(message: str) -> str:
     return html.unescape(re.sub("<[^>]+>", "", message))
 
 
-def _marks_for(findings, side):
+def _ds_tag(ds: str, registry: dict | None) -> str | None:
+    """The element a template writes to use component `ds` (`app-combo`), or None when the
+    capture never rendered it — then the component is named, not guessed at as a tag."""
+    comp = next((c for c in (registry or {}).get("components") or [] if c["ds"] == ds), {})
+    return (comp.get("tags") or [None])[0]
+
+
+def _tag_text(tag: str, name: str | None = None, ds: str | None = None) -> str:
+    """`<select name="vetId">`: the opening tag, with the one attribute both sides of the
+    swap share — the form field's `name` — so the pair differs in the tag and nothing else.
+
+    A component whose host is a custom element (`<app-combo>`) is named by its tag. One
+    mounted on a plain element (`<div data-ds="combo">`) is not — `<div>` says nothing — so
+    it is written with its marker, and the field's name stays on the control inside it."""
+    if ds and "-" not in tag:
+        return f'<{tag} data-ds="{ds}">'
+    return f'<{tag} name="{name}">' if name else f"<{tag}>"
+
+
+def mark_tip_html(f: dict, registry: dict | None) -> str:
+    """The bubble over a drawn verdict: the tag that is there against the tag that should
+    be, as two tags, red and struck against green.
+
+    "not the design-system component — a plain <select> where combo belongs" made the
+    reader translate "combo" into markup (20 Oct 2026, Victor: "what should have appeared
+    in the HTML? put a tag"). The pair shows it: the found opening tag, then the design
+    system's own element (`registry.components[].tags`, what the rendered hosts were),
+    carrying the same `name`. One sentence under it says why. The bubble is tip.js's
+    near-black in both schemes, so its colours are fixed, not the page's flipping tokens."""
+    el, esc = f["element"], html.escape
+    name = el.get("name")
+    found = ("matSort" if el.get("kit") == "mat-sort"
+             else _tag_text(el["tag"], name, f.get("ds") if f["verdict"] == "ds" else None))
+    kit = KIT_CONTROLS.get(el.get("kit") or "")
+
+    def row(key: str, cls: str, value: str) -> str:
+        return f'<span class="dsa-vsk {cls}">{key}</span><span>{value}</span>'
+
+    if f["verdict"] == "ds":
+        ds = f.get("ds") or ""
+        rows = row("✓ found", "good", f'<code class="good">{esc(found)}</code>')
+        foot = f"The design system’s {esc(ds)} component."
+    elif f["verdict"] == "foreign":
+        role = f.get("role") or ""
+        rows = (row("✗ found", "bad", f'<code class="bad">{esc(found)}</code>')
+                + row("✓ should be", "good",
+                      f'<span class="dsa-vsnone">nothing — the design system has no '
+                      f'{esc(role)} component</span>'))
+        what = kit[0] if kit else el["tag"]
+        foot = f"{esc(_a(what))}, from outside the design system."
+        # A kit control may hold one the design system does cover (the paginator's
+        # page-size select); `_kit_finding` appends each as "; its … control is a …".
+        inner = _plain(f["message"]).split("; its ", 1)
+        if len(inner) == 2:
+            foot += f" Its {esc(inner[1])}."
+    else:
+        owners = f.get("expected_ds") or []
+        wanted = [(_ds_tag(d, registry), d) for d in owners]
+        cells = " <span class=\"dsa-vsor\">or</span> ".join(
+            f'<code class="good">{esc(_tag_text(t, name, d))}</code>' if t
+            else f'<span class="dsa-vsnone">the {esc(d)} component</span>'
+            for t, d in wanted) or '<span class="dsa-vsnone">a design-system component</span>'
+        rows = (row("✗ found", "bad", f'<code class="bad">{esc(found)}</code>')
+                + row("✓ should be", "good", cells))
+        what = f"{_a(kit[0])}" if kit else f"A plain <{el['tag']}>"
+        names = " or ".join(owners) or "a component"
+        foot = esc(f"{what} where the design system’s {names} belongs.")
+    return f'<div class="dsa-vs">{rows}</div><p class="tipfoot">{foot}</p>'
+
+
+def _marks_for(findings, side, registry: dict | None = None):
     marks = []
     for f in findings:
         if f["side"] != side:
@@ -1973,7 +2069,8 @@ def _marks_for(findings, side):
         if f["verdict"] == "ds":
             marks.append({"id": f["id"], "cls": "ok", "box": f["box"],
                           "badge": f'✓ {f["ds"]}{note}', "short": f'✓ {f["ds"]}',
-                          "tip": _plain(f["message"]), "status": status})
+                          "tip": _plain(f["message"]), "status": status,
+                          "tip_html": mark_tip_html(f, registry)})
         elif f["verdict"] == "foreign":
             # The kit's own name on the picture (`mat-paginator`, `matSort`): it says what
             # library the control came from, which is the finding. The accessible name is
@@ -1983,17 +2080,31 @@ def _marks_for(findings, side):
             what = KIT_CONTROLS.get(kit, (name,))[0]
             marks.append({"id": f["id"], "cls": "bad", "box": f["box"],
                           "badge": f'✗ {age} {what} — the design system has none',
-                          "short": f'✗ {name}', "tip": _plain(f["message"]), "status": status})
+                          "short": f'✗ {name}', "tip": _plain(f["message"]), "status": status,
+                          "tip_html": mark_tip_html(f, registry)})
         else:
             # Says what the control is and what it should have been: the component the
-            # design system has for that role, named, not the role itself.
-            expect = " or ".join(f["expected_ds"])
-            expect = f"the {expect} component" if expect else "a design-system component"
+            # design system has for that role — as the tag a template writes for it
+            # (`<app-combo>`) when the capture saw one rendered, else by its name.
+            tags = [_ds_tag(d, registry) for d in f["expected_ds"]]
+            if f["expected_ds"] and all(tags):
+                expect = " or ".join(_tag_text(t, ds=d)
+                                     for t, d in zip(tags, f["expected_ds"]))
+            else:
+                expect = " or ".join(f["expected_ds"])
+                expect = f"the {expect} component" if expect else "a design-system component"
             plain = "" if f["element"].get("kit") else "plain "
+            head = f'✗ {age} {plain}<{f["element"]["tag"]}> — should be '
             marks.append({"id": f["id"], "cls": "bad", "box": f["box"],
-                          "badge": f'✗ {age} {plain}<{f["element"]["tag"]}> — should be {expect}',
+                          "badge": head + expect,
+                          # The wanted tag rides a green end of the red chip: the same
+                          # contrast as the bubble, readable without hovering.
+                          "badge_html": html.escape(head) + (
+                              f'<i class="dsa-want">{html.escape(expect)}</i>'
+                              if all(tags) and tags else html.escape(expect)),
                           "short": f'✗ <{f["element"]["tag"]}>',
-                          "tip": _plain(f["message"]), "status": status})
+                          "tip": _plain(f["message"]), "status": status,
+                          "tip_html": mark_tip_html(f, registry)})
     return marks
 
 
@@ -2140,7 +2251,7 @@ def render_screen(screen: dict, assets_prefix: str, build, registry: dict | None
     def annotated(side):
         marks = [dict(m, num=nums.get(m["id"], (None, False))[0],
                       in_frame=nums.get(m["id"], (None, False))[1])
-                 for m in _marks_for(findings, side)]
+                 for m in _marks_for(findings, side, registry)]
         return LEGEND + shot_html(f"{stem}-{side}.png", pages[side], marks,
                                   frames.get(side), numbered, fnums)
 

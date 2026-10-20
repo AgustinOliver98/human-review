@@ -280,9 +280,9 @@ def test_a_kit_control_and_an_outside_one_get_their_own_sentence():
     foreign = {"verdict": "foreign", "role": "paginator",
                "element": {"tag": "mat-paginator", "kit": "mat-paginator"}}
     rule = ds.rule_html(foreign, _registry(), "s")
-    assert rule.startswith("An Angular Material paginator (<code>&lt;mat-paginator&gt;"
-                           "</code>) is a control from outside the design system")
-    assert "no component for a <code>paginator</code>" in rule
+    # 99db1e5: the fact, no advice paragraph.
+    assert rule == ("An Angular Material paginator (<code>&lt;mat-paginator&gt;</code>); "
+                    "the design system has no <code>paginator</code> component.")
 
 
 def test_the_registry_knows_the_tag_a_template_writes_for_each_component():
@@ -348,7 +348,7 @@ def test_one_number_per_verdict_on_the_picture_and_on_its_row():
     mark and at the head of its row with the same number."""
     result = _fixture_result()
     frag = ds.render(result, "")
-    marks = dict(re.findall(r'data-find="([^"]+)" data-tip="[^"]*"><b>[^<]*</b>'
+    marks = dict(re.findall(r'data-find="([^"]+)" data-tip(?:-html)?="[^"]*"><b>(?:(?!</b>).)*</b>'
                             r'<b class="dsa-mnum">(\d+)</b>', frag))
     rows = dict(re.findall(r'<tr class="(?:ok|bad)" data-find="([^"]+)"><td><b class='
                            r'"dsa-rnum [^"]+" data-tip="[^"]+">(\d+)</b>', frag))
