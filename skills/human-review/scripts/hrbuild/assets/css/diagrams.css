@@ -223,6 +223,12 @@
 @media (prefers-reduced-motion: reduce) {
   .diagram .svgbox svg .dgm-m-glow .dgm-m-shape { animation-duration:1600ms; }
 }
+/* A PlantUML line New / Old gained between two boxes already on screen: it glows amber once
+   it has faded in, then goes back to its own stroke. */
+.diagram .svgbox svg g.link.dgm-m-glow > :is(path, polygon) { animation:dgm-m-glow-own 1300ms ease-out 300ms 1 both; }
+@media (prefers-reduced-motion: reduce) {
+  .diagram .svgbox svg g.link.dgm-m-glow > :is(path, polygon) { animation-delay:0ms; }
+}
 /* A card's credential after its status badge (`diagrams.prov_badge`): a ✓ on a green dot,
    then "ArchUnit-tested vs code" or "Generated from …". It stays beside the badge; the
    file name after it takes the push to the right edge. */

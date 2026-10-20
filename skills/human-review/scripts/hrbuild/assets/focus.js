@@ -29,7 +29,7 @@
 
 
 // The morph between two renders of one diagram. A picture that switches to another render
-// of itself — a wider radius, or a hand-drawn diagram's Diff / New / Old — comes back
+// of itself — a wider radius, or any card's Diff / New / Old — comes back
 // with its own layout, so a bare visibility flip throws every box somewhere new and the
 // reader loses the change they were looking at. Instead: slide every box both renders
 // share from its old spot to its new one, ghost out the ones that left, and fade the
@@ -98,6 +98,26 @@
     }
     return Array.prototype.slice.call(
       svg.querySelectorAll('g.link, g.title, g.footer, g.caption, g.legend, g.cluster'));
+  }
+  // A PlantUML picture the morph can key: boxes by qualified name. A sequence diagram's
+  // participants carry the name too, but are not `g.entity`, and are left to a plain flip.
+  function hasBoxes(svg) { return !!(svg && !isDrawio(svg) && svg.querySelector('g.entity[data-qualified-name]')); }
+  function text(g) { return (g.textContent || '').replace(/\s+/g, ' ').trim(); }
+  // A PlantUML line keyed by the names of the two boxes it joins (its own ids are per
+  // render), counted so two lines between one pair stay two.
+  function links(svg) {
+    var names = {}, out = {};
+    svg.querySelectorAll('g.entity[id][data-qualified-name]').forEach(function (g) {
+      names[g.id] = g.getAttribute('data-qualified-name');
+    });
+    svg.querySelectorAll('g.link[data-entity-1][data-entity-2]').forEach(function (g) {
+      var a = names[g.getAttribute('data-entity-1')], b = names[g.getAttribute('data-entity-2')];
+      if (!a || !b) return;
+      var key = a + '>' + b + ':' + (g.getAttribute('data-link-type') || ''), n = 0;
+      while ((key + '#' + n) in out) n++;
+      out[key + '#' + n] = { g: g, ends: [a, b] };
+    });
+    return out;
   }
   // New key -> old key. By key first; then, on a draw.io picture, by label for the boxes
   // a redraw handed a new id — only where the label names exactly one box on each side.
@@ -216,6 +236,25 @@
         if (s) { s.classList.add('dgm-m-shape'); shapes.push(s); }
       }
     });
+    // New / Old of one PlantUML diagram shows the same boxes twice, so nothing arrives:
+    // the change is a box whose content differs (a column gained), or a line drawn between
+    // two boxes that were both already there (an association gained). Those glow too.
+    // A line that came with a newcomer box is that box's news, already glowing.
+    if (!drawio && o.oldSvg) {
+      shared.forEach(function (n) {
+        var g = newEnt[n];
+        if (text(g) === text(o.oldEnt[pairs[n]])) return;
+        touched.push(g);
+        g.classList.add('dgm-m-glow');
+      });
+      var had = links(o.oldSvg), now = links(newSvg);
+      Object.keys(now).forEach(function (k) {
+        var l = now[k];
+        if (k in had || !(l.ends[0] in pairs) || !(l.ends[1] in pairs)) return;
+        touched.push(l.g);
+        l.g.classList.add('dgm-m-glow');
+      });
+    }
     timers.push(setTimeout(end, (still ? 0 : MOVE) + GLOW));
     if (still) return;
 
@@ -381,9 +420,12 @@
     try { morph(diagram, bar, button); } catch (e) { settle(diagram); }
   }, true);
 
-  // Diff / New / Old on a hand-drawn (draw.io) card. The switch has already flipped the
+  // Diff / New / Old, on a hand-drawn (draw.io) card and on a PlantUML one (the Data tab's
+  // domain model and ERD, the Structure tab's views). The switch has already flipped the
   // panes when this runs, so the pane it left is shown again for one synchronous read of
-  // where its boxes were — layout only, nothing is painted in between.
+  // where its boxes were — layout only, nothing is painted in between. No anchoring
+  // scroll here, unlike the radius: the Diff / New / Old bar does not pin, and the next
+  // click on it must land where the last one did.
   function paneOf(views, state) {
     return views.querySelector(':scope > .dgmpane[data-view="' + state + '"]');
   }
@@ -396,14 +438,15 @@
     settle(diagram);
     if (!from || !to || from === to) return;
     var oldSvg = shownSvg(from), newSvg = shownSvg(to);
-    if (!isDrawio(oldSvg) || !isDrawio(newSvg)) return;
+    var drawio = isDrawio(oldSvg) && isDrawio(newSvg);
+    if (!drawio && !(hasBoxes(oldSvg) && hasBoxes(newSvg))) return;
     var fromHidden = from.hidden, toHidden = to.hidden;
     to.hidden = true; from.hidden = false;
     var oldEnt, oldR, oldSvgR, oldEdges = {};
     try {
       oldSvgR = oldSvg.getBoundingClientRect();
       oldEnt = entities(oldSvg); oldR = rects(oldEnt);
-      waiting(oldSvg).forEach(function (g) { oldEdges[g.getAttribute('data-cell-id')] = rectOf(g); });
+      if (drawio) waiting(oldSvg).forEach(function (g) { oldEdges[g.getAttribute('data-cell-id')] = rectOf(g); });
     } finally {
       from.hidden = fromHidden; to.hidden = toHidden;
     }
@@ -411,7 +454,7 @@
     var newEnt = entities(newSvg);
     play({ diagram: diagram, to: newSvg.parentNode, oldSvg: oldSvg, oldSvgR: oldSvgR, oldEnt: oldEnt,
            oldR: oldR, oldEdges: oldEdges, newSvg: newSvg, newEnt: newEnt, newR: rects(newEnt),
-           pairs: match(oldEnt, newEnt, true) });
+           pairs: match(oldEnt, newEnt, drawio) });
   }
   if (window.MutationObserver) {
     new MutationObserver(function (records) {

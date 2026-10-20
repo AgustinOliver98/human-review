@@ -287,3 +287,128 @@ def test_reduced_motion_on_a_drawio_swap_glows_but_does_not_slide(tmp_path):
             browser.close()
     assert not errors
     assert moving == 0 and glowing == ["d"] and left == 0
+
+
+# --- The same morph on a PlantUML card's Diff / New / Old swap (the Data tab). ------------
+#
+# New and Old of a domain model hold the same boxes, so nothing arrives: what the switch
+# has to show is a box whose content changed and a line drawn between two boxes that were
+# both already there. Diff (radius 0) holds only the changed pair, so Diff -> New is the
+# radius morph's own picture: the neighbours arrive and glow.
+
+def _box(eid, name, x, y, body=""):
+    return (f'<g class="entity" data-qualified-name="{name}" id="{eid}"><rect fill="#fff" x="{x}" y="{y}" '
+            f'width="120" height="60" style="stroke:var(--dgm-line);stroke-width:0.5;"/>'
+            f'<text x="{x + 10}" y="{y + 30}">{name}</text><text x="{x + 10}" y="{y + 50}">{body}</text></g>')
+
+
+def _line(a, b):
+    return (f'<g class="link" data-entity-1="{a}" data-entity-2="{b}" data-link-type="dependency">'
+            f'<path d="M0,0 L10,10" fill="none" style="stroke:var(--dgm-line);stroke-width:1;"/></g>')
+
+
+PUML_DIFF0 = _svg(260, _box("e1", "Visit", 40, 40, "vet : Vet"), _box("e2", "Vet", 40, 160), _line("e1", "e2"))
+PUML_NEW = _svg(420, _box("e3", "Pet", 220, 40), _box("e1", "Visit", 40, 160, "vet : Vet"),
+                _box("e2", "Vet", 40, 300), _line("e1", "e2"), _line("e3", "e1"))
+PUML_OLD = _svg(420, _box("e2", "Vet", 220, 300), _box("e3", "Pet", 40, 40),
+                _box("e1", "Visit", 220, 160), _line("e3", "e1"))
+
+PUML_PAGE = f"""<!doctype html><html><head><meta charset="utf-8"><style>{assets.CSS}</style></head>
+<body><div class="wrap"><div class="diagram dgm-toggles"><div class="head"><b>Domain Model</b></div>
+<div class="dgmviews" data-state="diff"><div class="dgmbar">
+<button type="button" class="dgm-diff" data-go="diff" aria-pressed="true">Diff</button>
+<button type="button" class="dgm-newold" data-go="newold" aria-pressed="false"><u data-view="new">New</u>/<u data-view="old">Old</u></button></div>
+<div class="dgmpane" data-view="diff"><div class="focus"><span class="lbl">Diff + extra neighbours:</span>
+<button type="button" data-level="0" aria-pressed="true">0</button></div>
+<div class="svgbox" data-level="0">{PUML_DIFF0}</div></div>
+<div class="dgmpane" data-view="new" hidden><div class="svgbox">{PUML_NEW}</div></div>
+<div class="dgmpane" data-view="old" hidden><div class="svgbox">{PUML_OLD}</div></div>
+</div></div><div style="height:1500px"></div></div>
+{assets.DGM_VIEWS_JS}{assets.FOCUS_JS}</body></html>"""
+
+PUML_MID = """() => ({
+  state: document.querySelector('.dgmviews').dataset.state,
+  moving: [...document.querySelectorAll('.dgmpane:not([hidden]) g.entity')]
+            .filter(g => !g.classList.contains('dgm-m-new') && getComputedStyle(g).transform !== 'none')
+            .map(g => g.dataset.qualifiedName).sort(),
+  arriving: [...document.querySelectorAll('.dgm-m-new')].map(g => g.dataset.qualifiedName),
+  glowing: [...document.querySelectorAll('.dgmpane:not([hidden]) .dgm-m-glow')]
+             .map(g => g.dataset.qualifiedName || g.getAttribute('data-entity-1') + '>' + g.getAttribute('data-entity-2')).sort(),
+  ghost: [...document.querySelectorAll('.dgm-m-ghost g.entity')]
+           .filter(g => g.style.visibility !== 'hidden').map(g => g.dataset.qualifiedName) })"""
+PUML_LAYOUT = LAYOUT.replace(".svgbox:not([hidden]) svg", ".dgmpane:not([hidden]) .svgbox:not([hidden]) svg")
+
+
+def _open_puml(p, tmp_path, plain=False, **ctx):
+    page_file = tmp_path / "puml.html"
+    page_file.write_text(PUML_PAGE, encoding="utf-8")
+    try:
+        browser = p.chromium.launch()
+    except Exception as e:  # no browser downloaded for this interpreter
+        pytest.skip(f"chromium unavailable: {e}")
+    context = browser.new_context(viewport={"width": 1152, "height": 625}, **ctx)
+    if plain:
+        context.add_init_script("window.__dgmMorph = true;")
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(page_file.as_uri())
+    return browser, page, errors
+
+
+def test_a_plantuml_new_old_swap_slides_the_boxes_and_glows_what_changed(tmp_path):
+    sync = pytest.importorskip("playwright.sync_api")
+    steps = {}
+    with sync.sync_playwright() as p:
+        browser, page, errors = _open_puml(p, tmp_path)
+        try:
+            for name, click in (("diff>new", 'u[data-view="new"]'), ("new>old", 'u[data-view="old"]'),
+                                ("old>new", 'u[data-view="new"]'), ("new>diff", 'button[data-go="diff"]')):
+                page.click('.dgmbar ' + click)
+                page.wait_for_timeout(40)
+                steps[name] = page.evaluate(PUML_MID)
+                page.wait_for_timeout(1900)
+                steps[name]["left"] = page.evaluate(LEFTOVERS)
+            page.click('.dgmbar u[data-view="old"]')
+            page.wait_for_timeout(1900)
+            morphed = page.evaluate(PUML_LAYOUT)
+        finally:
+            browser.close()
+    assert not errors
+    # Diff -> New: the neighbour arrives and glows, the changed pair slides to its new spot.
+    assert steps["diff>new"]["arriving"] == ["Pet"] and steps["diff>new"]["glowing"] == ["Pet"]
+    assert steps["diff>new"]["moving"] == ["Vet", "Visit"]
+    # New -> Old: same boxes, all slide; the box whose content changed glows; no line was gained.
+    assert steps["new>old"]["state"] == "old" and steps["new>old"]["arriving"] == []
+    assert steps["new>old"]["moving"] == ["Pet", "Vet", "Visit"] and steps["new>old"]["glowing"] == ["Visit"]
+    # Old -> New: and now the association Visit -> Vet is gained between two boxes already there.
+    assert steps["old>new"]["glowing"] == ["Visit", "e1>e2"]
+    # New -> Diff: the neighbour leaves as a ghost.
+    assert steps["new>diff"]["ghost"] == ["Pet"]
+    assert all(s["left"] == 0 for s in steps.values()), "the morph must leave nothing behind"
+    with sync.sync_playwright() as p:
+        browser, page, _ = _open_puml(p, tmp_path, plain=True)
+        try:
+            page.click('.dgmbar u[data-view="old"]')
+            plain = page.evaluate(PUML_LAYOUT)
+        finally:
+            browser.close()
+    assert morphed == plain
+
+
+def test_reduced_motion_on_a_plantuml_swap_glows_but_does_not_slide(tmp_path):
+    sync = pytest.importorskip("playwright.sync_api")
+    with sync.sync_playwright() as p:
+        browser, page, errors = _open_puml(p, tmp_path, reduced_motion="reduce")
+        try:
+            page.click('.dgmbar u[data-view="old"]')
+            page.wait_for_timeout(1700)
+            page.click('.dgmbar u[data-view="new"]')
+            page.wait_for_timeout(30)
+            mid = page.evaluate(PUML_MID)
+            page.wait_for_timeout(1700)
+            left = page.evaluate(LEFTOVERS)
+        finally:
+            browser.close()
+    assert not errors
+    assert mid["moving"] == [] and mid["glowing"] == ["Visit", "e1>e2"] and left == 0
