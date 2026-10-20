@@ -22,6 +22,11 @@ MAPPING_ANNOTATION = re.compile(r"@(?P<kind>Get|Post|Put|Patch|Delete|Request)Ma
 # `value =`/`path =`. Anything else leaves the mapping at its class-level base.
 MAPPING_NAMED_PATH = re.compile(r'(?:value|path)\s*=\s*\{?\s*"(?P<path>[^"]*)"')
 MAPPING_POSITIONAL_PATH = re.compile(r'^\s*\{?\s*"(?P<path>[^"]*)"')
+MAPPING_NAMED_CONSTANT = re.compile(r'(?:value|path)\s*=\s*\{?\s*(?P<ref>[A-Za-z_][\w.]*)\s*[,})]?')
+MAPPING_POSITIONAL_CONSTANT = re.compile(r'^\s*\{?\s*(?P<ref>[A-Za-z_][\w.]*)\s*(?:[,}]|$)')
+STRING_CONSTANT = re.compile(
+    r'\bstatic\s+final\s+String\s+(?P<name>\w+)\s*=\s*"(?P<value>[^"]*)"\s*;'
+)
 REQUEST_METHOD = re.compile(r"RequestMethod\.(?P<verb>GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)")
 TYPE_DECL = re.compile(
     r"^(?:(?:public|private|protected|static|final|abstract|sealed|non-sealed)\s+)*"
@@ -123,9 +128,25 @@ def _annotation_span(lines, i: int):
     return text, len(lines) - 1
 
 
-def _mapping_path(args: str) -> str:
+def _mapping_path(args: str, constants: dict | None = None) -> str:
     m = MAPPING_NAMED_PATH.search(args) or MAPPING_POSITIONAL_PATH.match(args)
-    return m["path"] if m else ""
+    if m:
+        return m["path"]
+    # `@PostMapping(VisitBookedNotification.PATH)`: a route shared by the service that
+    # serves it and the client that calls it lives in one constant, so neither can drift.
+    # Without this the visit-booked arrow had no handler, only the route repeated.
+    ref = MAPPING_NAMED_CONSTANT.search(args) or MAPPING_POSITIONAL_CONSTANT.match(args)
+    if ref and constants:
+        return constants.get(ref["ref"]) or constants.get(ref["ref"].rsplit(".", 1)[-1]) or ""
+    return ""
+
+
+def _string_constants(source: str, rel: str, found: dict) -> None:
+    """`Class.NAME` (and bare `NAME`) → the literal of every `static final String NAME = "…"`."""
+    cls = Path(rel).stem
+    for m in STRING_CONSTANT.finditer(source):
+        found[f"{cls}.{m['name']}"] = m["value"]
+        found.setdefault(m["name"], m["value"])
 
 
 def _join_route(base: str, sub: str) -> str:
@@ -133,7 +154,8 @@ def _join_route(base: str, sub: str) -> str:
     return "/" + "/".join(parts)
 
 
-def _controller_routes(source: str, rel: str, found: dict) -> None:
+def _controller_routes(source: str, rel: str, found: dict,
+                       constants: dict | None = None) -> None:
     """Every `VERB /route` this file handles, mapped to `Class.method` and its line.
 
     A line scan, not a parser: the three things it needs — the class-level base path, a
@@ -155,7 +177,7 @@ def _controller_routes(source: str, rel: str, found: dict) -> None:
             if mapping:
                 verbs = ([mapping["kind"].upper()] if mapping["kind"] != "Request"
                          else [m["verb"] for m in REQUEST_METHOD.finditer(args)] or list(HTTP_VERBS))
-                pending = (verbs, _mapping_path(args))
+                pending = (verbs, _mapping_path(args, constants))
             continue
         declared = TYPE_DECL.match(stripped)
         if declared:
@@ -178,6 +200,8 @@ def spring_handlers(root: Path) -> dict:
     it pays one directory walk and nothing else. Resolved here rather than in the diagram
     generator because that generator sees a trace, which carries the route and no code."""
     found: dict = {}
+    constants: dict = {}
+    controllers = []
     for folder, dirs, names in os.walk(root):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for name in names:
@@ -188,9 +212,15 @@ def spring_handlers(root: Path) -> dict:
                 source = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            if "@RestController" not in source and "@Controller" not in source:
-                continue
-            _controller_routes(source, str(path.relative_to(root)), found)
+            rel = str(path.relative_to(root))
+            if "static final String" in source:
+                _string_constants(source, rel, constants)
+            if "@RestController" in source or "@Controller" in source:
+                controllers.append((source, rel))
+    # Second, so a mapping can name a constant declared in a file the walk reaches later —
+    # a shared library's, typically, read after the service that uses it.
+    for source, rel in controllers:
+        _controller_routes(source, rel, found, constants)
     return found
 
 
@@ -208,6 +238,9 @@ def _with_handlers(index: dict, root: Path) -> dict:
         if handlers is None:
             handlers = spring_handlers(root)
         hit = handlers.get(f'{called["verb"]} {called["route"]}')
+        # The route is on the arrow the reader just clicked: the head says who called whom,
+        # and the handler takes the place the route was repeated in.
+        entry["title"] = entry["title"][: called.start("verb")].rstrip().rstrip(":").rstrip()
         if hit:
             rel, line, name = hit
             entry["handler"] = {"name": name,

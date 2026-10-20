@@ -37,7 +37,6 @@ pre.code .ln-row .ln, pre.code .ln-row .dm { text-indent:0; }
 pre.code .ln-row * { text-indent:0; }
 .ln { display:inline-block; width:3.4em; padding-right:.9em; text-align:right; color:var(--muted);
       user-select:none; opacity:.65; }
-#genseq-panel .genseq-handler .srcref { margin-bottom:0; }
 .ghdiff { border:1px solid var(--line); border-radius:8px; overflow:hidden; margin:.9rem 0; background:var(--card); }
 /* The bar itself is the shared `.srcbar` (layout, pills, the file on the right — all of
    it in extract-snippet.py's stylesheet, which is where the snippets get theirs). What is

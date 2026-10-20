@@ -48,12 +48,12 @@
 #genseq-panel .genseq-close:hover { color:var(--fg); }
 #genseq-panel .genseq-label { color:var(--link); font-size:.8rem; margin:.15rem 0 .4rem; }
 #genseq-panel .genseq-label[hidden] { display:none; }
-/* The method that answers the route, at the same level as `request body`: both are
-   sub-headings of the arrow, one naming what travelled and the other where it landed. */
-#genseq-panel .genseq-handler { display:flex; align-items:baseline; gap:.4rem;
-                                font-size:.8rem; margin:.15rem 0 .4rem; }
+/* The method that answers the route, in the head where the route used to be repeated:
+   `Backend → NotificationService: NotificationController.visitBooked()`. Title-sized, and
+   a link — the head is the drag handle, but a press on a link is left to the link. */
+#genseq-panel .genseq-head .genseq-handler { font-size:12.5px; margin:0; flex:0 1 auto;
+                                             min-width:0; word-break:break-all; cursor:pointer; }
 #genseq-panel .genseq-handler[hidden] { display:none; }
-#genseq-panel .genseq-handler .genseq-key { color:var(--muted); }
 /* The `?` / `values` badge wears `.genseq-value`, the marks' own colours (below): it names
    what those marks will show, so it looks like them. Only its shape is its own. */
 #genseq-panel .genseq-toggle { border:0; cursor:pointer; border-radius:999px;

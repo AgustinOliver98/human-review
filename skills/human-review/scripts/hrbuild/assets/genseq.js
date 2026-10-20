@@ -57,12 +57,14 @@
     panel.id = 'genseq-panel';
     panel.hidden = true;
     panel.innerHTML =
+      // The handler rides in the head, right after `Backend → NotificationService:` — the
+      // place the route used to be repeated from the arrow the reader had just clicked.
       '<div class="genseq-head"><span class="genseq-title"></span>' +
+      '<a class="genseq-handler srcref" data-tip="Open in VS Code" hidden></a>' +
       // `genseq-value`: the badge wears the marks' colours, since it names what they show.
       '<button type="button" class="genseq-toggle genseq-value" hidden></button>' +
       '<span class="genseq-grow"></span><span class="genseq-step"></span>' +
       '<button type="button" class="genseq-close" data-tip="close (Esc)" aria-label="close">&times;</button></div>' +
-      '<div class="genseq-handler" hidden></div>' +
       '<div class="genseq-label"></div><pre></pre>';
     document.body.appendChild(panel);
     els = {
@@ -212,32 +214,22 @@
   }
 
   // The entry point that answered the call. The arrow already carries the route, which is
-  // the contract; a reviewer reading a request body next wants the method that receives
-  // it, and no trace knows its name — the generator resolved it against this checkout's
-  // controllers, so the link lands on the real declaration line.
+  // the contract — so the head no longer repeats it (the build cut it from the title) and
+  // names, in its place, the method that receives the request, in the service the arrow
+  // points at. No trace knows that name: the build resolved the route against this
+  // checkout's controllers, so the link lands on the real declaration line.
   function renderHandler(entry) {
     var handler = entry.handler;
-    els.handler.textContent = '';
     els.handler.hidden = !handler;
-    if (!handler) return;
-    var key = document.createElement('span');
-    key.className = 'genseq-key';
-    key.textContent = 'handler';
-    var name = document.createElement(handler.href ? 'a' : 'span');
-    name.className = 'srcref';
-    name.textContent = handler.name;
-    if (handler.href) {
-      name.href = handler.href;
-      name.setAttribute('data-tip', 'Open in VS Code');
-    }
-    els.handler.appendChild(key);
-    els.handler.appendChild(name);
+    els.title.textContent = entry.title + (handler ? ':' : '');
+    if (!handler) { els.handler.removeAttribute('href'); return; }
+    els.handler.textContent = handler.name + '()';
+    els.handler.href = handler.href;
   }
 
   function show(entry, index, target) {
     build();
     step = entry.steps[index];
-    els.title.textContent = entry.title;
     els.step.textContent = entry.steps.length > 1 ? (index + 1) + ' / ' + entry.steps.length : '';
     renderHandler(entry);
     render();

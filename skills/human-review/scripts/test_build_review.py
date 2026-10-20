@@ -1835,6 +1835,58 @@ def test_a_route_this_checkout_no_longer_serves_gets_no_row(tmp_path):
     assert "handler" not in index["details"]["aaa"]
 
 
+NOTIFICATION_CONTROLLER = '''package victor.training.notification;
+
+@RestController
+public class NotificationController {
+    @PostMapping(VisitBookedNotification.PATH)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void visitBooked(@RequestBody VisitBookedNotification notification) {
+    }
+}
+'''
+
+VISIT_BOOKED = '''package victor.training.commons;
+
+public record VisitBookedNotification(String ownerPhone) {
+    public static final String PATH = "/api/notifications/visit-booked";
+}
+'''
+
+
+def test_a_route_named_by_a_constant_resolves_to_its_handler(tmp_path):
+    """`@PostMapping(VisitBookedNotification.PATH)` - the route lives in a shared library's
+    constant, which both the client and the service read. Before, the mapping had no string
+    literal, so the visit-booked arrow got no handler and its panel only repeated the URL."""
+    service = tmp_path / "notification-service/src/main/java/victor/training/notification"
+    commons = tmp_path / "petclinic-commons/src/main/java/victor/training/commons"
+    service.mkdir(parents=True)
+    commons.mkdir(parents=True)
+    (service / "NotificationController.java").write_text(NOTIFICATION_CONTROLLER, encoding="utf-8")
+    (commons / "VisitBookedNotification.java").write_text(VISIT_BOOKED, encoding="utf-8")
+    build.spring_handlers.cache_clear()
+    index = build._with_handlers({"details": {
+        "aaa": {"title": "Backend → NotificationService: POST /api/notifications/visit-booked",
+                "steps": [{"label": "request body", "text": "{}"}]},
+    }}, tmp_path)
+    entry = index["details"]["aaa"]
+    assert entry["handler"]["name"] == "NotificationController.visitBooked"
+    assert entry["handler"]["href"].endswith("NotificationController.java:7:1")
+    # The route is on the arrow already; the head names the call and, after it, the handler.
+    assert entry["title"] == "Backend → NotificationService"
+
+
+def test_a_call_title_drops_the_route_even_without_a_handler(tmp_path):
+    """No handler to name is no reason to repeat the arrow's own label in the panel."""
+    _spring_repo(tmp_path)
+    index = build._with_handlers({"details": {
+        "aaa": {"title": "Browser → Backend: DELETE /api/gone", "steps": []},
+        "bbb": {"title": "Backend → Browser: 200", "steps": []},
+    }}, tmp_path)
+    assert index["details"]["aaa"]["title"] == "Browser → Backend"
+    assert index["details"]["bbb"]["title"] == "Backend → Browser: 200"
+
+
 # --------------------------------------------------------------------------- #
 # requirements, and the tests nested under them
 # --------------------------------------------------------------------------- #
