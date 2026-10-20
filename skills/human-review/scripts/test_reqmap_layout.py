@@ -92,15 +92,21 @@ def test_the_colour_legend_moves_under_the_ticket_it_explains(tmp_path):
 
 def test_the_title_row_over_the_card_offers_all_tests_where_the_filters_stood(tmp_path):
     """Victor, 7 Oct 2026: the card is split into E2E/API/UNIT chapters, so the three
-    filter checkboxes went; the row over the card keeps its place, and one checkbox, "All
-    tests", off by default, goes on the card's title row before the counts."""
+    filter checkboxes went; the row over the card keeps its place. Victor, 20 Oct 2026: the
+    card's title is the choice, "Tests: [covering the change set]" by default, then
+    "running the change set" and "all"."""
     out = _laid_out(tmp_path)
     head, cats, side = _order(out, 'class="tabtitle rm-head"', 'class="rm-cats"',
                               'class="rm-side"')
     assert head < cats < side
-    assert "lab.innerHTML = '<input type=\"checkbox\"> Show all tests';" in T.REQMAP_CHAPTERS_JS
-    assert "head.insertBefore(lab, head.querySelector('.tledger'))" in T.REQMAP_CHAPTERS_JS
-    assert ".reqmap .rm-code > .rm-tkhead > .rm-allf{margin-left:auto;" in T.REQMAP_CSS
+    js = T.REQMAP_CHAPTERS_JS
+    assert "var MODES = [['cover', 'covering the change set'," in js
+    assert "['run', 'running the change set'," in js and "['all', 'all'," in js
+    assert "who.textContent = 'Tests:';" in js
+    assert "return mode === 'cover' ? paired(row) : !folded(row);" in js
+    assert "sec.hidden = !n;" in js                       # an emptied chapter goes
+    assert ".reqmap .rm-list .rm-t[data-off=yes]{display:none}" in T.REQMAP_CSS
+    assert "Show all tests" not in js
     assert '<label class="rm-catf"' not in out and "data-catoff=yes" not in out
     assert T.REQMAP_CHAPTERS_JS in out
 
@@ -188,17 +194,14 @@ def test_the_fixture_dot_slides_into_the_file_columns_blank():
     assert "if (clash) tw.dataset.clash = 'yes'; else delete tw.dataset.clash;" in js
 
 
-def test_the_title_row_carries_the_grand_total_after_show_all():
+def test_the_title_row_carries_the_grand_total():
     """Victor, 19 Oct 2026: the masthead's `tests +20` was the chapters' `+11` and `+9`
-    and nothing added them up. The title row ends in the chapters' four columns, summed;
-    "Show all tests" moves left of it."""
+    and nothing added them up. The title row ends in the chapters' four columns, summed."""
     js, css = T.REQMAP_CHAPTERS_JS, T.REQMAP_CSS
     assert "grand.className = 'rm-chled rm-grand';" in js
-    assert "head.insertBefore(grand, lab.nextSibling);" in js
+    assert "head.insertBefore(grand, head.querySelector('.tledger'));" in js
     assert "grand.innerHTML = led(sum, total, '', 'listed, all kinds');" in js
-    # The checkbox steps into the total's empty leading slots, beside its first number.
-    assert "lab.style.marginRight = lead ? (8 - 43 * lead) + 'px' : '';" in js
-    assert ".reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;" in css
+    assert ".reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;margin-left:auto;" in css
     # One row: the totals never wrap under the title, the title is cut instead.
     assert ".reqmap .rm-code > .rm-tkhead:not(:has(> .tledger)){flex-wrap:nowrap}" in css
 
@@ -309,7 +312,7 @@ def test_a_row_of_the_rest_of_the_run_keeps_every_column_and_opens_nothing():
     assert '<span class="rm-st rm-st-none" aria-hidden="true">' in js
     assert ".reqmap .rm-st-none{width:15px;height:15px}" in T.REQMAP_CSS
     # Built on the first check, not at load.
-    assert "if (on) buildOthers();" in js
+    assert "if (mode === 'all') buildOthers();" in js
 
 
 def test_the_inventory_is_every_test_that_ran_minus_the_card(tmp_path):

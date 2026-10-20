@@ -8,13 +8,17 @@
 // left and still lights the rows a sentence click picks, it just no longer files them.
 //
 // The chapters replace the E2E/API/UNIT filter checkboxes: a chapter that is closed is the
-// filter. In their place, one checkbox: "Show all tests". Off, the card lists every test
-// whose own coverage ran a changed line - every row wearing the blue shield. On, it also
-// lists the rows that wear none: the branch's tests no probe measured, the ones it deleted,
-// and every other test the coverage run executed (`#rm-all-tests`, written by tests.py
-// `all_tests_inventory`): name, badge and file link only - no preview to open, so the
-// arrow's slot stays blank and the columns stay put. Those rows are built on the first
-// check, not at load: a big repo runs thousands of tests and nobody asked for them yet.
+// filter. In their place, the card's title is a choice of which tests it lists (Victor, 20
+// Oct 2026), "Tests: [covering the change set]" by default:
+//   covering - the tests paired with a sentence of the ticket, the rows wearing the fork;
+//   running  - every test whose own coverage ran a changed line, the blue-shield rows;
+//   all      - those, and the rows that wear none: the branch's tests no probe measured,
+//              the ones it deleted, and every other test the coverage run executed
+//              (`#rm-all-tests`, written by tests.py `all_tests_inventory`): name, badge
+//              and file link only - no preview to open, so the arrow's slot stays blank and
+//              the columns stay put. Those rows are built on first pick, not at load: a big
+//              repo runs thousands of tests and nobody asked for them yet.
+// A chapter the choice leaves empty is not shown at all.
 //
 // The untouched tests that only run a changed line (semcov's `fold`, "Untouched and
 // unpaired") used to sit behind the checkbox too. They wear the shield - their coverage
@@ -140,35 +144,44 @@
   });
   CH.forEach(function (c) { list.appendChild(chapters[c[0]]); });
 
-  // ---- the "All tests" checkbox, on the card's own title row ---------------------------
-  // Right-aligned on the "Tests covering the change set" strip, just before the changed-
-  // tests counts (Victor, 7 Oct 2026): it changes what that card lists, so it sits on the
-  // card. The filters it replaces stood over the card; their chips go.
+  // ---- "Tests: [covering the change set ▾]", the card's own title ------------------------
+  // The title's tail becomes the choice; "Tests:" stays the label in front of it. The
+  // filters it replaces stood over the card; their chips go.
   var inv = document.getElementById('rm-all-tests'), INV = null;
   var bar = map.querySelector('.rm-cats');
   if (bar) Array.prototype.forEach.call(bar.querySelectorAll('.rm-catf, .rm-allf'), function (x) {
     x.parentNode.removeChild(x);
   });
-  var lab = document.createElement('label');
-  lab.className = 'rm-allf';
-  lab.innerHTML = '<input type="checkbox"> Show all tests';
+  var MODES = [['cover', 'covering the change set',
+                'Tests paired with a sentence of the ticket, the ones wearing the fork.'],
+               ['run', 'running the change set',
+                'Tests that ran a changed line, as captured by a coverage probe.'],
+               ['all', 'all', 'All tests, as captured by a coverage probe.']];
   var head = map.querySelector('.rm-code > .rm-tkhead');
-  if (head) head.insertBefore(lab, head.querySelector('.tledger'));
+  var who = head && head.querySelector('.cov-head .rm-who');
+  var pick = null;
+  if (who) {
+    who.textContent = 'Tests:';
+    pick = document.createElement('select');
+    pick.className = 'rm-mode';
+    pick.setAttribute('aria-label', 'Which tests the card lists');
+    pick.innerHTML = MODES.map(function (m, i) {
+      return '<option value="' + m[0] + '"' + (i ? '' : ' selected') + '>' + esc(m[1]) + '</option>';
+    }).join('');
+    head.insertBefore(pick, who.closest('.cov-head').nextSibling);
+  }
   // The grand total, on the card's title row in the chapters' own four columns: the sum of
   // their `−`, ✍️ and `+` and of the tests listed (Victor, 19 Oct 2026: the masthead's
   // `tests +20` is the chapters' `+11` and `+9`, and nothing on the card added them up).
-  // The checkbox moves left of it.
   var grand = null;
   if (head) {
     grand = document.createElement('span');
     grand.className = 'rm-chled rm-grand';
-    head.insertBefore(grand, lab.nextSibling);
+    head.insertBefore(grand, head.querySelector('.tledger'));
   }
-  var box = head ? lab.querySelector('input') : null;
   Array.prototype.forEach.call(list.querySelectorAll('.rm-t[data-catoff]'), function (r) {
     delete r.dataset.catoff;
   });
-  // No tooltip on "Show all tests": what it does is on its face (Victor, 20 Oct 2026).
 
   function otherRow(t) {
     var file = t.file || '', cat = CH.some(function (c) { return c[0] === t.cat; }) ? t.cat : 'unit';
@@ -232,10 +245,20 @@
     });
   }
 
-  // Behind the checkbox: only rows without a shield (see the header). `data-fold` rows ran
-  // a changed line, so they are listed whatever the box says.
+  // Rows without a shield (see the header): listed only under "all". `data-fold` rows ran
+  // a changed line, so "running" lists them too.
   function folded(row) {
     return row.dataset.own === 'yes' || row.dataset.del === 'yes';
+  }
+  // The fork: a wire button the renderer left enabled, so the test pins a sentence.
+  function paired(row) {
+    var b = row.querySelector('.rm-link');
+    return !!b && !b.disabled && b.getAttribute('aria-disabled') !== 'true';
+  }
+  function listed(row, mode) {
+    if (mode === 'all') return true;
+    if (row.classList.contains('rm-other')) return false;
+    return mode === 'cover' ? paired(row) : !folded(row);
   }
   // `−`, ✍️, `+` and the total, four slots always, an empty one kept (Victor, 14 Oct 2026:
   // "align in columns"), so the chapters' counts and the grand total stand in columns.
@@ -251,12 +274,13 @@
       + '<span class="rm-chn" data-tip="' + n + k + tests(n) + ' ' + what + '">' + n + '</span>';
   }
   function count() {
-    var all = list.dataset.all === 'yes';
+    var mode = list.dataset.mode || 'cover';
     var sum = {new: 0, deleted: 0, edited: 0}, total = 0;
     CH.forEach(function (c) {
       var sec = chapters[c[0]], n = 0, shown = [];
       Array.prototype.forEach.call(sec.querySelectorAll('.rm-t'), function (r) {
-        if (r.classList.contains('rm-other') ? all : (all || !folded(r))) { n++; shown.push(r); }
+        var on = listed(r, mode);
+        if (on) { n++; shown.push(r); delete r.dataset.off; } else r.dataset.off = 'yes';
       });
       distinguish(sec, shown);
       sec.hidden = !n;
@@ -274,32 +298,23 @@
     });
     if (grand) {
       grand.innerHTML = led(sum, total, '', 'listed, all kinds');
-      // The checkbox steps into the grand total's empty leading slots, so it stands right
-      // beside the first number and the title keeps the width (Victor, 20 Oct 2026: "aligned
-      // to the right … to avoid the ellipses in the title"). The slots stay in the grid, so
-      // the columns still line up with the chapters'.
-      var lead = 0;
-      for (var i = 0; i < 3 && !grand.children[i].textContent; i++) lead++;
-      lab.style.marginRight = lead ? (8 - 43 * lead) + 'px' : '';
     }
   }
-  function setAll(on) {
-    if (on) buildOthers();
-    list.dataset.all = on ? 'yes' : 'no';
-    // The card title's hover says what the list is, so it follows the checkbox (tests.py
-    // COVCARD_TIP / COVCARD_TIP_ALL).
+  function setMode(mode) {
+    if (mode === 'all') buildOthers();
+    list.dataset.mode = mode;
+    list.dataset.all = mode === 'all' ? 'yes' : 'no';
+    // The card title's hover says what the list is, so it follows the choice.
     var tipEl = map.querySelector('.rm-code > .rm-tkhead .cov-head[data-tip]')
              || map.querySelector('.rm-code > .rm-tkhead .rm-who[data-tip]');
-    if (tipEl) tipEl.setAttribute('data-tip', on
-      ? 'All tests, as captured by a coverage probe.'
-      : 'Tests that ran a changed line, as captured by a coverage probe.');
-    list.dataset.unfold = 'yes';
-    ['unown', 'undel'].forEach(function (k) { list.dataset[k] = on ? 'yes' : 'no'; });
+    MODES.forEach(function (m) { if (m[0] === mode && tipEl) tipEl.setAttribute('data-tip', m[2]); });
+    // Rows are kept or dropped one by one (`data-off`, from `listed`), not by these.
+    ['unfold', 'unown', 'undel'].forEach(function (k) { list.dataset[k] = 'yes'; });
     count();
     window.dispatchEvent(new Event('resize'));       // the wires follow the rows
   }
-  if (box) box.addEventListener('change', function () { setAll(box.checked); });
-  setAll(!!(box && box.checked));
+  if (pick) pick.addEventListener('change', function () { setMode(pick.value); });
+  setMode(pick ? pick.value : 'run');
 
   list.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('.rm-link[aria-disabled=true]')) {
@@ -335,7 +350,7 @@
   function reveal() {
     if (list.dataset.sel !== 'yes') return;
     var hits = Array.prototype.filter.call(list.querySelectorAll('.rm-t[data-hit=yes]'),
-      function (r) { return !folded(r) || list.dataset.all === 'yes'; });
+      function (r) { return r.dataset.off !== 'yes'; });
     if (!hits.length) return;
     hits.forEach(function (r) { var s = r.closest('.rm-ch'); if (s) openCh(s, true); });
     var sec = hits[0].closest('.rm-ch'), hh = sec ? sec.querySelector('.rm-chh').offsetHeight : 0;
@@ -356,7 +371,7 @@
     CH.forEach(function (c) {
       var sec = chapters[c[0]], mark = sec.querySelector('.rm-chhit');
       if (!on) { delete sec.dataset.hits; mark.hidden = true; mark.textContent = ''; return; }
-      var n = sec.querySelectorAll('.rm-t[data-hit=yes]').length;
+      var n = sec.querySelectorAll('.rm-t[data-hit=yes]:not([data-off=yes])').length;
       var K = LABEL[c[0]] || c[0].toUpperCase();
       sec.dataset.hits = String(n);
       mark.hidden = false;

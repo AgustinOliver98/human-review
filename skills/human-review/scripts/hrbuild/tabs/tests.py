@@ -1469,17 +1469,21 @@ REQMAP_CSS = """
 .rm-covpop .rm-cpn{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
   font-size:12px;opacity:.72}
 .rm-covpop .rm-cpm{margin:.3rem 0 0;font-size:12px;opacity:.72}
-/* "All tests": off, the card lists what it always did; on, the rest of the run too. On
-   the card's title row, right-aligned, just before the changed-tests counts. */
+/* "Tests: [covering the change set ▾]" (testchapters.js): the title's tail is the choice
+   of which tests the card lists, in the title's own type. A row the choice leaves out is
+   `data-off`; the rest of the run's rows exist only under "all". */
 .reqmap .rm-list:not([data-all=yes]) .rm-cho{display:none}
-.reqmap .rm-code > .rm-tkhead > .rm-allf{margin-left:auto;align-self:center;display:inline-flex;
-  position:relative;z-index:1;
-  align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--muted,#6b6b6b);
-  user-select:none;white-space:nowrap}
+.reqmap .rm-list .rm-t[data-off=yes]{display:none}
+.reqmap .rm-code > .rm-tkhead > .rm-mode{flex:0 1 auto;min-width:0;align-self:center;
+  margin-left:6px;padding:1px 4px;font:inherit;font-weight:600;color:var(--fg,#1c1c1c);
+  background:transparent;border:1px solid var(--border,#d0d7de);border-radius:6px;
+  cursor:pointer;text-overflow:ellipsis}
+.reqmap .rm-code > .rm-tkhead > .rm-mode:hover{border-color:var(--link)}
+.reqmap .rm-code > .rm-tkhead > .rm-mode option{background:var(--bg,#fff);color:var(--fg,#1c1c1c)}
 /* The grand total closes the title row, in the chapters' four columns and right above
-   them; "Show all tests" moves left of it (Victor, 19 Oct 2026). The strip's own 16px
-   right padding is the headings', so the columns stand one over the other. */
-.reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;margin-left:6px;align-self:center}
+   them. The strip's own 16px right padding is the headings', so the columns stand one
+   over the other. */
+.reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;margin-left:auto;align-self:center}
 .reqmap .rm-grand > .rm-chn{font-weight:700}
 /* One row, always (Victor, 19 Oct 2026): on a narrow card the totals wrapped under the
    title. The title gives way instead, cut with an ellipsis; its hover keeps the rest. A
@@ -1493,9 +1497,6 @@ REQMAP_CSS = """
 .reqmap .rm-code > .rm-tkhead > .tledger{flex:1 0 100%;margin:2px 0 0}
 .reqmap .rm-code > .rm-tkhead .tmoves{margin-left:auto}
 .reqmap .rm-code > .rm-tkhead .tmoves > :empty{display:block}
-.reqmap .rm-allf,.reqmap .rm-allf *{cursor:pointer}
-.reqmap .rm-allf:hover,.reqmap .rm-allf:has(input:checked){color:var(--fg,#1c1c1c)}
-.reqmap .rm-allf input{margin:0;width:12px;height:12px}
 /* A row of the rest of the run has no preview and no stamp: both slots kept, empty. */
 .reqmap .rm-st-none{width:15px;height:15px}
 .reqmap .rm-other .rm-thead{cursor:default}
