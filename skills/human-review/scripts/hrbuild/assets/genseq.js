@@ -65,7 +65,8 @@
       '<button type="button" class="genseq-toggle genseq-value" hidden></button>' +
       '<span class="genseq-grow"></span><span class="genseq-step"></span>' +
       '<button type="button" class="genseq-close" data-tip="close (Esc)" aria-label="close">&times;</button></div>' +
-      '<div class="genseq-label"></div><pre></pre>';
+      // `code`: the page's Pygments token colours are scoped to `pre.code` (tokenize, below).
+      '<div class="genseq-label"></div><pre class="code"></pre>';
     document.body.appendChild(panel);
     els = {
       title: panel.querySelector('.genseq-title'),
@@ -170,25 +171,84 @@
     return spans;
   }
 
+  // Syntax colours for the body (Victor, 20 Oct 2026: "add syntax coloring to this SQL
+  // snippet, as well as to the JSON"). Not a second palette: the tokens carry Pygments' own
+  // short class names, and the <pre> is a `pre.code`, so the light and dark token colours
+  // `extract-snippet.py --css` already puts on the page for every code snippet apply here
+  // too. A body is one of two things — a JSON payload, or a SQL statement — and the first
+  // character tells them apart; anything a pattern does not claim stays plain text.
+  var SQL_WORDS = new RegExp('^(?:' + ('select|from|where|and|or|not|in|is|null|like|ilike|escape|' +
+    'between|exists|join|left|right|inner|outer|full|cross|on|using|as|distinct|all|any|' +
+    'insert|into|values|update|set|delete|returning|order|group|by|having|limit|offset|' +
+    'fetch|first|next|rows|row|only|asc|desc|nulls|last|union|intersect|except|case|when|' +
+    'then|else|end|with|recursive|for|true|false|cast|count|sum|min|max|avg|coalesce|' +
+    'lower|upper|default|create|table|alter|drop|index|primary|key|references|constraint|' +
+    'unique|lock|nowait|skip|locked|share|current_date|current_timestamp') + ')$', 'i');
+  var SQL_TOKENS = /(--[^\n]*)|(\/\*[\s\S]*?(?:\*\/|$))|('(?:[^']|'')*'?)|("(?:[^"]|"")*"?)|(\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z_][\w$]*)|([=<>!|+\-*\/%]+)/g;
+  var JSON_TOKENS = /("(?:[^"\\\n]|\\.)*"?)(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+
+  // [start, end, class] for every coloured run of `text`, in order.
+  function tokenize(text) {
+    var out = [], m, json = /^\s*[\[{]/.test(text);
+    var rx = json ? JSON_TOKENS : SQL_TOKENS;
+    rx.lastIndex = 0;
+    while ((m = rx.exec(text))) {
+      if (!m[0]) { rx.lastIndex++; continue; }
+      var at = m.index, cls = null, len = m[0].length;
+      if (json) {
+        // A key is a string followed by `:` — only the string is coloured, not the colon.
+        if (m[1]) { cls = m[2] ? 'nt' : 's2'; len = m[1].length; }
+        else if (m[3]) cls = /[.eE]/.test(m[3]) ? 'mf' : 'mi';
+        else if (m[4]) cls = 'kc';
+      } else if (m[1]) cls = 'c1';
+      else if (m[2]) cls = 'cm';
+      else if (m[3]) cls = 's1';
+      else if (m[4]) cls = 'n';                       // a quoted identifier: a name
+      else if (m[5]) cls = /[.eE]/.test(m[5]) ? 'mf' : 'mi';
+      else if (m[6]) cls = /^(?:null|true|false)$/i.test(m[6]) ? 'kc' : SQL_WORDS.test(m[6]) ? 'k' : null;
+      else if (m[7]) cls = 'o';
+      if (cls) out.push([at, at + len, cls]);
+    }
+    return out;
+  }
+
+  // `text[from, to)` into `parent`, coloured by the tokens that overlap it — a token cut by a
+  // mark's edge is coloured on both sides of it.
+  function appendColoured(parent, text, tokens, from, to) {
+    var at = from;
+    tokens.forEach(function (t) {
+      var s = Math.max(t[0], from), e = Math.min(t[1], to);
+      if (e <= s) return;
+      if (s > at) parent.appendChild(document.createTextNode(text.slice(at, s)));
+      var span = document.createElement('span');
+      span.className = t[2];
+      span.textContent = text.slice(s, e);
+      parent.appendChild(span);
+      at = e;
+    });
+    if (to > at) parent.appendChild(document.createTextNode(text.slice(at, to)));
+  }
+
   // Both renderings mark the same holes: the `?` as sent, and what was put back into each —
   // otherwise `=1` reads as a literal the query always had, and toggling makes the eye hunt
   // for what changed. Only a statement that lines up with its values is marked, which is
-  // also what tells a placeholder from a `?` that is just text.
+  // also what tells a placeholder from a `?` that is just text. Inside a mark the text is
+  // plain: the mark's own solid colours are what say "this is the hole", in either view.
   function renderBody(text, on) {
     var bound = step.alternate && valueSpans(step.text, step.alternate.text);
-    var spans = !bound ? null : on ? bound : placeholderSpans(text);
-    if (!spans) { els.body.textContent = text; return; }
+    var spans = !bound ? [] : on ? bound : placeholderSpans(text);
+    var tokens = tokenize(text);
     els.body.textContent = '';
     var at = 0;
     spans.forEach(function (span) {
-      els.body.appendChild(document.createTextNode(text.slice(at, span[0])));
+      appendColoured(els.body, text, tokens, at, span[0]);
       var mark = document.createElement('mark');
       mark.className = 'genseq-value';
       mark.textContent = text.slice(span[0], span[1]);
       els.body.appendChild(mark);
       at = span[1];
     });
-    els.body.appendChild(document.createTextNode(text.slice(at)));
+    appendColoured(els.body, text, tokens, at, text.length);
   }
 
   // The button always names the *other* rendering, so it reads as what a click will get

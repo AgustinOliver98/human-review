@@ -227,3 +227,57 @@ def test_one_diagram_of_several_scenarios_on_one_start_still_gets_its_dot(tmp_pa
     (review / "assets").mkdir(parents=True)
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
     assert out.count('class="fx-dot fx-free"') == 1, out[:2000]
+
+
+# ── the panel's SQL and JSON are syntax-coloured ─────────────────────────────────────
+
+COLOUR_PAGE = """<!doctype html><html><head><style>{css}</style></head><body>
+<div class="diagram"><div class="svgbox"><svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 400 100" width="400" height="100">
+  <g class="message"><a href="genseq://sql"><text font-size="13" x="10" y="30">select pets</text></a></g>
+  <g class="message"><a href="genseq://json"><text font-size="13" x="10" y="60">200</text></a></g>
+</svg></div>
+<script type="application/json" class="genseq-details">{details}</script></div>
+<script>window.HR = {{onready: function (fn) {{ fn(null); }}}};</script>
+<script>{js}</script></body></html>"""
+
+
+def test_the_panel_colours_sql_and_json_and_keeps_the_value_marks(browser, tmp_path):
+    """Victor, 20 Oct 2026: "add syntax coloring to this SQL snippet, as well as to the JSON".
+    The tokens wear Pygments' class names inside a `pre.code`, so the page's one snippet
+    palette colours them; the `?` and the bound values stay marks in both views."""
+    import json
+    details = {"details": {
+        "sql": {"title": "select pets", "steps": [{
+            "text": "SELECT p.name\nFROM pets p\nWHERE p.owner_id=? AND p.name like ? escape '\\'",
+            "alternate": {"text": "SELECT p.name\nFROM pets p\nWHERE p.owner_id=1 AND p.name like 'A%' escape '\\'"}}]},
+        "json": {"title": "200", "steps": [{"label": "response body",
+            "text": '{\n  "id": 1,\n  "name": "Axel",\n  "vet": null,\n  "ok": true\n}'}]}}}
+    page_file = tmp_path / "c.html"
+    page_file.write_text(COLOUR_PAGE.format(css=GENSEQ_CSS, js=GENSEQ_JS,
+                                            details=json.dumps(details)), encoding="utf-8")
+    page = browser.new_page()
+    read = """() => [...document.querySelector('#genseq-panel pre').childNodes]
+                 .filter(n => n.nodeType === 1).map(n => [n.className, n.textContent])"""
+    try:
+        page.goto(page_file.as_uri())
+        assert page.evaluate("document.querySelector('#genseq-panel') === null")
+        page.click('a[href="genseq://sql"] text')
+        assert page.evaluate("document.querySelector('#genseq-panel pre').classList.contains('code')")
+        sent = page.evaluate(read)
+        page.click("#genseq-panel .genseq-toggle")
+        bound = page.evaluate(read)
+        page.keyboard.press("Escape")
+        page.click('a[href="genseq://json"] text')
+        payload = page.evaluate(read)
+    finally:
+        page.close()
+    for words in (sent, bound):
+        assert ["k", "SELECT"] in words and ["k", "WHERE"] in words and ["k", "escape"] in words
+        assert ["s1", "'\\'"] in words, "a string literal is a string"
+        assert not any(t in ("p", "owner_id", "p.name") for _, t in words), "names stay plain"
+    assert [t for c, t in sent if c == "genseq-value"] == ["?", "?"]
+    assert [t for c, t in bound if c == "genseq-value"] == ["1", "'A%'"], \
+        "the values view still marks what was put back, uncoloured inside the mark"
+    assert ["nt", '"id"'] in payload and ["mi", "1"] in payload
+    assert ["s2", '"Axel"'] in payload and ["kc", "null"] in payload and ["kc", "true"] in payload
