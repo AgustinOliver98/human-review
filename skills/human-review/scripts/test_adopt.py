@@ -122,24 +122,14 @@ def test_the_demo_button_sits_under_the_transcript_in_a_column_of_its_own():
                      r'<div class="adoptline adopt-after">.*?</div></div></div>$', out)
 
 
-def test_each_review_round_gets_a_button_at_its_own_end():
-    body = ('<p class="pileround">Round I</p><h2 id="assumed">A</h2><ol class="findings"></ol>'
-            '<p class="pileround">Round II</p><h2 id="first">B</h2><ol class="findings"></ol>'
-            '<p class="pileround">Round III</p><h2 id="fixed">C</h2><ol class="findings"></ol>'
-            '<details class="fixother"></details>')
-    out = place_prompts("review", body)
-    rounds = out.split('<p class="pileround">')[1:]
-    assert [r.count("Prompt to get this") for r in rounds] == [1, 1, 1]
-    assert all(r.endswith("</button></div>") for r in rounds)
-
-
 def test_the_whole_review_rides_the_sticky_counts_line_at_its_right_end():
     """Victor, 20 Oct 2026: the page's pill on the line that counts assumptions, open and
     fixed, on its right. Inside the line and not around it — the line is sticky, and a
     wrapper would be the box it sticks in — so it is a span, and the (i) beside it opens
     the workflow drawing under the line."""
     line = '<p class="sub counts pilelede"><a href="#assumed">6 assumptions</a></p>'
-    out = place_prompts("review", line + '<h2 id="assumed">A</h2>')
+    out = place_prompts("review", line + '<p class="pileround">Round I</p><h2 id="assumed">A</h2>')
+    assert out.count("Prompt to get this") == 1, "one pill for the review, none per pile"
     assert out.startswith('<p class="sub counts pilelede" data-adoptrow><a href="#assumed">'
                           '6 assumptions</a><span class="adoptline adopt-row">')
     row = out[:out.index("</p>")]
@@ -222,9 +212,9 @@ def test_a_whole_tab_without_its_title_row_still_closes_the_panel_with_its_butto
 
 
 def test_every_tab_is_either_per_card_or_whole_tab_or_one_of_the_agreed_exceptions():
-    per_card = {"data", "packages", "review"}
-    # The Tests filter row, the Demo's transcript column.
-    agreed = {"requirements": "title", "behaviour": "col"}
+    per_card = {"data", "packages"}
+    # The Tests filter row, the Demo's transcript column, the Review tab's sticky counts line.
+    agreed = {"requirements": "title", "behaviour": "col", "review": "row"}
     assert set(PLACES) == per_card | set(WHOLE_TAB) | set(agreed)
     for tid, how in agreed.items():
         assert [h for _, h, _, _ in PLACES[tid]] == [how]
@@ -241,8 +231,6 @@ def test_tab_title_pills_say_page_and_smaller_areas_keep_the_short_label():
                                        '<p class="sub dgm-stale">Also changed</p>'))
     assert "adopt-title" in card and "Prompt to get this</button>" in card
     assert "this page" not in card
-    cost = place_prompts("review", '<h2 id="assumed">A</h2><p class="pileround">r</p>')
-    assert "Prompt to get this</button>" in cost and "this page" not in cost
 
 
 # The (i) beside every pill (7 Oct 2026, Victor): what the reader is looking at, read

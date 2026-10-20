@@ -48,22 +48,6 @@ PIECES: dict[str, tuple[str, str]] = {
         "script turns that and the branch into a review page like this one",
         HOME_URL + "/blob/main/skills/record-review/SKILL.md, SKILL.md, "
         "reference/review-points.md, scripts/build-review-html.py"),
-    "review.assumed": (
-        "the coder's assumptions listed for a human reviewer — every place the ticket did "
-        "not decide, the reading the coding agent chose, how sure it was, and the "
-        "alternative it did not take",
-        "reference/review-points.md, scripts/authoring-sessions.py, scripts/review-points.py, "
-        "scripts/hrbuild/tabs/review.py"),
-    "review.open": (
-        "an AI code review of the branch that leaves its open issues for a human, each "
-        "with its severity, the reviewer that raised it and the code it is about",
-        "reference/review-prompt.md, reference/review-points.md, scripts/review-points.py, "
-        "scripts/review_points_schema.py"),
-    "review.fixed": (
-        "an auto-fix round after that review: the issues it accepted, fixed in one commit "
-        "and shown with their diffs",
-        "reference/review-prompt.md, scripts/rerun-review.py, scripts/review-points.py, "
-        "scripts/review_points_schema.py"),
     "behaviour": (
         "a narrated film of the feature working, recorded by a Playwright script, with its "
         "captions as a clickable transcript beside the player",
@@ -221,29 +205,8 @@ EXPLAIN: dict[str, dict[str, object]] = {
             '<code>/record-review</code> writes what it assumed, fixed and refuted to a file.',
             'Local hooks and CI guard the rest; <code>/human-review</code> builds this page.',
             'Read the assumptions first: a wrong guess is a wrong feature.',
-        ],
-    },
-    'review.assumed': {
-        "li": [
-            'Where the ticket was vague, the coder guessed, with how sure it was.',
-            'Read these first: a wrong guess is a wrong feature.',
-            'Confirm or reject each one with whoever wrote the ticket.',
-        ],
-        "ex": 'e.g. "link a vet to a visit": can the vet be left empty?',
-    },
-    'review.open': {
-        "li": [
-            'A quorum of adversarial AI reviewers criticised the code.',
-            'These the coder refused or left open.',
-            'The robot tags at the right name the AI reviewers that raised each one.',
-            'You decide, top first: <b>must look</b> › <b>worth a look</b> › <b>nit</b>.',
-            'The GitHub icon opens the PR comment; the title or IDE icon opens the line in your IDE.',
-        ],
-    },
-    'review.fixed': {
-        "li": [
-            'What the AI reviewers raised and the coder already fixed, one diff each.',
-            'Skim them: stop only at a fix that changed behaviour.',
+            'Open issues: you decide, top first: <b>must look</b> › <b>worth a look</b> › <b>nit</b>.',
+            'Auto-fixed: skim them, and stop only at a fix that changed behaviour.',
         ],
     },
     'behaviour': {
@@ -374,7 +337,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test; AI-matched, may be wrong.',
             'Name colour = kind: E2E and API weigh most, they prove the feature, not one method.',
             'Click a sentence: a line to each test covering it; <b>▲ ▼</b> = more scrolled away.',
-            '<b>− ✏️ +</b> before a total: deleted, edited, new tests.',
+            '<b>− ✏️ +</b> before a total: deleted, edited, new; hover <b>−</b>: the deleted ones, in the IDE.',
             'Dot: the DB data a test starts on; grey = Default, hollow = uses none of its rows.',
         ],
     },
@@ -476,18 +439,15 @@ DIAGRAM_KINDS = (
 #: opens a tab that has none: the API verdict band, the UX audit's count line, the Tests
 #: key over the card), and it becomes a flex row with that row on the left and the pill on
 #: the right (a row too long to share its line wraps its own text beside the pill); `col` — under it
-#: in a column of its own (the Demo's transcript, beside the player); `upto` — a row
-#: closing the region that starts at the anchor and runs to the next Round kicker (the
-#: Review tab's three piles); `row` — inside the anchor's own row, pinned to its right end
-#: (the Review tab's sticky counts line, which a wrapper would unstick). Piece None is a diagram card, whose piece is read off its
+#: in a column of its own (the Demo's transcript, beside the player); `row` — inside the
+#: anchor's own row, pinned to its right end (the Review tab's sticky counts line, which a
+#: wrapper would unstick; one pill for the whole review since 20 Oct 2026, where each of its
+#: three piles had its own). Piece None is a diagram card, whose piece is read off its
 #: head. A tab whose anchor is missing gets one row at the end of the panel, so a renamed
 #: class costs placement, never the button.
 DIAGRAM_CARD = r'<div class="diagram(?![^"]*\bdgm-bare\b)[^"]*"'
 PLACES: dict[str, tuple[tuple[str | None, str, str | None, str | None], ...]] = {
-    "review": (("review", "row", r'<p class="sub counts pilelede', "first"),
-               ("review.assumed", "upto", r'<h2 id="assumed"', "first"),
-               ("review.open", "upto", r'<h2 id="first"', "first"),
-               ("review.fixed", "upto", r'<h2 id="fixed"', "first")),
+    "review": (("review", "row", r'<p class="sub counts pilelede', "first"),),
     "behaviour": (("behaviour", "col", r'<ol class="transcript"', "first"),),
     "api": (("api", "title", r'<div class="apiverdict\b', "first"),),
     "data": ((None, "in", DIAGRAM_CARD, "all"),),
@@ -621,11 +581,6 @@ def place_prompts(tid: str, body: str) -> str:
         taken = []                  # a card inside a card already given its button
         for hit in hits:
             if any(a < hit.start() < b for a, b in taken):
-                continue
-            if how == "upto":
-                nxt = re.compile(r'<p class="pileround"').search(body, hit.end())
-                at = nxt.start() if nxt else len(body)
-                edits.append((at, at, adopt_html(piece, how="after")))
                 continue
             span = _close(body, hit.start())
             if not span:
