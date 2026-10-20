@@ -338,6 +338,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             "A script flags controls that aren't from the app's own components.",
             'Open the changed screens: is each change wanted?',
             '✅ judged fine · ⚠️ a gap · ⚪ changed, but no control to judge.',
+            'Hover a red box: the tag found, struck, against the tag it should be.',
         ],
         "ex": 'e.g. a home-made combo box, or an inline <code>style=</code>.',
     },
@@ -348,6 +349,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Nesting is what costs: each level adds one.',
             'Green = added by this PR; hover a number for what it counts.',
             'Watch the + per endpoint, not the total.',
+            'Each faded box is a class, its methods the blocks inside; the changed one opens by itself.',
         ],
         "code": (
             'for (Owner o : owners) {            <span class="p">// +1</span>\n'
