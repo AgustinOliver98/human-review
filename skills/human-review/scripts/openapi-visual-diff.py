@@ -1164,6 +1164,14 @@ TEMPLATE = r"""<!doctype html>
   .swagger-ui .highlight-code > .microlight {
     background: var(--dv-code); color: var(--dv-fg);
   }
+  /* An example shows whole: Swagger caps it at 400px with its own scrollbar, a scroll
+     inside a page that already scrolls (Victor, 20 Oct 2026). Long lines wrap rather
+     than scroll sideways, so the box has no scrollbar on either axis. */
+  .swagger-ui .opblock-body pre.microlight,
+  .swagger-ui .highlight-code > .microlight {
+    max-height: none !important; overflow: visible !important;
+    white-space: pre-wrap !important; overflow-wrap: anywhere;
+  }
   /* The constraint pills next to a type — `[1, 255] characters`, `≥ 0`,
      `matches ^[0-9]+$`, `int32` — ship as saturated purple and amber chips, which
      in both themes shout louder than the field names they qualify. They are
