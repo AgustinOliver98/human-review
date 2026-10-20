@@ -265,9 +265,28 @@ def _impact_bar(inner: str, share: float) -> str:
     w = max(a["width"] * share, 3.0)
     r = min(a.get("rx", 0.0), w / 2)
     bar = (f'<rect class="pkg-impact" x="{a["x"]:g}" y="{a["y"]:g}" width="{w:.1f}" '
-           f'height="{a["height"]:g}" rx="{r:g}" ry="{r:g}" fill="var(--dgm-diff-add)" '
+           f'height="{a["height"]:g}" rx="{r:g}" ry="{r:g}" fill="var(--dgm-impact)" '
            'fill-opacity=".45" pointer-events="none"/>')
     return inner[:m.end()] + bar + inner[m.end():]
+
+
+def _center_label(inner: str) -> str:
+    """A one-line box's name centred on its box. PlantUML places it at a left padding it
+    computed from its own font metrics; the browser's sans-serif is narrower, so the name
+    drifted left in a box sized for it (Victor, 20 Oct 2026). A box with more than one
+    line — a class with fields — is left as drawn."""
+    tag = re.compile(r'<text\b([^>]*)>')
+    texts = tag.findall(inner)
+    m = _RECT.search(inner)
+    if len(texts) != 1 or not m or not re.search(r'\bx="', texts[0]):
+        return inner
+    a = {k: float(v) for k, v in _ATTR.findall(m.group(0))}
+    if "x" not in a or "width" not in a:
+        return inner
+    attrs = re.sub(r'\bx="[\d.]+"', f'x="{a["x"] + a["width"] / 2:.2f}"', texts[0], count=1)
+    if "text-anchor" not in attrs:
+        attrs += ' text-anchor="middle"'
+    return tag.sub(lambda _: f"<text{attrs}>", inner, count=1)
 
 
 def _impact_pop(label: str, box: dict, base: str, root: Path, folder: str) -> str:
@@ -306,7 +325,7 @@ def link_folders(markup: str, rel: str, root: Path) -> str:
         label, folder = hit
         attrs = (f' data-folder="{html.escape(folder, quote=True)}"'
                  f' data-folder-name="{html.escape(label, quote=True)}"')
-        inner = m["inner"]
+        inner = _center_label(m["inner"])
         box = impact.get(name)
         if box:
             pop = _impact_pop(label, box, base, root, folder)

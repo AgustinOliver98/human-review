@@ -173,6 +173,11 @@ def _checked_label(note: str, root: Path) -> tuple[str, str]:
     so it goes in the header as *ArchUnit-checked by C3ArchTest* (Victor, 9 Oct 2026), the
     whole sentence on hover and the test's name the way into it. A note that is not that
     sentence (hand-maintained, uncompared) stays under the card, where it was."""
+    # A view nothing compares with the code: the same header slot, an amber badge in two
+    # words, the sentence on hover (Victor, 20 Oct 2026) — not a paragraph under the card.
+    if (note or "").startswith("Hand-maintained:"):
+        return prov_badge("Hand-maintained", note.strip()
+                          + " Hand-maintained, so it can drift from the code.", warn=True), ""
     m = _CHECKED_NOTE.match(note or "")
     if not m:
         return "", note

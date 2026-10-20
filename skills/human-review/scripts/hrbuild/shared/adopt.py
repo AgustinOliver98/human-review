@@ -484,7 +484,7 @@ def adopt_prompt(piece: str, title: str = "") -> str | None:
             "so and show it on a recent commit that does. Leave the changes uncommitted.")
 
 
-#: What the green fill in a package/module box means, left of the pill on a card that has one
+#: What the blue fill in a package/module box means, left of the pill on a card that has one
 #: (Victor, 18 Oct 2026: "it's not clear what the progress bar means"). The swatch is a
 #: box drawn like the diagram's own, a third filled, so the legend looks like the thing.
 IMPACT_LEGEND = (
@@ -492,9 +492,9 @@ IMPACT_LEGEND = (
     '<svg viewBox="0 0 30 14" aria-hidden="true">'
     '<rect x=".5" y=".5" width="29" height="13" rx="2" fill="var(--dgm-box-accent)" '
     'stroke="var(--dgm-line-accent)"/>'
-    '<rect x=".5" y=".5" width="11" height="13" rx="2" fill="var(--dgm-diff-add)" '
+    '<rect x=".5" y=".5" width="11" height="13" rx="2" fill="var(--dgm-impact)" '
     'fill-opacity=".45"/></svg>'
-    '<span><b>green fill</b> = the box\'s share of the lines this PR added</span></span>')
+    '<span><b>blue fill</b> = the box\'s share of the lines this PR added</span></span>')
 
 
 def adopt_html(piece: str, title: str = "", how: str = "in", page: bool = False,

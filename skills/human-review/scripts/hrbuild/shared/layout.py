@@ -100,10 +100,22 @@ LAYOUT_TABS: dict[str, dict] = {
 }
 
 #: A canonical section that is on its tab whenever the step that feeds it wrote this file,
-#: declared or not. The hand-drawn deployment diagram closes the Structure tab, under the
-#: container view it is checked against, only when the project configured one
+#: declared or not. The hand-drawn deployment diagram stands right above the container
+#: view it is checked against (Victor, 20 Oct 2026: it used to close the tab, under it),
+#: only when the project configured one
 #: (`steps.c2.drawio`) — a model writing the content file cannot know that it did.
 LAYOUT_WHEN_WRITTEN = {"deployment": "assets/deployment-diff.json"}
+
+def _deployment_above_containers(blocks: list) -> None:
+    """The deployment section, moved in front of the C2 container view's own block (the
+    one reading `assets/c2/MANIFEST.tsv`) when the tab has both."""
+    dep = next((i for i, b in enumerate(blocks) if b.get("type", "section") == "section"
+                and b.get("id") == "deployment"), None)
+    c2 = next((i for i, b in enumerate(blocks) if b.get("type") == "diagrams"
+               and "/c2/" in f'/{b.get("manifest") or ""}'), None)
+    if dep is not None and c2 is not None and dep > c2:
+        blocks.insert(c2, blocks.pop(dep))
+
 
 #: A block that is on its tab whenever the step that feeds it wrote this file, declared or
 #: not, after everything else the tab carries: the repository's own C4 views, drawn by
@@ -245,6 +257,7 @@ def own_layout(spec: dict, out_dir) -> list[str]:
         sec_blocks = [{"type": "section", "id": sid} for sid in rule["sections"]
                       if sid in sections]
         tab["blocks"] = sec_blocks + kept if rule.get("first") else kept + sec_blocks
+        _deployment_above_containers(tab["blocks"])
         auto = LAYOUT_BLOCK_WHEN_WRITTEN.get(tid)
         if auto and (out_dir / auto[1]).is_file() and not any(
                 b.get("type") == auto[0]["type"] for b in tab["blocks"]):

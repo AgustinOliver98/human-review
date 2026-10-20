@@ -243,3 +243,6 @@
   height:1.05em; border-radius:50%; background:#2e7d32; color:#fff; font-style:normal;
   font-size:.72rem; line-height:1; }
 @media (prefers-color-scheme: dark) { .diagram .head .dgm-prov > i { background:#3f9a55; } }
+/* Nothing checks the view (c4._checked_label): amber `!`, the page's "look twice" hue. */
+.diagram .head .dgm-prov.warn > i { background:#b26a00; font-weight:800; }
+@media (prefers-color-scheme: dark) { .diagram .head .dgm-prov.warn > i { background:#c98a1e; } }

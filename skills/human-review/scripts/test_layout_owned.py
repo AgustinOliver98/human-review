@@ -158,13 +158,14 @@ STRUCTURE = [{"id": "packages", "label": "Structure", "blocks": [
     {"type": "diagrams", "manifest": "assets/c2/MANIFEST.tsv", "only": ["C2-Containers"]}]}]
 
 
-def test_the_deployment_drawing_goes_under_the_container_view_when_it_was_drawn(tmp_path):
+def test_the_deployment_drawing_goes_above_the_container_view_when_it_was_drawn(tmp_path):
+    """Victor, 20 Oct 2026: above the C2 view it is checked against, no longer under it."""
     (tmp_path / "assets").mkdir()
     (tmp_path / "assets" / "deployment-diff.json").write_text("{}")
     spec, _ = _own(json.loads(json.dumps(STRUCTURE)), tmp_path)
     blocks = spec["tabs"][0]["blocks"]
-    assert blocks[0]["type"] == "diagrams"
-    assert blocks[-1] == {"type": "section", "id": "deployment"}
+    assert blocks[0] == {"type": "section", "id": "deployment"}
+    assert blocks[1]["type"] == "diagrams"
     assert {"id": "deployment", "title": "", "body": "{{drawio:deployment}}"} in spec["sections"]
 
 

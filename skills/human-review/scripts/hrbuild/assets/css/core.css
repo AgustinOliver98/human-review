@@ -38,6 +38,9 @@
      hue there is a slab that swallows the black label PlantUML draws on it. */
   --dgm-diff-add:#2e7d32; --dgm-diff-del:#c62828;
   --dgm-diff-add-bg:#eaf6ec; --dgm-diff-del-bg:#ffebeb;
+  /* A box's share of the PR's added lines (folders.py `_impact_bar`): a quantity, not a
+     direction, so not the added-green it was confused with (Victor, 20 Oct 2026). */
+  --dgm-impact:#0284c7;
   /* The blast radius, one hop out to three, fading into PlantUML's own box grey past
      that. Amber rather than a fourth and fifth green: the pair above marks a direction,
      this marks a distance, and one hue cannot carry both without the ladder reading as
@@ -86,6 +89,7 @@
           --dgm-arrow-accent:#7f97a6;
           --dgm-diff-add:#8fd39c; --dgm-diff-del:#f08a8a;
           --dgm-diff-add-bg:#1f3329; --dgm-diff-del-bg:#3a1f1f;
+          --dgm-impact:#38bdf8;
           /* The ripple inverts like the two tints above it and for the same reason: the
              label inside a diagram box is #000000 -> --dgm-fg, near-white here, so a
              wash that stayed pale is a box that reads as empty. The hue is kept amber

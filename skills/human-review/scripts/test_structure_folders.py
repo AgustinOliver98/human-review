@@ -348,3 +348,13 @@ def test_a_box_named_by_a_folder_path_maps_to_that_folder(tmp_path):
            "[ghost] <<src/app/ghost>>\n@enduml\n")
     got = folders.package_folders("web/docs/frontend-packages.puml", r)
     assert got == {"owners": "web/src/app/owners", "app": "web/src/app"}
+
+
+def test_a_one_line_box_has_its_name_centred_on_the_box():
+    """PlantUML pads the name from its own font metrics; the browser's font is narrower, so
+    the name sat left in its box (Victor, 20 Oct 2026). A class box with fields is kept."""
+    from hrbuild.shared.folders import _center_label
+    one = '<rect x="7" y="44" width="136" height="36"/><text font-size="14" x="17" y="68">m</text>'
+    assert '<text font-size="14" x="75.00" y="68" text-anchor="middle">' in _center_label(one)
+    two = one + '<text x="17" y="90">id : Integer</text>'
+    assert _center_label(two) == two

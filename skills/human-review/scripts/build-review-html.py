@@ -160,7 +160,7 @@ from hrbuild.shared.genseq import (
 from hrbuild.shared.folders import (
     folder_targets, link_folders, maven_modules, package_folders, puml_boxes, _artifact_id,
     _DECL, _ENTITY, _KEYWORD, _ls_files, _module_dir, _packages, _pattern, _SOURCE_DIR,
-    _STEREO, _tree_base, box_impact, _branch_files, _impact_bar, _impact_pop, _RECT, _ATTR
+    _STEREO, _tree_base, box_impact, _branch_files, _impact_bar, _center_label, _impact_pop, _RECT, _ATTR
 )
 from hrbuild.shared.changes import changed_files, file_link, files_pop, _numbers
 from hrbuild.shared.diagrams import (
@@ -215,7 +215,7 @@ from hrbuild.shared.validate import (
 from hrbuild.shared.layout import (
     _layout_overridden, _layout_section, _video_step_ran, LAYOUT_ALWAYS, LAYOUT_MODEL_KEYS, LAYOUT_PRODUCER,
     LAYOUT_SECTIONS, LAYOUT_TABS, SHORT_TAB_LABELS, own_layout, LAYOUT_TESTPAIRS, _squash, _own_testpairs,
-    _own_diagram_title, LAYOUT_WHEN_WRITTEN, LAYOUT_BLOCK_WHEN_WRITTEN, claim_changed_diagrams,
+    _own_diagram_title, LAYOUT_WHEN_WRITTEN, LAYOUT_BLOCK_WHEN_WRITTEN, claim_changed_diagrams, _deployment_above_containers,
     diagram_home, _DATA_DECL, _STRUCT_DECL, _DIAGRAM_FALLBACK
 )
 from hrbuild.tabs.review import (

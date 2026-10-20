@@ -428,14 +428,16 @@ def _prov_source(text: str) -> str:
     return ""
 
 
-def prov_badge(text: str, tip: str, href: str = "") -> str:
-    """The credential itself: a link to the test or generator when there is one."""
-    face = f'<i aria-hidden="true">\u2713</i>{html.escape(text)}'
+def prov_badge(text: str, tip: str, href: str = "", warn: bool = False) -> str:
+    """The credential itself: a link to the test or generator when there is one. `warn`
+    is the lack of one — a view nothing checks — drawn as an amber `!` instead of the ✓."""
+    face = f'<i aria-hidden="true">{"!" if warn else chr(0x2713)}</i>{html.escape(text)}'
     tip = html.escape(tip, quote=True)
+    cls = "dgm-prov warn" if warn else "dgm-prov"
     if href:
-        return (f'<a class="dgm-prov" href="{html.escape(href, quote=True)}" '
+        return (f'<a class="{cls}" href="{html.escape(href, quote=True)}" '
                 f'data-tip="{tip}">{face}</a>')
-    return f'<span class="dgm-prov" data-tip="{tip}">{face}</span>'
+    return f'<span class="{cls}" data-tip="{tip}">{face}</span>'
 
 
 def _mentions(root: Path, rel: str) -> list[tuple[str, str]]:

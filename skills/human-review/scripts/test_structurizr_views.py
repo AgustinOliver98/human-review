@@ -217,10 +217,15 @@ def test_the_header_names_a_view_and_its_archunit_test_and_opens_the_dsl_at_it(t
     assert 'class="sub dgm-stale"' not in out, "the checked sentence left the card's foot"
 
 
-def test_a_hand_maintained_note_stays_under_the_card(tmp_path):
+def test_a_hand_maintained_note_is_an_amber_badge_with_the_sentence_on_hover(tmp_path):
+    """Victor, 20 Oct 2026: the paragraph under the card becomes two words in the header,
+    the same slot as `ArchUnit-tested vs code`, warning-coloured; the sentence is the tip."""
     from hrbuild.shared.c4 import _checked_label
     label, rest = _checked_label("Hand-maintained: no test reads this workspace.", tmp_path)
-    assert (label, rest) == ("", "Hand-maintained: no test reads this workspace.")
+    assert rest == "" and 'class="dgm-prov warn"' in label and ">Hand-maintained</span>" in label
+    assert "no test reads this workspace." in label and "drift" in label
+    label, rest = _checked_label("Some other note.", tmp_path)
+    assert (label, rest) == ("", "Some other note.")
     label, rest = _checked_label(sv.tested_note("Component", [
         {"path": "T.java", "levels": ["Component"], "arrows": False}]) + " Not compared.",
         tmp_path)
