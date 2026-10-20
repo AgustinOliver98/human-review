@@ -1,4 +1,1 @@
-  * logging -> logging
-    $ git merge-base c790590b10e89e90a7bf228bad0137d09eedef97 HEAD
-    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/logextract.py petclinic-backend --repo . --since c790590b10e89e90a7bf228bad0137d09eedef97 --json .human-review/assets/logging.json
-0 logging statement(s) on added/modified lines
+  = logging: unchanged, 0.9 s saved

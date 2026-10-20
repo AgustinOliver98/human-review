@@ -2,8 +2,8 @@
   "new": {
     "sources": [
       "petclinic-test/generated/AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.puml",
-      "petclinic-test/generated/VisitListTest.java.avisitcarriesitspetandowner.genseq.puml",
-      "petclinic-test/generated/VisitListTest.java.defaultpage-isthetenlatestvisits.genseq.puml",
+      "petclinic-test/generated/VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.puml",
+      "petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml",
       "petclinic-test/generated/add-visit.spec.ts.add-a-visit-to-an-existing-pet-from-the-owner-detail-page.genseq.puml",
       "petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml",
       "petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml",
@@ -55,7 +55,7 @@
         "protocol": "SQL + HTTP",
         "operations": 12,
         "operationsDelta": 0,
-        "calls": 276,
+        "calls": 262,
         "detail": [
           {
             "name": "",
@@ -110,12 +110,12 @@
           {
             "name": "select pets",
             "path": "",
-            "calls": 98
+            "calls": 86
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 104
+            "calls": 102
           }
         ],
         "toKind": "db"
@@ -393,7 +393,7 @@
         "protocol": "SQL + HTTP",
         "operations": 12,
         "operationsDelta": 0,
-        "calls": 276,
+        "calls": 262,
         "detail": [
           {
             "name": "",
@@ -448,12 +448,12 @@
           {
             "name": "select pets",
             "path": "",
-            "calls": 98
+            "calls": 86
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 104
+            "calls": 102
           }
         ],
         "toKind": "db"
@@ -537,8 +537,8 @@
         "petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml"
       ],
       "onlyNew": [
-        "petclinic-test/generated/VisitListTest.java.avisitcarriesitspetandowner.genseq.puml",
-        "petclinic-test/generated/VisitListTest.java.defaultpage-isthetenlatestvisits.genseq.puml",
+        "petclinic-test/generated/VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.puml",
+        "petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml",
         "petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml",
         "petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml",
         "petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml"

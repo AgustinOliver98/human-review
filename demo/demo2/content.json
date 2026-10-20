@@ -28,7 +28,7 @@
     }
   ],
   "verdict": {
-    "score": 7,
+    "score": 5,
     "bullets": [
       "The new e2e test \"a page of 5 visits, then the next one\" is flaky. It reads the expected page from the API before the browser loads it, while parallel suites write visits. It failed on this run's stack and passed locally.",
       "The traced e2e run was red: add-visit failed with \"fetch failed\", so its re-traced sequence lost NotificationService, Commons and the SMS gateway. The stack missed those calls; this branch does not touch booking."
