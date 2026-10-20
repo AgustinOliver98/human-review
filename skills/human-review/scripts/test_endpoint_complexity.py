@@ -623,7 +623,8 @@ def test_the_graph_draws_what_costs_and_leaves_the_getters_out():
              _gnode("a.Owner#getId"), _gnode("a.Owner#getName")]
     out, drawn = delta._graph(nodes)
     assert out.index("Ctl") < out.index("Map"), "left to right, the handler first"
-    assert '<span class="cg-c">Map</span>' in out and '<span class="cg-m">toDto()</span>' in out
+    assert re.search(r'<span class="cg-c"[^>]*>Map</span>', out)
+    assert '<span class="cg-m">toDto()</span>' in out
     assert '<span class="cg-cog">3</span>' in out
     assert "cyclomatic" not in out and "cg-cyc" not in out, "one score, the one the bar sums"
     assert "cg-add" in out and "+1" in out, "the method the branch made heavier is marked"
@@ -641,7 +642,7 @@ def test_a_node_folds_open_onto_its_own_lines_and_only_the_arrow_navigates():
     row = _row(graph=nodes, why=[{"method": "a.Map#toDto", "display": "Map.toDto()",
                                   "cognitive": 1, "hits": [hit]}])
     out = delta.render_row(row, 12, "main")
-    node = re.search(r'<div class="cg-n[^"]*cg-has".*?</div></div>', out, re.S)[0]
+    node = re.search(r'<div class="cg-n[^"]*cg-has[^"]*".*?</div></div>', out, re.S)[0]
     assert "if (x) {" in node and 'class="cg-lines"' in node, "the line lives in its box"
     assert 'role="button"' in node and not node.startswith("<a"), "the box is a toggle"
     assert "cx-why-m" not in out, "no second list of the same methods under the graph"
@@ -663,42 +664,105 @@ def test_a_node_folds_open_onto_its_own_lines_and_only_the_arrow_navigates():
     assert "scored as" not in lede
     assert "Click ▸" not in page
     assert re.search(r"\.cg-open > \.cg-lines \{[^}]*display:block", delta.CSS)
-    assert "border-left:6px solid var(--cg-arrow)" in delta.CSS, "edges end in arrowheads"
+    assert ".cg-svg .cg-ah" in delta.CSS and "'cg-ah'" in delta.TOGGLE_JS, "edges end in arrowheads"
 
 
 
-def test_a_class_colour_tints_its_name_and_never_the_frame():
+def test_a_class_is_one_faded_box_tinted_in_its_hue_and_its_methods_are_plain_cards():
     """Six frame colours around one graph were louder than the scores they frame (Victor,
-    9 Oct: "too colorful, distracting"). The class's hue stays — on its name only — and
-    the frame is the plain rule again, so green on a frame still means only "raised"."""
+    9 Oct: "too colorful, distracting"). The hue now tints the class's box, faintly, and
+    names it; the method blocks inside keep a plain frame, so green on a frame still means
+    only "raised"."""
     nodes = [_gnode("a.Ctl#go", calls=["a.Map#all"]), _gnode("a.Map#all", cog=1)]
     out, _ = delta._graph(nodes)
-    assert re.search(r'class="cg-n cg-h0[ "]', out) and re.search(r'class="cg-n cg-h1[ "]', out)
-    frame = re.search(r"\.cg-n \{([^}]*)\}", delta.CSS).group(1)
-    assert "border:1px solid var(--line);" in frame, "the frame is the plain rule"
+    assert re.search(r'class="cg-k cg-h0"', out) and re.search(r'class="cg-k cg-h1"', out)
+    assert not re.search(r'class="cg-n[^"]*cg-h\d', out), "no hue on a method block"
+    k = re.search(r"\.cg-k \{([^}]*)\}", delta.CSS).group(1)
+    assert re.search(r"background:color-mix\(in srgb, var\(--cg-hue[^)]*\)\) [0-9]%", k), \
+        "the box is a faint tint, under 10%"
     name = re.search(r"\.cg-c \{([^}]*)\}", delta.CSS).group(1)
-    assert "color:var(--cg-hue, var(--muted))" in name, "the hue is on the class name"
-    assert "border-bottom:1px solid var(--line);" in name, "the rule under it is plain too"
-    assert re.search(r"\.cg-add \{[^}]*border-color:var\(--cx-added\)", delta.CSS), \
+    assert "color:var(--cg-hue, var(--muted))" in name, "the hue names the class"
+    frame = re.search(r"\.cg-n \{([^}]*)\}", delta.CSS).group(1)
+    assert "cg-hue" not in frame and "background:var(--card)" in frame, "a method is a card"
+    assert re.search(r"\.cg-n\.cg-add \{[^}]*border-color:var\(--cx-added\)", delta.CSS), \
         "a raised method keeps its green frame"
 
-def test_a_call_into_the_same_class_hangs_below_and_only_another_class_moves_right():
-    """Width is what makes a reader scroll the graph sideways, and a mapper handing its
-    elements to its own overload is not a step anywhere new. So a same-class callee goes
-    under its caller (`cg-down`), and only a call into another class opens a column."""
+
+def test_a_class_is_drawn_once_however_many_of_its_methods_are_in_the_flow():
+    """`PetMapper` was three boxes in a row (Victor, 20 Oct 2026: "why does PetMapper
+    appear three times?"). One box per class, named once with its ↗, its methods inside in
+    the order the flow met them; a call that stays in the class is an edge between two
+    blocks of one box, a call into another class an edge to the next column."""
     nodes = [_gnode("a.Ctl#go", calls=["a.Map#all"]),
              _gnode("a.Map#all", cog=1, calls=["a.Map#one", "a.Pet#toDto"]),
-             _gnode("a.Map#one", cog=2), _gnode("a.Pet#toDto", cog=1)]
+             _gnode("a.Map#one", cog=2), _gnode("a.Pet#toDto", cog=1, calls=["a.Map#type"]),
+             _gnode("a.Map#type", cog=1)]
     out, drawn = delta._graph(nodes)
-    all_ = re.search(r'<div class="cg-t cg-v"><div class="cg-row"><div class="cg-stem">'
-                     r'<div class="cg-n[^>]*><span class="cg-c">Map</span>'
-                     r'.*?all\(\)(.*)', out, re.S)
-    assert all_, "Map.all() carries a same-class callee below it"
-    right, below = all_[1].split('<div class="cg-down">', 1)
-    assert "toDto()" in right and "one()" not in right, "the other class goes right"
-    assert "one()" in below and "toDto()" not in below, "the same class goes down"
-    assert drawn == {"a.Ctl#go", "a.Map#all", "a.Map#one", "a.Pet#toDto"}
-    assert "border-top:6px solid var(--cg-arrow)" in delta.CSS, "and its arrow points down"
+    assert len(re.findall(r'<span class="cg-c"[^>]*>Map</span>', out)) == 1, "Map, once"
+    assert out.count('class="cg-k ') == 3, "three classes, three boxes"
+    boxes = out.split('<div class="cg-k ')[1:]
+    inside = {re.search(r'data-k="(\w+)"', b)[1]: re.findall(r'class="cg-m">(\w+)\(\)', b)
+              for b in boxes}
+    assert inside["Map"] == ["all", "one", "type"], inside
+    cols = [re.findall(r'data-k="(\w+)"', c) for c in out.split('<div class="cg-col">')[1:]]
+    assert cols == [["Ctl"], ["Map"], ["Pet"]], "a column per class, left to right"
+    edges = re.search(r'data-edges="([^"]*)"', out)[1].split()
+    # Depth first: go, all, one, toDto, type.
+    assert {e.rstrip("*") for e in edges} == {"0>1", "1>2", "1>3", "3>4"}, edges
+    assert drawn == {"a.Ctl#go", "a.Map#all", "a.Map#one", "a.Pet#toDto", "a.Map#type"}
+    assert 'class="cg-svg"' in out and "createElementNS" in delta.TOGGLE_JS, "arrows are drawn"
+
+
+def test_a_callee_is_right_of_every_class_that_calls_it():
+    """The column is the longest run of class boundaries to a class, so a class reached
+    both directly and through another sits right of both its callers."""
+    nodes = [_gnode("a.Ctl#go", calls=["a.Svc#run", "a.Repo#find"]),
+             _gnode("a.Svc#run", cog=1, calls=["a.Repo#save"]),
+             _gnode("a.Repo#find", cog=1), _gnode("a.Repo#save", cog=1)]
+    out, _ = delta._graph(nodes)
+    cols = [re.findall(r'data-k="(\w+)"', c) for c in out.split('<div class="cg-col">')[1:]]
+    assert cols == [["Ctl"], ["Svc"], ["Repo"]], cols
+
+
+def test_opening_a_row_shows_what_the_branch_added_without_another_click():
+    """Victor, 20 Oct 2026: "if I open GET /api/owners it must already be expanded to show
+    me what is newly added because of this +1". The method the branch raised starts open on
+    its lines, and every edge on the way to it is marked; the rest stays shut."""
+    def hit(line, new):
+        return {"file": "a/src/main/java/a/V.java", "line": line, "code": f"if (x{line}) {{",
+                "inc": 1, "why": "if", "new": new}
+    nodes = [_gnode("a.Ctl#go", calls=["a.Pet#toDto", "a.Type#name"]),
+             _gnode("a.Pet#toDto", cog=1, calls=["a.Vis#toDto"]),
+             _gnode("a.Vis#toDto", cog=2, delta=1), _gnode("a.Type#name", cog=1)]
+    groups = [{"method": "a.Pet#toDto", "display": "Pet.toDto()", "cognitive": 1,
+               "hits": [hit(1, False)]},
+              {"method": "a.Vis#toDto", "display": "Vis.toDto()", "cognitive": 2,
+               "hits": [hit(2, False), hit(3, True)]},
+              {"method": "a.Type#name", "display": "Type.name()", "cognitive": 1,
+               "hits": [hit(4, False)]}]
+    out, _ = delta._graph(nodes, groups)
+    classes = re.findall(r'<div class="(cg-n[^"]*)"', out)
+    opened = [c for c in classes if "cg-open" in c]
+    assert opened == ["cg-n cg-add cg-has cg-open"], classes
+    assert re.search(r'<div class="cg-n cg-add cg-has cg-open"[^>]*aria-expanded="true"', out)
+    assert "if (x3) {" in out and "cx-why-new" in out
+    edges = re.search(r'data-edges="([^"]*)"', out)[1].split()
+    assert sorted(e for e in edges if e.endswith("*")) == ["0>1*", "1>2*"], edges
+    assert len(edges) == 3, "and the edge away from the change is drawn, unmarked"
+    assert re.search(r"\.cg-n\.cg-add\.cg-open \{", delta.CSS), "an open raised block stays green"
+    # A brand-new entry point marks nothing, so nothing opens on its own.
+    fresh, _ = delta._graph([dict(n, delta=0) for n in nodes], groups)
+    assert "cg-open" not in fresh
+
+
+def test_a_path_to_the_change_is_never_folded_into_plus_n():
+    """`+N` keeps the costliest callees and folds the rest; the one that leads to the
+    change is drawn even when it is the cheapest, or the open row would hide its answer."""
+    cheap = "a.Z#changed"
+    nodes = ([_gnode("a.Ctl#go", calls=[f"a.S{i}#f" for i in range(7)] + [cheap])]
+             + [_gnode(f"a.S{i}#f", cog=5) for i in range(7)] + [_gnode(cheap, cog=0, delta=1)])
+    out, drawn = delta._graph(nodes)
+    assert cheap in drawn and ">+2</span>" in out, "the change drawn, two others folded"
 
 
 def test_recursion_draws_each_method_once():

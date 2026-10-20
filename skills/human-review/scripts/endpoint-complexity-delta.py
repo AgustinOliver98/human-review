@@ -244,14 +244,15 @@ def graph_nodes(cur, old):
 # How much of the flow the graph draws before it starts folding. The biggest flow in
 # petclinic reaches forty methods, thirty of them getters and setters: drawn whole, the
 # graph is a wall of `getId` nobody reads. So a method that costs nothing and reaches
-# nothing that costs is not drawn at all, and a node with more expensive children than
-# this shows the costliest and folds the rest into "+N".
+# nothing that costs is not drawn at all, and a method with more expensive callees than
+# this shows the costliest and folds the rest into "+N" — never one that leads to what the
+# branch changed, which is the one path the reader opened the row for.
 GRAPH_KIDS = 6
-# A box's class name is written in its class's colour, so two boxes of one mapper read as a
-# pair and the next mapper over reads as another. Only the name: on the frames as well, six
-# hues around one graph were louder than the scores they frame. The hues are numbered here
-# and painted in CSS; none of them is green, red or the link blue, which already mean added,
-# removed and open — and the frames keep those three to themselves.
+# A class is one faded container, tinted in its class's colour, so the next mapper over
+# reads as another file at a glance. The tint is faint and the methods inside are solid
+# cards, so the hue frames a group and never competes with the scores. None of the hues is
+# green, red or the link blue, which already mean added, removed and open — and the method
+# frames keep those three to themselves.
 CLASS_HUES = 6
 
 
@@ -259,6 +260,23 @@ def _split(key: str) -> tuple[str, str]:
     """`pkg.Class#method` -> ("Class", "method")."""
     owner, _, name = key.partition("#")
     return owner.rsplit(".", 1)[-1], name
+
+
+@lru_cache(maxsize=None)
+def class_source(fqcn: str):
+    """Where a class is declared, as (absolute path, 1-based line) — or None.
+
+    The class header's ↗ opens the class, not the first of its methods the graph happens
+    to draw: the header names the class, so that is what it opens."""
+    path = _source_of(fqcn)
+    if path is None:
+        return None
+    name = fqcn.rsplit(".", 1)[-1]
+    decl = re.compile(r"\b(class|interface|record|enum)\s+" + re.escape(name) + r"\b")
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if decl.search(line) and not line.strip().startswith(("//", "*", "/*")):
+            return path, n
+    return path, 1
 
 
 SONAR_COGNITIVE = "https://www.sonarsource.com/resources/cognitive-complexity/"
@@ -269,30 +287,33 @@ EXTRACTOR_URL = ("https://github.com/victorrentea/human-review/blob/main/"
 
 
 def _graph(nodes, groups=()) -> tuple[str, set[str]]:
-    """The flow behind a row, drawn left to right as the tree the extractor walked it in,
-    and every method that is drawn carries the lines it was charged for.
+    """The flow behind a row: one faded box per class, its methods as solid blocks inside,
+    and an arrow from every caller to every callee it reached first.
+
+    A box used to be a method, with its class written on top — so a mapper whose three
+    methods were all in the flow appeared three times, and the reader counted classes
+    that were not there (Victor, 20 Oct 2026: "boxes mean classes, not methods — why does
+    PetMapper appear three times?"). Now the class is the container, named once with its
+    ↗, and the method is the thing that stands out: the box is a faint tint, the methods
+    are cards. A call inside the class is an arrow between two blocks of the same box; a
+    call into another class crosses to that class's box.
 
     Each method appears once, under whoever reached it first — the same breadth-first
     order the score is summed in, so the graph and the number can never disagree about
-    what is in the flow. That is also what keeps recursion finite: a method that calls
-    itself, or calls back into one already drawn, adds no edge, and the `+1` the extractor
-    charges for it is one of the lines inside the box.
+    what is in the flow. That is also what keeps recursion finite: a call back into a
+    method already drawn adds no edge, and the `+1` the extractor charges for it is one of
+    the lines inside the block.
 
-    Only a call into another class moves right. A call that stays in the class — a public
-    mapper handing its elements to its own private overload — hangs *below* its caller,
-    with an arrow pointing down: the reader is still in the same file, and the graph spends
-    its width only on what crosses a class boundary. The width is what makes a reader
-    scroll sideways; a mapper chain drawn one column per method was a screen and a half
-    of it.
+    The classes are laid out in columns, left to right, by how many class boundaries the
+    flow crosses to reach them (the longest such path, so a callee is right of every
+    caller); inside a box the methods keep the order the flow met them. The page's script
+    then slides each box down level with its first caller and draws the arrows over the
+    columns (`data-edges`, `caller>callee`, `*` on an edge that leads to what the branch
+    changed). Without the script the boxes still stand, they are only unjoined.
 
-    A node is the class above `method()` below, its cognitive score
-    beside them, and two handles: ↗ opens the method in the editor, a click anywhere else
-    on the box folds open the lines that make up its score. That used to be a second list
-    under the graph, the same methods again in another order — the reader had to match a
-    heading down there to a box up here. Now the detail is where the box is.
-
-    One score, not two. Cyclomatic sat under the cognitive number and the reader could not
-    tell which one the bar summed; only cognitive is summed, so only cognitive is shown.
+    A method the branch changed opens with its lines already folded out, so the `+1` on
+    the row is answered without a click (Victor, 20 Oct 2026: "I should see it directly,
+    without having to expand anything myself"); a click folds it shut like any other.
 
     Returns the HTML and the methods it drew, so the caller can still offer the lines of
     the ones folded into a `+N` chip."""
@@ -309,8 +330,7 @@ def _graph(nodes, groups=()) -> tuple[str, set[str]]:
                 seen.add(t)
                 kids.setdefault(n["method"], []).append(t)
     weight: dict[str, int] = {}
-    drawn: set[str] = set()
-    hues: dict[str, int] = {}  # class -> its colour, numbered as the classes are met
+    hot: dict[str, bool] = {}
 
     def w(k):
         if k not in weight:
@@ -319,35 +339,66 @@ def _graph(nodes, groups=()) -> tuple[str, set[str]]:
                          + sum(w(c) for c in kids.get(k, [])))
         return weight[k]
 
-    def tree(k) -> str:
-        drawn.add(k)
-        children = kids.get(k, [])
-        heavy = [c for c in children if w(c) > 0]
-        shown = sorted(heavy, key=lambda c: -w(c))[:GRAPH_KIDS]
-        shown = [c for c in heavy if c in shown]  # keep the call order among those shown
-        rest = [c for c in heavy if c not in shown]
-        home = k.partition("#")[0]
-        down = [tree(c) for c in shown if c.partition("#")[0] == home]
-        parts = [tree(c) for c in shown if c.partition("#")[0] != home]
-        if rest:
-            names = "\n".join(by[c]["display"] for c in rest)
-            parts.append(f'<div class="cg-t"><span class="cg-more"'
-                         f'{_tip("Also called, and folded to keep this readable:" + chr(10) + names)}>'
-                         f'+{len(rest)}</span></div>')
-        sub = f'<div class="cg-kids">{"".join(parts)}</div>' if parts else ""
-        fork = " cg-fork" if len(down) > 1 else ""
-        below = f'<div class="cg-down{fork}">{"".join(down)}</div>' if down else ""
-        node = _node(by[k], lines_of.get(k),
-                     hues.setdefault(k.partition("#")[0], len(hues)) % CLASS_HUES)
-        return (f'<div class="cg-t{" cg-v" if down else ""}"><div class="cg-row">'
-                f'<div class="cg-stem">{node}</div>{sub}</div>{below}</div>')
+    def leads(k):
+        """Whether this method, or anything drawn under it, is what the branch changed."""
+        if k not in hot:
+            hot[k] = False
+            hot[k] = bool(by[k]["delta"]) or any(leads(c) for c in kids.get(k, []))
+        return hot[k]
 
-    body = tree(root)
-    return (f'<div class="cg" role="group" aria-label="Call graph of this entry point">'
-            # No key line over the graph: repeated under every open row it was the same
-            # sentence N times, and what it explained the boxes show on hover. Its one
-            # link — what "cognitive complexity" means — moved to the tab's lede.
-            f'{body}</div>'), drawn
+    order: list[str] = []          # every drawn method, depth first: the order in a box
+    edges: list[tuple[str, str]] = []
+    folded: dict[str, list[str]] = {}
+
+    def walk(k):
+        order.append(k)
+        heavy = [c for c in kids.get(k, []) if w(c) > 0]
+        shown = set(sorted(heavy, key=lambda c: (not leads(c), -w(c)))[:GRAPH_KIDS])
+        if len(heavy) > len(shown):
+            folded[k] = [c for c in heavy if c not in shown]
+        for c in heavy:
+            if c in shown:
+                edges.append((k, c))
+                walk(c)
+
+    walk(root)
+    owner = lambda k: k.partition("#")[0]  # noqa: E731
+    classes = list(dict.fromkeys(owner(k) for k in order))
+    # The longest run of class boundaries from the entry point to each class, capped at
+    # the number of classes so a call back into an earlier class cannot loop forever.
+    col = {c: 0 for c in classes}
+    cross = [(owner(a), owner(b)) for a, b in edges if owner(a) != owner(b)]
+    for _ in classes:
+        moved = False
+        for a, b in cross:
+            if b != classes[0] and col[a] + 1 > col[b] and col[a] + 1 < len(classes):
+                col[b], moved = col[a] + 1, True
+        if not moved:
+            break
+    ranks = sorted(set(col.values()))
+    columns: list[list[str]] = [[c for c in classes if col[c] == r] for r in ranks]
+    idx = {k: i for i, k in enumerate(order)}
+    hues = {c: i % CLASS_HUES for i, c in enumerate(classes)}
+
+    def box(c) -> str:
+        name = c.rsplit(".", 1)[-1]
+        found = class_source(c)
+        go = (f' <a class="cg-go" href="vscode://file/{found[0]}:{found[1]}:1"'
+              f'{_tip("Open " + name + " in VS Code")} aria-label="Open in VS Code">↗</a>'
+              if found else "")
+        blocks = "".join(_node(by[k], lines_of.get(k), idx[k], folded.get(k), by)
+                         for k in order if owner(k) == c)
+        return (f'<div class="cg-k cg-h{hues[c]}" data-k="{html.escape(name)}">'
+                f'<div class="cg-kh"><span class="cg-c"{_tip(c)}>{html.escape(name)}</span>'
+                f'{go}</div><div class="cg-ms">{blocks}</div></div>')
+
+    cols = "".join(f'<div class="cg-col">{"".join(box(c) for c in column)}</div>'
+                   for column in columns)
+    data = " ".join(f'{idx[a]}>{idx[b]}{"*" if leads(b) else ""}' for a, b in edges)
+    return (f'<div class="cg" role="group" aria-label="Call graph of this entry point"'
+            f' data-edges="{data}"><div class="cg-cols">'
+            # The arrows: drawn by the page's script once the boxes have a size.
+            f'<svg class="cg-svg" aria-hidden="true"></svg>{cols}</div></div>'), set(order)
 
 
 def _lines(hits) -> str:
@@ -367,35 +418,40 @@ def _lines(hits) -> str:
     return "".join(out)
 
 
-def _node(n, group=None, hue=None) -> str:
-    """A method as a box. The box itself is a toggle, not a link: a click selects it and,
-    when the method was charged for anything, folds its lines open inside it. Navigation
-    is the ↗ alone — a box that sometimes opened the editor and sometimes did nothing was
-    a box nobody dared click. The ↗ sits inside the class badge, right after the name: it
-    opens that class, and the name is where the eye already is when it wants to."""
+def _node(n, group=None, i=None, folded=None, by=None) -> str:
+    """A method as a block inside its class's box. The block itself is a toggle, not a
+    link: a click folds its lines open inside it. Navigation is the ↗ alone — a block
+    that sometimes opened the editor and sometimes did nothing was a block nobody dared
+    click. A method the branch raised starts open, on the lines that raised it."""
     cls, name = _split(n["method"])
     cog, d = n["cognitive"], n["delta"]
     mark = " cg-add" if d > 0 else " cg-cut" if d < 0 else ""
     zero = " cg-zero" if not cog and not d else ""
     hits = (group or {}).get("hits") or []
+    opened = d > 0 and bool(hits)
     tip = (f'complexity {cog}' + (f" (+{d})" if d > 0 else f" (−{-d})" if d < 0 else "")
            + (". Click for its lines" if hits else ""))
     found = entry_source(n["method"])
     go = (f'<a class="cg-go" href="vscode://file/{found[0]}:{found[1]}:1"'
           f'{_tip("Open " + n["display"] + " in VS Code")} aria-label="Open in VS Code">↗</a>'
           if found else "")
-    go = f" {go}" if go else ""
+    more = ""
+    if folded:
+        names = "\n".join((by or {}).get(c, {}).get("display", c) for c in folded)
+        more = (f'<span class="cg-more"'
+                f'{_tip("Also called, and folded to keep this readable:" + chr(10) + names)}>'
+                f'+{len(folded)}</span>')
     tog = '<span class="cg-tog" aria-hidden="true"></span>' if hits else ""
     delta = (f'<b class="cg-d">+{d}</b>' if d > 0 else
              f'<b class="cg-d">−{-d}</b>' if d < 0 else "")
     lines = f'<div class="cg-lines">{_lines(hits)}</div>' if hits else ""
     has = " cg-has" if hits else ""
-    tint = f" cg-h{hue}" if hue is not None else ""
-    return (f'<div class="cg-n{tint}{mark}{zero}{has}" tabindex="0" role="button"'
-            f' aria-expanded="false"{_tip(tip)}>'
-            f'<span class="cg-c">{html.escape(cls)}{go}</span>'
-            f'<span class="cg-cog">{cog}</span>'
+    at = f' data-i="{i}"' if i is not None else ""
+    return (f'<div class="cg-n{mark}{zero}{has}{" cg-open" if opened else ""}"{at}'
+            f' tabindex="0" role="button" aria-expanded="{"true" if opened else "false"}"'
+            f'{_tip(tip)}><span class="cg-mh">'
             f'<span class="cg-m">{tog}{html.escape(name if "(" in name else name + "()")}</span>'
+            f'{go}{more}</span><span class="cg-cog">{cog}</span>'
             f'{delta}{lines}</div>')
 
 
@@ -740,7 +796,94 @@ TOGGLE_JS = """<script data-hr-swap="keep">
     var on = !n.classList.contains('cg-open');
     n.classList.toggle('cg-open', on);
     n.setAttribute('aria-expanded', on ? 'true' : 'false');
+    var g = n.closest('.cg[data-edges]');
+    if (g) sched(g);
   }
+  /* The call graph's arrows. The boxes are laid out by CSS, one column per class depth;
+     here each box slides down level with its first caller, then every edge in
+     `data-edges` is drawn into the graph's <svg> from the caller's right edge to the
+     callee's left — or, inside one class, round the box's left margin from one block to
+     the next. Redrawn whenever a block changes size: a fold opening, the tab or the row
+     being shown (a hidden graph measures zero and is skipped). */
+  var NS = 'http://www.w3.org/2000/svg';
+  function draw(g) {
+    var cols = g.querySelector('.cg-cols'), svg = cols && cols.querySelector('.cg-svg');
+    if (!svg || !cols.offsetWidth) return;
+    var ks = cols.querySelectorAll('.cg-k'), at = {};
+    Array.prototype.forEach.call(ks, function (k) { k.style.marginTop = ''; });
+    Array.prototype.forEach.call(cols.querySelectorAll('.cg-n[data-i]'), function (n) {
+      at[n.getAttribute('data-i')] = n;
+    });
+    var edges = (g.getAttribute('data-edges') || '').split(' ').filter(Boolean).map(function (s) {
+      var h = s.slice(-1) === '*', p = (h ? s.slice(0, -1) : s).split('>');
+      return { a: at[p[0]], b: at[p[1]], hot: h };
+    }).filter(function (e) { return e.a && e.b; });
+    function box(n) {
+      var base = cols.getBoundingClientRect(), r = n.getBoundingClientRect();
+      var m = (n.querySelector('.cg-mh') || n).getBoundingClientRect();
+      return { l: r.left - base.left, r: r.right - base.left, y: m.top + m.height / 2 - base.top };
+    }
+    function colOf(n) { return Array.prototype.indexOf.call(cols.children, n.closest('.cg-col')); }
+    Array.prototype.forEach.call(cols.querySelectorAll('.cg-col'), function (c) {
+      var here = colOf(c.firstElementChild || c);
+      Array.prototype.forEach.call(c.querySelectorAll('.cg-k'), function (k) {
+        for (var i = 0; i < edges.length; i++) {
+          var e = edges[i];
+          if (!k.contains(e.b) || colOf(e.a) >= here) continue;
+          var dy = box(e.a).y - box(e.b).y;
+          if (dy > 0.5) k.style.marginTop = dy + 'px';
+          return;
+        }
+      });
+    });
+    svg.setAttribute('width', cols.scrollWidth);
+    svg.setAttribute('height', cols.scrollHeight);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    edges.forEach(function (e) {
+      var a = box(e.a), b = box(e.b), d, x = b.l, y = b.y;
+      if (e.a.closest('.cg-k') === e.b.closest('.cg-k')) {
+        var bend = Math.min(15, 8 + (b.y - a.y) / 14);
+        d = 'M' + a.l + ' ' + a.y + 'C' + (a.l - bend) + ' ' + a.y + ' ' + (b.l - bend) + ' ' + b.y + ' ' + x + ' ' + y;
+      } else {
+        var dx = Math.max(16, Math.abs(b.l - a.r) / 2);
+        d = 'M' + a.r + ' ' + a.y + 'C' + (a.r + dx) + ' ' + a.y + ' ' + (b.l - dx) + ' ' + b.y + ' ' + x + ' ' + y;
+      }
+      var p = document.createElementNS(NS, 'path'), t = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      t.setAttribute('d', 'M' + x + ' ' + y + 'L' + (x - 6) + ' ' + (y - 3.5) + 'L' + (x - 6) + ' ' + (y + 3.5) + 'Z');
+      p.setAttribute('class', 'cg-e' + (e.hot ? ' cg-hot' : ''));
+      t.setAttribute('class', 'cg-ah' + (e.hot ? ' cg-hot' : ''));
+      svg.appendChild(p); svg.appendChild(t);
+    });
+  }
+  function sched(g) {
+    if (g._cgq) return;
+    g._cgq = (window.requestAnimationFrame || setTimeout)(function () { g._cgq = 0; draw(g); });
+  }
+  function arm(g) {
+    if (g._cgArmed) return;
+    g._cgArmed = true;
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(function () { sched(g); });
+      ro.observe(g);
+      Array.prototype.forEach.call(g.querySelectorAll('.cg-n'), function (n) { ro.observe(n); });
+    }
+    sched(g);
+  }
+  function armIn(el) {
+    Array.prototype.forEach.call(el.querySelectorAll('.cg[data-edges]'), arm);
+  }
+  armIn(document);
+  /* A row swapped in by a rebuild was not here when the script ran: arm it when it opens,
+     or when the pointer first reaches its graph. */
+  document.addEventListener('toggle', function (e) {
+    var r = e.target;
+    if (r && r.matches && r.matches('details.cx-row') && r.open) armIn(r);
+  }, true);
+  document.addEventListener('mouseover', function (e) {
+    var g = e.target.closest && e.target.closest('.cg[data-edges]');
+    if (g) arm(g);
+  });
   document.addEventListener('click', function (e) {
     var n = e.target.closest && e.target.closest('.cg-n');
     if (!n || e.target.closest('a') || e.target.closest('.cg-lines')) return;
@@ -902,104 +1045,63 @@ a.cx-why-line:hover code { text-decoration:underline; }
 .cx-why-inc { flex:0 0 2.9rem; text-align:right; font-variant-numeric:tabular-nums;
               font:700 10.5px/1.55 ui-monospace,Menlo,monospace; color:var(--muted); }
 /* ── the call graph ─────────────────────────────────────────────────────────────────
-    The flow drawn left to right: a node per method, its callees in a column to its right,
-    joined by elbow lines drawn from borders alone (no SVG, no layout engine), each ending
-    in an arrowhead on the callee. A node is two badges — the class, and `method()` under
-    it — with its cognitive score beside them. The graph scrolls sideways inside its own
-    box rather than squeeze a deep chain or push the page wider than the window. The top
-    padding leaves room for the `+N` badge that rides above a node's corner. */
-.cg { overflow-x:auto; padding:.55rem 0 .45rem; margin:0 0 .35rem -3.3rem; }
-/* Top-aligned, not centred: a centred parent floats to the middle of however tall its
-    subtree is, and one wide branch then opens a screen of empty space above and below
-    every sibling. Aligned to the top, a node sits level with its first callee and the
-    elbows are drawn at a fixed height — half a node — from the top of each row. */
-.cg-t { display:flex; flex-direction:column; align-items:flex-start;
-        position:relative; }
-/* A node and the callees in other classes, to its right. The stem is the node's column,
-    stretched to the row's height so the rail down to its same-class callees can start
-    under the node however tall the branch beside it grows. */
-.cg-row { display:flex; align-items:flex-start; }
-.cg-stem { align-self:stretch; position:relative; display:flex; align-items:flex-start; }
-.cg-kids { display:flex; flex-direction:column; gap:3px; margin-left:12px; position:relative; }
-.cg-kids::before { content:""; position:absolute; left:-12px; top:var(--cg-mid); width:12px;
-                   border-top:1px solid var(--cg-line); }
-.cg-kids > .cg-t { padding-left:13px; }
-.cg-kids > .cg-t::before { content:""; position:absolute; left:0; top:-3px; bottom:0;
-                           border-left:1px solid var(--cg-line); }
-.cg-kids > .cg-t:first-child::before { top:var(--cg-mid); }
-.cg-kids > .cg-t:last-child::before { bottom:auto; height:calc(var(--cg-mid) + 3px); }
-.cg-kids > .cg-t:only-child::before { display:none; }
-.cg-kids > .cg-t::after { content:""; position:absolute; left:0; top:var(--cg-mid); width:8px;
-                          border-top:1px solid var(--cg-line); }
-/* The arrowhead: a border triangle hung off the callee's left edge, tip on its frame, so
-    every edge reads caller → callee without an SVG. */
-.cg-kids > .cg-t > .cg-row > .cg-stem > .cg-n::before, .cg-kids > .cg-t > .cg-more::before {
-    content:""; position:absolute; left:-7px; top:calc(var(--cg-mid) - 4.5px);
-    border:4px solid transparent; border-left:6px solid var(--cg-arrow); border-right:0; }
-.cg-kids > .cg-t > .cg-more::before { top:calc(50% - 4px); }
-.cg-more { position:relative; }
-/* Calls that stay in the class hang below the caller, flush with its left edge: the rail
-    down from under the caller runs straight into an arrowhead on the callee's top — down
-    means "same file", right means "another class". A second callee cannot take that line,
-    it would run through the first and read as a chain, so under a fork the rail also
-    turns left, runs down outside the boxes and comes back in with a ┐ over each later
-    callee. */
-.cg-down { display:flex; flex-direction:column; align-items:flex-start; gap:10px;
-           padding-top:10px; position:relative; }
-/* The rail starts at the caller's bottom edge, not its middle: a dimmed caller is
-    translucent, and a line from its middle showed through it. */
-.cg-v > .cg-row > .cg-stem::after { content:""; position:absolute; left:8px; top:var(--cg-h);
-                                    bottom:0; border-left:1px solid var(--cg-line); }
-.cg-down::after { content:""; position:absolute; left:8px; top:0; height:3px;
-                  border-left:1px solid var(--cg-line); }
-.cg-fork::before { content:""; position:absolute; left:-6px; top:0; width:14px;
-                   border-top:1px solid var(--cg-line); }
-.cg-fork > .cg-t::before { content:""; position:absolute; left:-6px; top:-10px; bottom:0;
-                           border-left:1px solid var(--cg-line); }
-.cg-fork > .cg-t:last-child::before { bottom:auto; height:3px; }
-.cg-fork > .cg-t + .cg-t::after { content:""; position:absolute; left:-6px; top:-8px; width:14px;
-                                  height:2px; border:solid var(--cg-line); border-width:1px 1px 0 0; }
-.cg-down > .cg-t > .cg-row > .cg-stem > .cg-n::before {
-    content:""; position:absolute; left:3px; top:-7px;
-    border:4px solid transparent; border-top:6px solid var(--cg-arrow); border-bottom:0; }
-/* The edges are drawn to measurements, not to the boxes, so the box's rows have fixed
-    heights: a 1px frame, an 18px class row whose last pixel is the divider, a 20px method row. Every
-    arrow from the left lands on the divider (--cg-mid, its top pixel), and a rail down
-    starts at the bottom edge (--cg-h). */
-.cg { --cg-line:color-mix(in srgb, var(--muted) 55%, transparent); --cg-arrow:var(--muted);
-      --cg-mid:18px; --cg-h:40px; }
-/* A node is one frame cut in two by a rule across its whole width: the class on top,
-    its ↗ right after the name, and the method below with its score hard right — the
-    score is the method's, so it sits on its row. No badge inside the badge: the class
-    used to be a pill of its own and the method a black lozenge, three frames per box.
-    The names are set in the UI face, not monospace: the graph is as wide as its deepest
-    chain times its widest names, and a proportional face buys back a fifth of that. */
-.cg-n { display:inline-grid; grid-template-columns:auto auto; column-gap:6px;
-        align-items:center; padding:0; border:1px solid var(--line); border-radius:6px;
-        background:var(--card); color:inherit; white-space:nowrap; cursor:pointer;
-        position:relative; z-index:1; transition:border-color .12s, background .12s; }
+    The flow drawn left to right: one faded box per class, a column per class depth, its
+    methods stacked inside as solid blocks. The page's script draws the arrows into the
+    <svg> over the columns and slides each box down level with its first caller. The graph
+    scrolls sideways inside its own box rather than push the page wider than the window.
+    The top padding leaves room for the `+N` badge that rides above a block's corner. */
+.cg { overflow-x:auto; padding:.45rem 0 .45rem; margin:0 0 .35rem -3.3rem;
+      --cg-line:color-mix(in srgb, var(--muted) 60%, transparent); --cg-arrow:var(--muted);
+      --cg-hot:color-mix(in srgb, var(--fg) 78%, transparent); }
+.cg-cols { position:relative; display:inline-flex; align-items:flex-start; gap:30px;
+           padding:8px 10px 4px 2px; }
+/* Over the boxes' tint, under the blocks: an arrow inside a class runs round the box's
+    left margin, and ends on a block's frame, never across its text. */
+.cg-svg { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; z-index:1; }
+.cg-svg .cg-e { fill:none; stroke:var(--cg-line); stroke-width:1.2; }
+.cg-svg .cg-ah { fill:var(--cg-arrow); }
+/* The edges that lead to what the branch changed are the path the reader came for. */
+.cg-svg .cg-e.cg-hot { stroke:var(--cg-hot); stroke-width:1.6; }
+.cg-svg .cg-ah.cg-hot { fill:var(--cg-hot); }
+.cg-col { display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+/* A class: a faint tint of its hue and a hairline of it, named once on top. The left
+    padding is the lane the same-class arrows run in. */
+.cg-k { position:relative; padding:0 8px 8px 18px; border-radius:9px;
+        background:color-mix(in srgb, var(--cg-hue, var(--muted)) 7%, transparent);
+        border:1px solid color-mix(in srgb, var(--cg-hue, var(--muted)) 30%, transparent); }
 .cg-h0 { --cg-hue:#b45309; } .cg-h1 { --cg-hue:#be185d; } .cg-h2 { --cg-hue:#6d28d9; }
 .cg-h3 { --cg-hue:#0e7490; } .cg-h4 { --cg-hue:#c2410c; } .cg-h5 { --cg-hue:#a21caf; }
+.cg-kh { display:flex; align-items:center; gap:3px; height:22px; margin-left:-10px; }
+.cg-c { font:500 10.5px/14px system-ui,sans-serif; color:var(--cg-hue, var(--muted)); }
+.cg-ms { display:flex; flex-direction:column; align-items:stretch; gap:9px; }
+/* A method: a solid card on the faded box, its name bold, its score hard right. The
+    names are set in the UI face, not monospace: the graph is as wide as its deepest chain
+    times its widest names, and a proportional face buys back a fifth of that. */
+.cg-n { display:grid; grid-template-columns:1fr auto; column-gap:8px; align-items:center;
+        padding:0; border:1px solid color-mix(in srgb, var(--fg) 24%, var(--line));
+        border-radius:6px; background:var(--card); color:inherit; white-space:nowrap;
+        cursor:pointer; position:relative; z-index:2;
+        box-shadow:0 1px 2px color-mix(in srgb, #000 14%, transparent);
+        transition:border-color .12s, background .12s; }
 .cg-n:hover { border-color:var(--link); }
 .cg-n:focus-visible { outline:2px solid var(--link); outline-offset:1px; }
-/* Clicked: the box takes the link blue — frame, ring and a tint — so the one being read
-    stands out of the graph around it. */
-.cg-n.cg-open { border-color:var(--link); box-shadow:0 0 0 1px var(--link) inset;
-                background:color-mix(in srgb, var(--link) 12%, var(--card)); opacity:1; }
-.cg-c { grid-column:1 / 3; display:flex; align-items:center; gap:3px; height:18px;
-        box-sizing:border-box; padding:0 6px;
-        border-bottom:1px solid var(--line);
-        font:500 10.5px/14px system-ui,sans-serif; color:var(--cg-hue, var(--muted)); }
-.cg-m { grid-column:1; display:flex; align-items:center; height:20px; padding-left:6px;
-        font:600 10.5px/14px system-ui,sans-serif; }
-.cg-cog { grid-column:2; grid-row:2; padding-right:6px; font:700 9.5px/1.3 ui-monospace,Menlo,monospace;
-          text-align:right; font-variant-numeric:tabular-nums; }
+.cg-mh { display:flex; align-items:center; gap:4px; height:24px; padding-left:7px; }
+.cg-m { display:flex; align-items:center; font:600 11.5px/14px system-ui,sans-serif; }
+.cg-cog { grid-column:2; grid-row:1; padding-right:7px; font:700 10px/1.3 ui-monospace,Menlo,monospace;
+          text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
 /* ↗ is the only way into the editor from the graph, so it is a real target, not a glyph:
-    a small square that fills blue under the pointer. */
+    a small square that fills blue under the pointer. On a block it stays quiet until the
+    block is under the pointer — the method's name is what the block is for. */
 a.cg-go { display:inline-block; min-width:14px; text-align:center; border-radius:3px;
           font:700 11px/14px system-ui,sans-serif; color:var(--link); text-decoration:none; }
 a.cg-go:hover { background:var(--link); color:var(--card); }
-.cg-c a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-kh a.cg-go, .cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-mh a.cg-go { opacity:.45; }
+.cg-n:hover .cg-mh a.cg-go, .cg-n:focus-within .cg-mh a.cg-go { opacity:1; }
+/* Clicked open: a tint of the link blue, and its frame unless the branch's green holds it. */
+.cg-n.cg-open { background:color-mix(in srgb, var(--link) 8%, var(--card)); opacity:1; }
+.cg-n.cg-open:not(.cg-add):not(.cg-cut) { border-color:var(--link);
+    box-shadow:0 0 0 1px var(--link) inset; }
 /* The fold's caret sits in front of the method name, the word a reader clicks on — the
     full-size ▶, not ▸: at the name's own size ▸ was a speck, and a speck does not say
     "this opens". */
@@ -1008,21 +1110,22 @@ a.cg-go:hover { background:var(--link); color:var(--card); }
                   transition:transform .12s; }
 .cg-n:hover .cg-tog::before { color:var(--link); }
 .cg-open .cg-tog::before { transform:rotate(90deg); color:var(--link); }
-.cg-lines { display:none; grid-column:1 / 3; margin:0 0 1px; padding:3px 6px 0;
+.cg-lines { display:none; grid-column:1 / 3; margin:0 0 1px; padding:3px 7px 0;
             border-top:1px dashed var(--line); cursor:auto; }
 .cg-open > .cg-lines { display:block; }
 .cg-lines a.cx-why-line code { font-size:11px; }
 .cg-d { font:700 9.5px/1 ui-monospace,Menlo,monospace; position:absolute; top:-6px; right:-6px;
         padding:1px 3px; border-radius:6px; background:var(--card); }
-.cg-zero { opacity:.55; }
-.cg-more { font:700 10px/18px ui-monospace,Menlo,monospace; color:var(--muted); padding:0 6px;
-           margin-top:calc(var(--cg-mid) - 9.5px); border:1px dashed var(--line);
-           border-radius:6px; cursor:help; }
+.cg-zero { opacity:.7; }
+.cg-zero .cg-m { font-weight:500; }
+.cg-more { font:700 10px/16px ui-monospace,Menlo,monospace; color:var(--muted); padding:0 5px;
+           border:1px dashed var(--line); border-radius:6px; cursor:help; }
 /* A method whose score this branch raised wears the added colour on its frame and its
-    number; one it lowered, the removed colour. */
-.cg-add { border-color:var(--cx-added); box-shadow:0 0 0 1px var(--cx-added) inset; }
+    number — open or shut; one it lowered, the removed colour. */
+.cg-n.cg-add { border-color:var(--cx-added); box-shadow:0 0 0 1px var(--cx-added) inset; }
+.cg-n.cg-add.cg-open { background:color-mix(in srgb, var(--cx-added) 7%, var(--card)); }
 .cg-add .cg-d, .cg-add .cg-cog { color:var(--cx-added); }
-.cg-cut { border-color:var(--cx-removed); }
+.cg-n.cg-cut { border-color:var(--cx-removed); }
 .cg-cut .cg-d { color:var(--cx-removed); }
 /* Lines of methods folded into `+N`: one closed fold under the graph, never lost. */
 .cx-why-rest > summary { cursor:pointer; font-size:.78rem; color:var(--muted); margin:.1rem 0 .3rem; }
