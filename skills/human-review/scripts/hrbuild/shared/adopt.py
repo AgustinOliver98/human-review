@@ -393,6 +393,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "move": 'p.tabsub',
         "li": [
             'Every log line this PR adds or changes.',
+            'The file name in each box opens that line in VS Code.',
             'Check: right level?',
             'No personal data?',
             'Enough context to debug?',

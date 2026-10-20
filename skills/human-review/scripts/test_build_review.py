@@ -648,7 +648,7 @@ def test_each_statement_renders_as_the_page_s_one_snippet_style():
     """No invented second code-block style — the same `.snippet` figure every other quoted
     line on the page uses, headed by the source bar every quoted block wears."""
     out = build._logging_listing([INFO_HIT], REPO_ROOT)
-    assert out.count('<figure class="snippet">') == 1
+    assert out.count('<figure class="snippet lg-snip">') == 1
     assert out.count('<div class="srcbar">') == 1
     assert '>Slf4jExplicit.java</a>' in out
     assert "Booking visit for owner" in out
@@ -665,7 +665,7 @@ def test_a_rewritten_statement_is_not_shown_as_new_logging():
     out = build._logging_listing([rewritten, fresh], REPO_ROOT)
     # The new one is listed first, and carries no caption: its `+` gutter says it.
     assert "New log statement" not in out
-    cards = out.split('<figure class="snippet">')[1:]
+    cards = out.split('<figure class="snippet lg-snip">')[1:]
     assert "lg-change" not in cards[0] and "Rewritten, not new" in cards[1]
     assert "it logs the same text as before" in out
     assert "Was <code>LOG.info(&quot;Booking {}&quot;, owner)</code>" in out
@@ -759,8 +759,10 @@ def test_two_statements_yield_two_boxes_and_nothing_else():
              "format": '"payload={}"', "args": ["owner"], "arg_types": ["String"],
              "origins": []}
     out = build._logging_listing([INFO_HIT, other], REPO_ROOT)
-    assert out.count('<figure class="snippet">') == 2
+    assert out.count('<figure class="snippet lg-snip">') == 2
     assert out.rstrip().endswith("</figure>")
+    # The file name is inlaid in the code box, not on a bar above it (Victor, 20 Oct 2026).
+    assert out.count('<div class="lg-box"><div class="srcbar">') == 2
 
 # --------------------------------------------------------------------------- #
 # logging_fragment end to end — the one part of this module not exercised through pure
@@ -829,7 +831,7 @@ def test_logging_fragment_keeps_its_weight_with_no_header_or_card(tmp_path, monk
     assert 'class="diagram"' not in frag             # the card wrapper is gone
     assert "On the lines this change set touches" not in frag  # the header heading is gone
     assert "logging statement" not in frag           # the count pill is gone
-    assert '<figure class="snippet">' in frag
+    assert '<figure class="snippet lg-snip">' in frag
     assert "Foo.java:7" in frag      # the location, in the bar every quoted block wears
     assert "bad id" in frag          # the statement's own text, verbatim in the snippet
     assert 'data-type="int"' in frag  # the logged value's declared type, as a hint
@@ -924,7 +926,7 @@ def test_a_logging_box_does_not_badge_what_its_own_gutter_already_marks(tmp_path
     frag, _, _ = build.logging_fragment({"paths": ["."], "base": "base"}, repo)
     assert "filemark" not in frag
     assert "new code" not in frag
-    assert '<figure class="snippet">' in frag  # and the snippet itself is untouched
+    assert '<figure class="snippet lg-snip">' in frag  # and the snippet itself is untouched
 
 
 def test_logging_fragment_keeps_its_weight_on_a_genuine_zero_too(tmp_path, monkeypatch):

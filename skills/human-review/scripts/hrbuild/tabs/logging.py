@@ -302,6 +302,27 @@ def _mark_rewritten(snippet: str, h: dict) -> str:
     return _ADDED_ROW.sub(swap, snippet)
 
 
+def _inlay_file(snippet: str) -> str:
+    """The statement's box *is* the card: the file name moves from a bar above it into
+    the code box's top-right corner, and the figure loses its own frame.
+
+    Victor, 20 Oct 2026: "it makes no sense to have the line numbers and the plus … just
+    show me the code … the file name should be inside the black box". The gutter is hidden
+    by CSS (`.lg-snip`), not removed: `_hint_arguments` and the page's cross-referencer
+    both read rows by their `.dm`/`.ln` shape. The `<pre>` is left byte for byte as it was
+    for the same reason — the bar sits beside it in a wrapper, floated, so a short line
+    shares its row with the name and a long one drops below it instead of running under."""
+    opening = '<figure class="snippet">'
+    srcbar = re.compile(r'<div class="srcbar">.*?</div>\n?', re.S)
+    bar = srcbar.search(snippet)
+    pre = re.search(r'<pre class="code.*?</pre>', snippet, re.S)
+    if not bar or not pre or not snippet.startswith(opening):
+        return snippet
+    box = f'<div class="lg-box">{bar.group(0).rstrip()}{pre.group(0)}</div>'
+    out = srcbar.sub("", snippet[:pre.start()] + box + snippet[pre.end():], count=1)
+    return '<figure class="snippet lg-snip">' + out[len(opening):]
+
+
 def _logging_listing(added: list, root: Path) -> str:
     """The leading answer: one code snippet per logging statement this change set
     actually added or modified — the same `.snippet` figure every other quoted line on
@@ -335,7 +356,7 @@ def _logging_listing(added: list, root: Path) -> str:
         snippet = snippet_html(_logging_ref(h), _change_line(h) or None, root, exact=True,
                                link_at=(h["line"], h.get("column", 1)))
         snippet = BADGE_RE.sub("", snippet, count=1)
-        boxes.append(_hint_arguments(_mark_rewritten(snippet, h), h))
+        boxes.append(_inlay_file(_hint_arguments(_mark_rewritten(snippet, h), h)))
     return "".join(boxes)
 
 def logging_fragment(block, root: Path, base: str | None = None):

@@ -28,9 +28,29 @@
    card's own caption, inside its frame, so it can only be read as describing that card. */
 .lg-change { font-size:.86rem; color:var(--muted); }
 .lg-change code { font-size:.92em; }
-/* On the file's row, left of it, not on a line of its own above it (Victor, 4 Oct 2026):
-   the bar is a flex row aligned right, so a caption floated left shares its line. */
-.snippet > .snippet-note:has(> .lg-change) { float:left; margin:0 1rem 0 0; line-height:24px; }
+/* The statement's box is the card (Victor, 20 Oct 2026: "just show me the code … the file
+   name inside the black box"). No frame around the code box, no `+`/line-number gutter —
+   every line here is added or rewritten, and the link already lands on the line — and the
+   file name inlaid in the box's top-right corner, small and muted until hovered. It
+   floats, so a short statement shares its first line with the name and a long one wraps
+   around it instead of running under it. */
+figure.snippet.lg-snip { background:none; border:0; border-radius:0; padding:0;
+                         margin:.45rem 0; overflow:visible; }
+.lg-snip > .snippet-note { margin:.8rem 0 .25rem; }
+.lg-box { background:var(--code-bg); border-radius:6px; padding:.5rem .8rem; overflow:hidden; }
+.lg-box > .srcbar { float:right; margin:0 0 0 1.5em; height:19px; }
+.lg-box > .srcbar .srcref { font-size:11px; font-weight:500; line-height:19px;
+                            color:var(--muted); border-bottom-color:transparent; }
+.lg-box > .srcbar .srcref:hover { color:var(--link); border-bottom-color:currentColor;
+                                  background:none; }
+.lg-box > pre.code { background:none; border-radius:0; padding:0; overflow:visible; }
+.lg-snip pre.code .ln-row > .dm, .lg-snip pre.code .ln-row > .ln { display:none; }
+/* Rows are inline here, not the shared inline-blocks: an inline-block the width of the
+   box sat on the name's line and ran under it, where inline text wraps around the float.
+   The newline between two rows still ends a line. The statement's own wrapped tail hangs
+   by 2em (a multi-line call's later lines shift with it, already indented anyway). */
+.lg-snip pre.code .ln-row { display:inline; padding:0; text-indent:0; }
+.lg-box > pre.code { padding-left:2em; text-indent:-2em; }
 /* A rewritten statement's lines: a neutral `~` and a grey rule, not the green `+` that
    says "new line" — the caption above it says it is not new. */
 pre.code .ln-row.added.rewritten .dm { border-left-color:var(--muted); color:var(--muted); }
