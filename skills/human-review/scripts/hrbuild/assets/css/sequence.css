@@ -114,8 +114,10 @@ details.testpair > summary:hover > .testcat { color:var(--tc); }
 .seqwhy > span { display:inline-flex; align-items:center; justify-content:center;
   min-width:1.35rem; height:1.35rem; padding:0 .2rem; border:1.5px solid var(--sw);
   border-radius:999px; font-size:.78rem; font-weight:700; line-height:1; }
-.seqwhy .sw-at { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted);
-  border-color:var(--muted); opacity:.75; }
+/* The tracing tag is a choice somebody made in the source, the one signal here a human put
+   there: bright yellow, filled, so it reads the same on either theme (Victor, 20 Oct 2026). */
+.seqwhy .sw-at { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#1a1400;
+  background:#ffd60a; border-color:#ffd60a; }
 .seqwhy .sw-add { color:var(--sw); }
 @media (prefers-color-scheme: dark) {
   .seqwhy { --sw:#8fd18f; }
