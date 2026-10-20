@@ -262,23 +262,6 @@ def _split(key: str) -> tuple[str, str]:
     return owner.rsplit(".", 1)[-1], name
 
 
-@lru_cache(maxsize=None)
-def class_source(fqcn: str):
-    """Where a class is declared, as (absolute path, 1-based line) — or None.
-
-    The class header's ↗ opens the class, not the first of its methods the graph happens
-    to draw: the header names the class, so that is what it opens."""
-    path = _source_of(fqcn)
-    if path is None:
-        return None
-    name = fqcn.rsplit(".", 1)[-1]
-    decl = re.compile(r"\b(class|interface|record|enum)\s+" + re.escape(name) + r"\b")
-    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if decl.search(line) and not line.strip().startswith(("//", "*", "/*")):
-            return path, n
-    return path, 1
-
-
 SONAR_COGNITIVE = "https://www.sonarsource.com/resources/cognitive-complexity/"
 # The extractor both snapshots come from, on GitHub: the repository is public, and a
 # reader forwarded the page has no checkout of this skill to open it in.
@@ -293,8 +276,9 @@ def _graph(nodes, groups=()) -> tuple[str, set[str]]:
     A box used to be a method, with its class written on top — so a mapper whose three
     methods were all in the flow appeared three times, and the reader counted classes
     that were not there (Victor, 20 Oct 2026: "boxes mean classes, not methods — why does
-    PetMapper appear three times?"). Now the class is the container, named once with its
-    ↗, and the method is the thing that stands out: the box is a faint tint, the methods
+    PetMapper appear three times?"). Now the class is the container, named once — with no ↗:
+    the class as a whole is not where a reviewer goes (Victor, 20 Oct 2026: "it's not
+    interesting to navigate to the actual PetMapper class"), its methods are — and the method is the thing that stands out: the box is a faint tint, the methods
     are cards. A call inside the class is an arrow between two blocks of the same box; a
     call into another class crosses to that class's box.
 
@@ -382,15 +366,11 @@ def _graph(nodes, groups=()) -> tuple[str, set[str]]:
 
     def box(c) -> str:
         name = c.rsplit(".", 1)[-1]
-        found = class_source(c)
-        go = (f' <a class="cg-go" href="vscode://file/{found[0]}:{found[1]}:1"'
-              f'{_tip("Open " + name + " in VS Code")} aria-label="Open in VS Code">↗</a>'
-              if found else "")
         blocks = "".join(_node(by[k], lines_of.get(k), idx[k], folded.get(k), by)
                          for k in order if owner(k) == c)
         return (f'<div class="cg-k cg-h{hues[c]}" data-k="{html.escape(name)}">'
                 f'<div class="cg-kh"><span class="cg-c"{_tip(c)}>{html.escape(name)}</span>'
-                f'{go}</div><div class="cg-ms">{blocks}</div></div>')
+                f'</div><div class="cg-ms">{blocks}</div></div>')
 
     cols = "".join(f'<div class="cg-col">{"".join(box(c) for c in column)}</div>'
                    for column in columns)
@@ -398,7 +378,7 @@ def _graph(nodes, groups=()) -> tuple[str, set[str]]:
     return (f'<div class="cg" role="group" aria-label="Call graph of this entry point"'
             f' data-edges="{data}"><div class="cg-cols">'
             # The arrows: drawn by the page's script once the boxes have a size.
-            f'<svg class="cg-svg" aria-hidden="true"></svg>{cols}</div></div>'), set(order)
+            f'<svg class="cg-svg" width="0" height="0" aria-hidden="true"></svg>{cols}</div></div>'), set(order)
 
 
 def _lines(hits) -> str:
@@ -836,21 +816,36 @@ TOGGLE_JS = """<script data-hr-swap="keep">
         }
       });
     });
+    /* Measured with the <svg> shrunk to nothing: an <svg> with no size is 300×150, and
+       one sized by the last draw is as tall as that draw — either way it propped the
+       columns up from inside, and a graph shorter than it scrolled in its own box. */
+    svg.setAttribute('width', 0); svg.setAttribute('height', 0);
     svg.setAttribute('width', cols.scrollWidth);
     svg.setAttribute('height', cols.scrollHeight);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
+    /* Every arrow ends on a straight, level run at least as long as its head, so the head
+       always continues the line it sits on. The same-class bend used to be one curve
+       whose only level stretch was shorter than the head: the head pointed right while
+       the line under it was still coming down. Now it is a lane — out left, down, back
+       in — with rounded corners, its last run a straight line into the block. It leaves
+       its caller 6px below the middle, clear of the head of the arrow coming in; a longer
+       call takes a lane further out, so two calls from one block do not share a line. */
+    var HEAD = 6;
     edges.forEach(function (e) {
       var a = box(e.a), b = box(e.b), d, x = b.l, y = b.y;
       if (e.a.closest('.cg-k') === e.b.closest('.cg-k')) {
-        var bend = Math.min(15, 8 + (b.y - a.y) / 14);
-        d = 'M' + a.l + ' ' + a.y + 'C' + (a.l - bend) + ' ' + a.y + ' ' + (b.l - bend) + ' ' + b.y + ' ' + x + ' ' + y;
+        var s = b.y < a.y ? -1 : 1, ay = a.y + s * 6, dy = b.y - ay;
+        var lx = Math.min(a.l, b.l) - Math.min(16, 10 + Math.abs(dy) / 14);
+        var r = Math.min(4, Math.abs(dy) / 2);
+        d = 'M' + a.l + ' ' + ay + 'H' + (lx + r) + 'Q' + lx + ' ' + ay + ' ' + lx + ' ' + (ay + s * r)
+          + 'V' + (b.y - s * r) + 'Q' + lx + ' ' + b.y + ' ' + (lx + r) + ' ' + b.y + 'H' + x;
       } else {
-        var dx = Math.max(16, Math.abs(b.l - a.r) / 2);
-        d = 'M' + a.r + ' ' + a.y + 'C' + (a.r + dx) + ' ' + a.y + ' ' + (b.l - dx) + ' ' + b.y + ' ' + x + ' ' + y;
+        var end = b.l - HEAD, dx = Math.max(14, Math.abs(end - a.r) / 2);
+        d = 'M' + a.r + ' ' + a.y + 'C' + (a.r + dx) + ' ' + a.y + ' ' + (end - dx) + ' ' + b.y + ' ' + end + ' ' + y + 'H' + x;
       }
       var p = document.createElementNS(NS, 'path'), t = document.createElementNS(NS, 'path');
       p.setAttribute('d', d);
-      t.setAttribute('d', 'M' + x + ' ' + y + 'L' + (x - 6) + ' ' + (y - 3.5) + 'L' + (x - 6) + ' ' + (y + 3.5) + 'Z');
+      t.setAttribute('d', 'M' + x + ' ' + y + 'L' + (x - HEAD) + ' ' + (y - 3.5) + 'L' + (x - HEAD) + ' ' + (y + 3.5) + 'Z');
       p.setAttribute('class', 'cg-e' + (e.hot ? ' cg-hot' : ''));
       t.setAttribute('class', 'cg-ah' + (e.hot ? ' cg-hot' : ''));
       svg.appendChild(p); svg.appendChild(t);
@@ -1095,7 +1090,7 @@ a.cx-why-line:hover code { text-decoration:underline; }
 a.cg-go { display:inline-block; min-width:14px; text-align:center; border-radius:3px;
           font:700 11px/14px system-ui,sans-serif; color:var(--link); text-decoration:none; }
 a.cg-go:hover { background:var(--link); color:var(--card); }
-.cg-kh a.cg-go, .cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
 .cg-mh a.cg-go { opacity:.45; }
 .cg-n:hover .cg-mh a.cg-go, .cg-n:focus-within .cg-mh a.cg-go { opacity:1; }
 /* Clicked open: a tint of the link blue, and its frame unless the branch's green holds it. */
