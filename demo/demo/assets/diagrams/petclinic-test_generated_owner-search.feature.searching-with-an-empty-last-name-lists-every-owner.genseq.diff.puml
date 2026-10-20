@@ -79,7 +79,7 @@ Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
-Backend -[#2E7D32]-> Browser: [[genseq://1488wrk{Click for this call’s JSON body} 200 ⊕]]
+Backend -[#2E7D32]-> Browser: [[genseq://0peufox{Click for this call’s JSON body} 200 ⊕]]
 deactivate Backend
 Browser -> Backend: List owners\nGET /api/owners
 activate Backend
@@ -152,6 +152,6 @@ Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
-Backend -[#2E7D32]-> Browser: [[genseq://112kn50{Click for this call’s JSON body} 200 ⊕]]
+Backend -[#2E7D32]-> Browser: [[genseq://0peufox{Click for this call’s JSON body} 200 ⊕]]
 deactivate Backend
 @enduml

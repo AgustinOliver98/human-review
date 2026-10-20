@@ -1,7 +1,7 @@
 {
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "review_short": "be762955",
- "head": "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
+ "head": "49c7f06cefb2e2e6eac35604e788ea7d8458d13a",
  "takeover": null,
  "generated_globs": [
   "**/generated/**",
@@ -1257,17 +1257,101 @@
    "measured": true,
    "taken_over": false,
    "takeover": false
+  },
+  {
+   "sha": "056347a042718632674e587155e1320cdfc594cf",
+   "short": "056347a0",
+   "when": "2026-10-20T06:47:38+02:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "files": [
+    {
+     "path": ".github/workflows/ci.yml",
+     "added": 4,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-commons/src/main/java/victor/training/commons/ModuleBoundaryTracing.java",
+     "added": 11,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-commons/src/test/java/victor/training/outside/ModuleBoundaryTracingTest.java",
+     "added": 3,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/run-tests-with-tracing.sh",
+     "added": 6,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/genseq/code-location.spec.ts",
+     "added": 58,
+     "deleted": 1,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/genseq/code-location.ts",
+     "added": 113,
+     "deleted": 9,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-test/src/genseq/generate.ts",
+     "added": 4,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 199,
+   "deleted": 16,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
+  },
+  {
+   "sha": "49c7f06cefb2e2e6eac35604e788ea7d8458d13a",
+   "short": "49c7f06c",
+   "when": "2026-10-20T07:06:19+02:00",
+   "subject": "review-points: base moved to main's e5106841 (merged)",
+   "files": [
+    {
+     "path": "review-points.md",
+     "added": 2,
+     "deleted": 2,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 2,
+   "deleted": 2,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
   }
  ],
  "totals": {
-  "commits": 33,
-  "files": 79,
-  "added": 1460,
-  "deleted": 481,
+  "commits": 35,
+  "files": 81,
+  "added": 1658,
+  "deleted": 496,
   "code": {
-   "files": 67,
-   "added": 1323,
-   "deleted": 349
+   "files": 69,
+   "added": 1521,
+   "deleted": 364
   },
   "generated": {
    "files": 12,

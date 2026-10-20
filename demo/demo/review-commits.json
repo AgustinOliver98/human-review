@@ -1,8 +1,8 @@
 {
- "base": "a931962a5a0d238c497be32a00a4688c3af85387",
+ "base": "e51068416d74ff456cc90d281f4d0aa9995285ac",
  "head": "HEAD",
  "points_file": "review-points.md",
- "commits": 99,
+ "commits": 101,
  "implementation": "1bcf74d4f14a165cabaaa7e9cd1cc5faaa3311b1",
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "session": "82329d0a-55d2-448f-aff5-0363cf80b32f",
@@ -40,7 +40,9 @@
   "566aed82993f08f0f7047348ee7849f5d4ff5a58",
   "3da0997879f1131785e7e2e51c02eee321c11124",
   "6c6c3c3573b91b1fbdcdb81f6d4de6d5479e5dc9",
-  "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0"
+  "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
+  "056347a042718632674e587155e1320cdfc594cf",
+  "49c7f06cefb2e2e6eac35604e788ea7d8458d13a"
  ],
  "after_detail": [
   {
@@ -239,6 +241,18 @@
    "sha": "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
    "when": "2026-10-20T01:12:27+02:00",
    "subject": "Draw the visits \u2192 vets and visits \u2192 design-system imports the PR needs",
+   "auto_fix": false
+  },
+  {
+   "sha": "056347a042718632674e587155e1320cdfc594cf",
+   "when": "2026-10-20T06:47:38+02:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "49c7f06cefb2e2e6eac35604e788ea7d8458d13a",
+   "when": "2026-10-20T07:06:19+02:00",
+   "subject": "review-points: base moved to main's e5106841 (merged)",
    "auto_fix": false
   }
  ],

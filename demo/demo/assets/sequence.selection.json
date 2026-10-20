@@ -2,9 +2,9 @@
  "max": 6,
  "picked": [
   {
-   "path": "petclinic-test/src/add-visit.spec.ts",
+   "path": "petclinic-test/src/visit-vet.feature",
    "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
-   "line": 56,
+   "line": 9,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -18,9 +18,9 @@
    "suite": "java"
   },
   {
-   "path": "petclinic-test/src/add-visit.spec.ts",
+   "path": "petclinic-test/src/visit-vet.feature",
    "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
-   "line": 72,
+   "line": 20,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -201,17 +201,17 @@
  "suites": {
   "e2e": [
    {
-    "path": "petclinic-test/src/add-visit.spec.ts",
+    "path": "petclinic-test/src/visit-vet.feature",
     "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
-    "line": 56,
+    "line": 9,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
    },
    {
-    "path": "petclinic-test/src/add-visit.spec.ts",
+    "path": "petclinic-test/src/visit-vet.feature",
     "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
-    "line": 72,
+    "line": 20,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -239,20 +239,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 23.7
+   "seconds": 27.8
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 16.1
+   "seconds": 16.5
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 15.2
+   "seconds": 17.1
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 6.8
+   "seconds": 4.3
   }
  ],
- "at": "2026-10-19T23:01:15+00:00"
+ "at": "2026-10-20T04:51:16+00:00"
 }

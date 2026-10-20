@@ -73,13 +73,13 @@
   "tested_against": "Java Domain Model",
   "rerun": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",
-    "command": "/Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base a931962a5a0d238c497be32a00a4688c3af85387 --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
+    "command": "/Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base e51068416d74ff456cc90d281f4d0aa9995285ac --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
   },
   "redraw": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",
-    "command": "git checkout a931962a5a0d238c497be32a00a4688c3af85387 -- petclinic-backend/docs/ConceptualModel.drawio.png && python3 petclinic-backend/docs/scripts/conceptual-model-patch.py",
+    "command": "git checkout e51068416d74ff456cc90d281f4d0aa9995285ac -- petclinic-backend/docs/ConceptualModel.drawio.png && python3 petclinic-backend/docs/scripts/conceptual-model-patch.py",
     "diagram": "petclinic-backend/docs/ConceptualModel.drawio.png",
-    "base": "a931962a5a0d238c497be32a00a4688c3af85387"
+    "base": "e51068416d74ff456cc90d281f4d0aa9995285ac"
   },
   "revert": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",

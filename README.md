@@ -86,17 +86,17 @@ One screenshot per tab of the demo, retaken on every publish.
 
 <sub>[open it live](https://victorrentea.github.io/human-review/demo/review.html#city) — The change lit up in a 3D Code City: every class a building, sized by lines of code, raised by complexity, coloured by churn.</sub>
 
-### [UX](docs/tabs/ux.md)
-
-<a href="docs/tabs/ux.md"><img src="demo/demo/tour/dsaudit.jpg" alt="UX tab" width="100%"></a>
-
-<sub>[open it live](https://victorrentea.github.io/human-review/demo/review.html#dsaudit) — Native controls sitting where a design-system component belongs — a finding made of an *absence*, which a passing Playwright suite cannot produce.</sub>
-
 ### [Complexity](docs/tabs/complexity.md)
 
 <a href="docs/tabs/complexity.md"><img src="demo/demo/tour/complexity.jpg" alt="Complexity tab" width="100%"></a>
 
 <sub>[open it live](https://victorrentea.github.io/human-review/demo/review.html#complexity) — The before → after of every entry point: cognitive complexity of the whole flow behind each REST endpoint, and what this branch added to it.</sub>
+
+### [UX](docs/tabs/ux.md)
+
+<a href="docs/tabs/ux.md"><img src="demo/demo/tour/dsaudit.jpg" alt="UX tab" width="100%"></a>
+
+<sub>[open it live](https://victorrentea.github.io/human-review/demo/review.html#dsaudit) — Native controls sitting where a design-system component belongs — a finding made of an *absence*, which a passing Playwright suite cannot produce.</sub>
 
 ### [Logging](docs/tabs/logging.md)
 

@@ -97,7 +97,7 @@ deactivate Backend
 deactivate Test
 Test -> Test: [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/AddVisitApiTest.java:81{Click to open the line of the test that says this} and a visit is added for the first pet ↗]]
 activate Test
-Test -[#2E7D32]> Backend: [[genseq://1532h3x{Click for this call’s JSON body} Add a visit for an owner's pet\nPOST /api/owners/{ownerId}/pets/{petId}/visits ⊕]]
+Test -[#2E7D32]> Backend: [[genseq://1lrtt21{Click for this call’s JSON body} Add a visit for an owner's pet\nPOST /api/owners/{ownerId}/pets/{petId}/visits ⊕]]
 activate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/rest/OwnerRestController.java:193{Click to open OwnerRestController.bookVisit} book-visit ↗]]
 activate Backend
@@ -105,7 +105,7 @@ Backend -[#2E7D32]> Backend: [[src://petclinic-backend/src/main/java/victor/trai
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:14{Click to open VisitRepository.save} VisitRepository.save ↗]]
 activate Backend
 group tx
-Backend -[#2E7D32]> DB: [[genseq://0nfc6t2{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
+Backend -[#2E7D32]> DB: [[genseq://1u89s0g{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
 end
 deactivate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/OwnerRepository.java:14{Click to open OwnerRepository.findById} OwnerRepository.findById ↗]]
@@ -115,7 +115,7 @@ Backend -> DB: [[genseq://0x8aana{Click for the statement behind this call} sele
 end
 deactivate Backend
 Backend -> DB: [[genseq://18567ho{Click for the statement behind this call} select pets ⊕]]
-Backend -> Commons: [[src://petclinic-commons/src/main/java/victor/training/commons/PhoneNumbers.java:8{Click to open PhoneNumbers.normalize} PhoneNumbers.normalize ↗]]
+Backend -> Commons: [[src://petclinic-commons/src/main/java/victor/training/commons/PhoneNumbers.java:14{Click to open PhoneNumbers.normalize} PhoneNumbers.normalize ↗]]
 activate Commons
 Commons -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/notification/NotificationServiceClient.java:45{Click to open NotificationServiceClient.homeDialCode} NotificationServiceClient.homeDialCode ↗]]
 deactivate Commons
@@ -141,7 +141,7 @@ end
 deactivate Backend
 Backend -> DB: [[genseq://18567ho{Click for the statement behind this call} select pets ⊕]]
 Backend -[#2E7D32]> DB: [[genseq://1eq1h2q{Click for the statement behind this call} select visits ⊕]]
-Backend -[#2E7D32]-> Test: [[genseq://0zkw2v9{Click for this call’s JSON body} 200 ⊕]]
+Backend -[#2E7D32]-> Test: [[genseq://1o0pfqr{Click for this call’s JSON body} 200 ⊕]]
 deactivate Backend
 deactivate Test
 @enduml

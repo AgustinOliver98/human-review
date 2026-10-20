@@ -43,14 +43,14 @@
       "file": "city.jpg"
     },
     {
-      "panel": "dsaudit",
-      "title": "UX",
-      "file": "dsaudit.jpg"
-    },
-    {
       "panel": "complexity",
       "title": "Complexity",
       "file": "complexity.jpg"
+    },
+    {
+      "panel": "dsaudit",
+      "title": "UX",
+      "file": "dsaudit.jpg"
     },
     {
       "panel": "logging",
