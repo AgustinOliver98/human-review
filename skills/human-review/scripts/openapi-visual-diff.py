@@ -1109,6 +1109,11 @@ TEMPLATE = r"""<!doctype html>
     background: transparent; padding: 0;
   }
   .swagger-ui .info .title small pre.version::before { content: "v"; }
+  /* …and since 20 Oct 2026 not even there: the version stands beside the bar's title
+     (`#dv-ver`), so the spec's masthead takes no row at all. */
+  .swagger-ui .information-container { display: none !important; }
+  .dv-ver { font: 11px/1.2 ui-monospace, Menlo, monospace; color: var(--dv-muted); white-space: nowrap; }
+  .dv-ver:empty { display: none; }
   /* Swagger UI's terms-of-service link: a contract detail for a consumer browsing the
      live docs, noise in a diff of two revisions. */
   .swagger-ui .info__tos { display: none; }
@@ -1433,6 +1438,9 @@ TEMPLATE = r"""<!doctype html>
 <div id="dv-app">
 <div class="dv-bar">
   <h1>OpenAPI visual diff</h1>
+  <!-- The spec's version, beside the title (Victor, 20 Oct 2026): on a line of its own
+       under the bar it cost a row for four characters. Filled in at boot from DATA.spec. -->
+  <span class="dv-ver" id="dv-ver"></span>
   <!-- The pair of refs used to sit here, between the title and the chips. Embedded in the
        review -- which is how this page is read -- the masthead two inches above already
        says which branch is against which base, on every tab, and saying it again here
@@ -2368,6 +2376,8 @@ function boot() {
   if (booted) return;
   if (typeof SwaggerUIBundle !== 'function') { retryBundle(); return; }
   booted = true;
+  var ver = DATA.spec && DATA.spec.info && DATA.spec.info.version;
+  if (ver) root.getElementById('dv-ver').textContent = 'v' + ver;
   SwaggerUIBundle({
     spec: DATA.spec,   // already fully dereferenced by the generator
     domNode: root.getElementById('swagger-ui'),
