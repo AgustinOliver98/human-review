@@ -52,6 +52,11 @@
    badge) made every chip in the row as tall, and the masthead 2px taller on a branch with
    commits outside the scope than on one without (UX review, 7 Oct 2026). */
 .masthead .scopebar { margin:.3rem 0 .05rem; align-items:center; }
+/* One row, always (Victor, 20 Oct 2026: demo2's review chip wrapped to a second line):
+   the chips keep their width and the branch chip, first, gives way with an ellipsis. */
+.masthead .scopebar { flex-wrap:nowrap; min-width:0; }
+.masthead .scopebar > * { flex:0 0 auto; white-space:nowrap; }
+.masthead .scopebar > :first-child { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
 /* Header chips ~30% shorter than the body's (28px -> ~20px): tighter padding and a 1.1
    line box. Scoped to the scopebar so chips elsewhere keep their size; 1.1 still clears
    the emoji glyph height at .82rem. */

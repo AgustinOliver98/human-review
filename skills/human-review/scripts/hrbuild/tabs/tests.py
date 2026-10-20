@@ -1206,7 +1206,8 @@ def ticket_head(ref: dict | None) -> str:
         # ticket's own frame, a bare title read as the PR's.
         num = (f'<a class="rm-num" href="{html.escape(ref["url"])}">#{ref["number"]}</a>'
                if ref.get("url") else f'<span class="rm-num">#{ref["number"]}</span>')
-        title = (f'<span class="rm-title"><span class="rm-ref">Issue {num}</span>: '
+        title = (f'<span class="rm-title" data-tip="{html.escape(ref.get("title") or "", quote=True)}">'
+                 f'<span class="rm-ref">Issue {num}</span>: '
                  f'{html.escape(ref.get("title") or "")}</span>')
     else:
         title = ""
@@ -1363,7 +1364,9 @@ REQMAP_CSS = """
 .reqmap[data-semcov=off] .rm-f[data-cov]{background:none}
 .reqmap[data-semcov=off] .rm-legend{visibility:hidden}
 /* The title in the heading's ink; only its "#25" links out to the issue, in link blue. */
-.reqmap .rm-head .rm-title{color:var(--fg,#1c1c1c);overflow-wrap:anywhere}
+/* One line, never two (Victor, 20 Oct 2026): a long title ellipsises, its hover keeps it. */
+.reqmap .rm-head .rm-title{color:var(--fg,#1c1c1c);flex:0 1 auto;min-width:0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
 .reqmap .rm-head .rm-num{color:var(--muted,#6b6b6b);font-weight:400}
 .reqmap .rm-head .rm-title .rm-ref .rm-num{color:var(--link);font-weight:inherit;text-decoration:none}
 .reqmap .rm-head .rm-title a.rm-num:hover{text-decoration:underline}
