@@ -269,3 +269,13 @@ def test_the_build_puts_an_unnamed_changed_diagram_on_structure_without_a_warnin
     assert "no tab claims" not in err, err
     assert "frontend delta" in _panel(page, "packages")
     assert "frontend delta" not in _panel(page, "data")
+
+
+def test_complexity_stands_right_after_city_whatever_order_the_content_file_wrote(tmp_path):
+    """Victor, 20 Oct 2026: "Move the complexity after city". Tabs the layout does not own
+    (`review`, `cost`) keep their own slots."""
+    ids = ["review", "behaviour", "city", "dsaudit", "complexity", "logging", "cost"]
+    spec, _ = _own([{"id": i, "label": i, "blocks": []} for i in ids], tmp_path)
+    got = [t["id"] for t in spec["tabs"]]
+    assert got[got.index("city") + 1] == "complexity"
+    assert got[0] == "review" and got[-1] == "cost"

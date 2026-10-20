@@ -89,10 +89,10 @@ LAYOUT_TABS: dict[str, dict] = {
                      "sections": ("deployment",), "required": ()},
     "city":         {"label": "City", "blocks": ("codecity",), "sections": (),
                      "required": ()},
-    "dsaudit":      {"label": "UX", "blocks": (), "sections": ("ds-audit",),
-                     "required": ("ds-audit",)},
     "complexity":   {"label": "Complexity", "blocks": (), "sections": ("complexity-delta",),
                      "required": ("complexity-delta",)},
+    "dsaudit":      {"label": "UX", "blocks": (), "sections": ("ds-audit",),
+                     "required": ("ds-audit",)},
     "logging":      {"label": "Logs", "blocks": ("logging",), "sections": (),
                      "required": ()},
     "owners":       {"label": "Codeowners", "blocks": ("codeowners",), "sections": (),
@@ -257,6 +257,14 @@ def own_layout(spec: dict, out_dir) -> list[str]:
         tabs.insert(at, {"id": LAYOUT_ALWAYS, "label": LAYOUT_TABS[LAYOUT_ALWAYS]["label"],
                          "blocks": [{"type": "section", "id": "video"}]})
         used.add("video")
+
+    # The tabs this module owns stand in its order, whatever order the content file wrote
+    # them in (Victor, 20 Oct 2026: Complexity right after City, beside the other picture of
+    # the code). A tab it does not know keeps its own slot.
+    order = list(LAYOUT_TABS)
+    slots = [i for i, t in enumerate(tabs) if t.get("id") in LAYOUT_TABS]
+    for i, t in zip(slots, sorted((tabs[i] for i in slots), key=lambda t: order.index(t["id"]))):
+        tabs[i] = t
 
     # A section only a dropped block pointed at goes with it: rendered, it would still
     # resolve its snippets for a page that never shows them.
