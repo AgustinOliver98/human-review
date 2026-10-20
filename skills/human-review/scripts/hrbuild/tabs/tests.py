@@ -1488,7 +1488,12 @@ REQMAP_CSS = """
 /* One row, always (Victor, 19 Oct 2026): on a narrow card the totals wrapped under the
    title. The title gives way instead, cut with an ellipsis; its hover keeps the rest. A
    page with the changed-tests ledger keeps the wrap that ledger's own row needs. */
-.reqmap .rm-code > .rm-tkhead:not(:has(> .tledger)){flex-wrap:nowrap}
+.reqmap .rm-code > .rm-tkhead:not(:has(> .tledger .toff)){flex-wrap:nowrap}
+/* The grand total says the ledger's `− ✍️ +` again, one row up (Victor, 20 Oct 2026: "why
+   do I see these numbers twice?"): under it the ledger keeps only "N stopped running",
+   and with nothing of that goes altogether. */
+.reqmap .rm-code > .rm-tkhead:has(> .rm-grand) > .tledger .tmoves{display:none}
+.reqmap .rm-code > .rm-tkhead:has(> .rm-grand) > .tledger:not(:has(.toff)){display:none}
 .reqmap .rm-code > .rm-tkhead > .cov-head{flex:0 1 auto;min-width:0}
 .reqmap .rm-code > .rm-tkhead > .cov-head .rm-who{min-width:0;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}

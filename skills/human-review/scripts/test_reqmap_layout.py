@@ -203,7 +203,9 @@ def test_the_title_row_carries_the_grand_total():
     assert "grand.innerHTML = led(sum, total, '', 'listed, all kinds');" in js
     assert ".reqmap .rm-code > .rm-tkhead > .rm-grand{flex:0 0 auto;margin-left:auto;" in css
     # One row: the totals never wrap under the title, the title is cut instead.
-    assert ".reqmap .rm-code > .rm-tkhead:not(:has(> .tledger)){flex-wrap:nowrap}" in css
+    assert ".reqmap .rm-code > .rm-tkhead:not(:has(> .tledger .toff)){flex-wrap:nowrap}" in css
+    # The ledger's own counts under it would say the same numbers twice.
+    assert ".reqmap .rm-code > .rm-tkhead:has(> .rm-grand) > .tledger .tmoves{display:none}" in css
 
 
 def test_a_picked_sentence_counts_its_tests_on_every_chapter_heading():
