@@ -187,11 +187,16 @@
   gap:.35rem; padding:.2rem .45rem .2rem .2rem; white-space:nowrap; font-size:.9em; }
 .dsv-t > summary::-webkit-details-marker { display:none; }
 /* the caret is the shared `.disclose` (core.css) */
-.dsv-t > summary:hover { background:var(--accent-soft); }
+/* Gentle colour (Victor, 20 Oct 2026): the table's title one tint, its header another, the
+   rows a faint zebra. Mixed into the card, so each tint is opaque (the header is sticky) and
+   follows the theme. */
+.dsv-t > summary { background:color-mix(in srgb, var(--link) 9%, var(--card)); }
+.dsv-t > summary:hover { background:color-mix(in srgb, var(--link) 16%, var(--card)); }
 .dsv-n { color:var(--muted); font-size:.9em; }
 .dsv-grid { max-height:15rem; overflow:auto; border-top:1px solid var(--line); }
 .dsv-grid table { border-collapse:collapse; font:11.5px/1.45 ui-monospace,Menlo,monospace; }
-.dsv-grid th { position:sticky; top:0; background:var(--card); text-align:left; font-weight:600;
+.dsv-grid th { position:sticky; top:0; background:color-mix(in srgb, #8b5cf6 11%, var(--card));
+  text-align:left; font-weight:600;
   padding:.1rem .45rem; border-bottom:1px solid var(--line); white-space:nowrap; }
 .dsv-grid th.dsv-numcol { text-align:right; }
 .dsv-grid th.dsv-fkcol, .dsv-grid th.dsv-allnull { cursor:help; }
@@ -199,6 +204,7 @@
 .dsv-grid th.dsv-allnull { color:var(--muted); font-weight:400; font-style:italic; }
 .dsv-grid td { padding:.05rem .45rem; white-space:nowrap; max-width:16rem; overflow:hidden;
   text-overflow:ellipsis; border-top:1px solid color-mix(in srgb, var(--line) 50%, transparent); }
+.dsv-grid tbody tr:nth-child(even) td { background:color-mix(in srgb, var(--fg) 3.5%, transparent); }
 .dsv-grid td.dsv-num { text-align:right; }
 .dsv-grid td.dsv-fkv { cursor:help; }
 .dsv-grid td.dsv-null { color:var(--muted); font-style:italic; }

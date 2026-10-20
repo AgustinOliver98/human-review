@@ -578,7 +578,8 @@ def ticket_ref(spec: dict, out_dir: Path) -> dict | None:
 #: default: the reader opens the tab and sees the matrix say what it was built to say; the
 #: box is there for the moment they want to read the ticket as the author wrote it, four
 #: sentences with no green under them, and then put the fills back.
-SEMCOV_LABEL = "Semantic coverage"
+#: The 🤖 owns the doubt (Victor, 20 Oct 2026): a model's mapping, not exact science.
+SEMCOV_LABEL = "Semantic coverage \U0001F916"
 #: Its hover (Victor, 5 Oct 2026): the colours it switches are a model's reading of which
 #: test proves which claim, and a checkbox named like a metric reads as a measured one.
 _SEMCOV_TIP = "Claim ↔ test, as matched by AI"

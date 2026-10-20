@@ -1435,9 +1435,9 @@ def _main(argv=None) -> int:
         mode_html += RERUN_CHIP + rerun_tests_chip(rerun_tests) + RERUN_AI_CHIP
         rerun_fail_html = (rerun_progress_html(step_expectations(out_dir))
                        + RERUN_DONE + RERUN_FAIL + RERUN_AI_CONFIRM)
-        # The one control at the foot, at the end of the closing sentence rather than on a
-        # line of its own: the footer is two lines, and every line it spends is a line the
-        # tab above it does not get.
+        # The one control at the foot, at the end of the second line, after the page's path
+        # (Victor, 20 Oct 2026: "on the second line of the footer"): the closing sentence
+        # reads to its full stop, and the footer stays two lines.
         allbtn_html = (
             ' <button type="button" class="allbtn" aria-pressed="false" '
             'data-label-off="⇄ Single page" data-label-on="⇄ back to one tab at a time" '
@@ -1458,7 +1458,7 @@ def _main(argv=None) -> int:
             '<button type="button" class="diskcopy copycmd" '
             f'data-copy="{html.escape(str(out_path), quote=True)}" '
             'data-say="Copied the path of this page" aria-label="Copy the path" '
-            f'data-tip="Copy this path">{CMD_COPY}</button></div>'
+            f'data-tip="Copy this path">{CMD_COPY}</button>{allbtn_html}</div>'
         )
         body_html = "\n".join(panels)
         # These two facts used to be appended to the page as a `<p class="sub">` — and the
@@ -1529,7 +1529,7 @@ def _main(argv=None) -> int:
 {lede_html}
 
 {body_html}
-<footer><p class="footrow"><span>{_link_home(spec.get('footer', ''))}</span> {TAKEAWAY}{allbtn_html}</p>{diskline_html}</footer>
+<footer><p class="footrow"><span>{_link_home(spec.get('footer', ''))}</span> {TAKEAWAY}</p>{diskline_html}</footer>
 </div>
 {SERVER_JS}
 {CAPTION_JS}

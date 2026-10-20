@@ -152,7 +152,9 @@
   if (bar) Array.prototype.forEach.call(bar.querySelectorAll('.rm-catf, .rm-allf'), function (x) {
     x.parentNode.removeChild(x);
   });
-  var MODES = [['cover', 'covering the change set',
+  // "covering" carries the 🤖: which test covers which sentence is a model's mapping, not
+  // a measurement (Victor, 20 Oct 2026); "running" is measured, so it has none.
+  var MODES = [['cover', 'covering \uD83E\uDD16 the change set',
                 'Tests paired with a sentence of the ticket, the ones wearing the fork.'],
                ['run', 'running the change set',
                 'Tests that ran a changed line, as captured by a coverage probe.'],

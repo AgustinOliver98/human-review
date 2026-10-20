@@ -100,7 +100,7 @@ def test_the_title_row_over_the_card_offers_all_tests_where_the_filters_stood(tm
                               'class="rm-side"')
     assert head < cats < side
     js = T.REQMAP_CHAPTERS_JS
-    assert "var MODES = [['cover', 'covering the change set'," in js
+    assert "var MODES = [['cover', 'covering \\uD83E\\uDD16 the change set'," in js
     assert "['run', 'running the change set'," in js and "['all', 'all'," in js
     assert "who.textContent = 'Tests:';" in js
     assert "return mode === 'cover' ? paired(row) : !folded(row);" in js
@@ -608,7 +608,7 @@ def test_the_coverage_switch_sits_on_the_ticket_header_and_starts_checked(tmp_pa
     assert "rm-semcov" not in head, "not on the title row any more"
     assert ('opened on Jun 13, 2026</span><label class="rm-semcov" data-tip="Claim ↔ test, '
             'as matched by AI"><input '
-            'type="checkbox" checked> Semantic coverage</label></div>') in out
+            'type="checkbox" checked> Semantic coverage \U0001F916</label></div>') in out
     assert out.count('class="rm-semcov"') == 1, "only the ticket's header, not the tests'"
     css = out[out.rindex("<style>"):]
     assert ".reqmap[data-semcov=off] .rm-f[data-cov]{background:none}" in css

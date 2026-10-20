@@ -120,9 +120,8 @@ button.tab .sev { width:6px; height:6px; border-radius:50%; background:var(--acc
 footer .footrow { text-align:center; margin:0; }
 footer .footrow > span { display:inline; }
 /* The single-page toggle used to be the last pill on the tab strip, pressed roughly never; then
-   a pill on a line of its own under this sentence. It is the sentence's last word now — a
-   small pill sized to the text it ends — because a whole line for an occasional act is
-   the line the panel above loses. */
+   a pill on a line of its own under this sentence, then the sentence's last word. It ends
+   the second line now, after the page's path — a small pill, no line of its own. */
 button.allbtn { border:1px solid var(--line); background:var(--card); color:var(--muted);
                 border-radius:999px; cursor:pointer; font:600 .74rem/1.45 inherit;
                 padding:0 .55rem; margin-left:.3rem; vertical-align:baseline; }

@@ -1408,7 +1408,7 @@ def test_the_footer_is_one_centred_line_ending_on_its_control_then_the_path(tmp_
     assert "footer .footrow > span { display:inline; }" in page
     line = foot[foot.index('<p class="footrow">'):foot.index("</p>")]
     assert line.count("<span") >= 2 and "<div" not in line
-    assert 'class="allbtn"' in line and "allbar" not in foot
+    assert 'class="allbtn"' not in line and "allbar" not in foot
     # The path, then the clipboard: text first, the mark that acts on it after.
     disk = foot[foot.index('class="diskline"'):]
     assert disk.index('id="hr-diskpath"') < disk.index('class="diskcopy copycmd"')
@@ -1416,6 +1416,8 @@ def test_the_footer_is_one_centred_line_ending_on_its_control_then_the_path(tmp_
     # Off disk the path is plain text: no hover promising a click until a server says so.
     span = disk[disk.index("<span"):disk.index("</span>")]
     assert "data-tip" not in span and "button" not in span
+    # The single-page toggle ends that second line (Victor, 20 Oct 2026).
+    assert disk.index('class="diskcopy copycmd"') < disk.index('class="allbtn"') < disk.index("</div>")
 
 
 def test_the_footer_says_where_the_page_came_from_and_where_to_see_it(tmp_path):
@@ -1435,7 +1437,7 @@ def test_the_footer_says_where_the_page_came_from_and_where_to_see_it(tmp_path):
     assert "run it locally" not in foot and "pkgs/container/human-review" not in foot
     assert "adapt it to your liking" not in foot
     assert "Download here" not in foot and "Download zip" not in foot
-    # The sentence first, the control as its last word.
+    # The sentence first, the control under it.
     assert foot.index("takeaway") < foot.index("allbtn")
 
 
