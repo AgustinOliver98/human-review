@@ -1,55 +1,408 @@
   * dsaudit -> dsaudit
     $ git rev-parse --abbrev-ref HEAD
-    $ git merge-base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf HEAD
-    $ git diff --name-only f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf HEAD -- 'petclinic-frontend/src'
+    $ git merge-base c790590b10e89e90a7bf228bad0137d09eedef97 HEAD
+    $ git diff --name-only c790590b10e89e90a7bf228bad0137d09eedef97 HEAD -- 'petclinic-frontend/src'
     $ git rev-parse HEAD
     $ git rev-parse --short HEAD
-    $ git rev-parse f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf
-    $ git rev-parse --short f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf
-    $ ./start-docker.sh url petclinic-4321c5bc
-    reusing the stack already up at http://localhost:54520
+    $ git rev-parse c790590b10e89e90a7bf228bad0137d09eedef97
+    $ git rev-parse --short c790590b10e89e90a7bf228bad0137d09eedef97
+    $ ./start-docker.sh url petclinic-90e8b7ef
+    reusing the stack already up at http://localhost:52592
     seed: reset (/__reset)
-    $ ./start-docker.sh url petclinic-f7ebe11c
-    reusing the stack already up at http://localhost:54512
+    $ ./start-docker.sh url petclinic-c790590b
+    $ ./start-docker.sh up --ref c790590b10e89e90a7bf228bad0137d09eedef97 --ttl 1800
+🐳 building petclinic-c790590b from c790590b  (this takes a few minutes the first time)
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.79kB done
+#1 DONE 0.0s
+
+#2 [frontend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.67kB done
+#2 DONE 0.0s
+
+#3 [notification internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.22kB done
+#3 DONE 0.0s
+
+#4 [backend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 1.22kB done
+#4 DONE 0.0s
+
+#5 [frontend internal] load metadata for docker.io/library/node:18-bookworm-slim
+#5 DONE 0.0s
+
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
+#6 DONE 0.0s
+
+#7 [reset internal] load build definition from Dockerfile
+#7 transferring dockerfile: 1.31kB done
+#7 DONE 0.0s
+
+#8 [backend internal] load metadata for docker.io/library/eclipse-temurin:21-jre
+#8 DONE 0.0s
+
+#9 [backend internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#9 DONE 0.0s
+
+#10 [reset internal] load metadata for docker.io/library/alpine:3.20
+#10 DONE 0.0s
+
+#11 [frontend internal] load .dockerignore
+#11 transferring context: 67B done
+#11 DONE 0.0s
+
+#12 [reset context fixtures] load .dockerignore
+#12 transferring fixtures: 2B done
+#12 DONE 0.0s
+
+#13 [notification context commons] load .dockerignore
+#13 transferring commons: 2B done
+#13 DONE 0.0s
+
+#14 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
+#14 DONE 0.0s
+
+#15 [frontend runtime 1/4] FROM docker.io/library/nginx:1.27-alpine
+#15 DONE 0.0s
+
+#16 [reset internal] load .dockerignore
+#16 transferring context: 2B done
+#16 DONE 0.0s
+
+#17 [notification internal] load .dockerignore
+#17 transferring context: 60B done
+#17 DONE 0.0s
+
+#18 [reset stage-0 1/5] FROM docker.io/library/alpine:3.20
+#18 DONE 0.0s
+
+#19 [backend internal] load .dockerignore
+#19 transferring context: 230B done
+#19 DONE 0.0s
+
+#20 [backend stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre
+#20 DONE 0.0s
+
+#21 [backend build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
+#21 DONE 0.0s
+
+#22 [reset internal] load build context
+#22 transferring context: 6.45kB done
+#22 DONE 0.0s
+
+#23 [reset context fixtures] load from client
+#23 transferring fixtures: 2.80kB done
+#23 DONE 0.0s
+
+#24 [backend context commons] load from client
+#24 transferring commons: 4.01kB done
+#24 DONE 0.0s
+
+#25 [frontend internal] load build context
+#25 transferring context: 2.89MB 0.0s done
+#25 DONE 0.1s
+
+#26 [notification internal] load build context
+#26 transferring context: 9.47kB done
+#26 DONE 0.0s
+
+#27 [notification context commons] load from client
+#27 transferring commons: 12.03kB done
+#27 DONE 0.0s
+
+#28 [backend internal] load build context
+#28 transferring context: 459.52kB 0.0s done
+#28 DONE 0.0s
+
+#29 [reset stage-0 3/5] COPY reset-server.py /reset-server.py
+#29 CACHED
+
+#30 [reset stage-0 4/5] COPY --from=fixtures . /fixtures/
+#30 CACHED
+
+#31 [reset stage-0 2/5] RUN apk add --no-cache postgresql16-client python3
+#31 CACHED
+
+#32 [reset stage-0 5/5] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
+#32 CACHED
+
+#33 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
+#33 CACHED
+
+#34 [frontend build 3/7] WORKDIR /app
+#34 CACHED
+
+#35 [frontend build 4/7] COPY package.json package-lock.json ./
+#35 CACHED
+
+#36 [frontend build 5/7] RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
+#36 CACHED
+
+#37 [notification build 7/8] COPY src ./src
+#37 CACHED
+
+#38 [notification build 6/8] COPY pom.xml .
+#38 CACHED
+
+#39 [notification stage-1 3/4] WORKDIR /app
+#39 CACHED
+
+#40 [notification stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#40 CACHED
+
+#41 [notification build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
+#41 CACHED
+
+#42 [notification stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
+#42 CACHED
+
+#43 [notification build 3/8] COPY --from=commons src /commons/src
+#43 CACHED
+
+#44 [notification build 4/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B -f /commons/pom.xml install
+#44 CACHED
+
+#45 [notification build 2/8] COPY --from=commons pom.xml /commons/pom.xml
+#45 CACHED
+
+#46 [notification build 5/8] WORKDIR /app
+#46 CACHED
+
+#47 [backend build 6/8] COPY pom.xml .
+#47 CACHED
+
+#48 [reset] exporting to image
+#48 exporting layers done
+#48 writing image sha256:6d90e92411a7b84f785d15a7823192697e0b62d922e86cbec285430b252c81e8 done
+#48 naming to docker.io/library/petclinic-env-reset:c790590b 0.0s done
+#48 DONE 0.0s
+
+#49 [notification] exporting to image
+#49 exporting layers done
+#49 writing image sha256:0293ce3d323538f43257b2756a9bffae668df1efbdef14562ce4b4bc127b38cc done
+#49 naming to docker.io/library/petclinic-env-notification:c790590b done
+#49 DONE 0.0s
+
+#50 [backend build 7/8] COPY src ./src
+#50 DONE 0.1s
+
+#51 [frontend build 6/7] COPY . .
+#51 DONE 0.1s
+
+#52 [reset] resolving provenance for metadata file
+#52 DONE 0.0s
+
+#53 [notification] resolving provenance for metadata file
+#53 DONE 0.0s
+
+#54 [frontend build 7/7] RUN npx ng build --configuration docker
+#54 1.623 - Generating browser application bundles (phase: setup)...
+#54 ...
+
+#55 [backend build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
+#55 DONE 5.5s
+
+#40 [backend stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#40 CACHED
+
+#39 [backend stage-1 3/4] WORKDIR /app
+#39 CACHED
+
+#56 [backend stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
+#56 DONE 0.1s
+
+#54 [frontend build 7/7] RUN npx ng build --configuration docker
+#54 ...
+
+#57 [backend] exporting to image
+#57 exporting layers 0.1s done
+#57 writing image sha256:8c3e274e3a8efdf8c5265e53c362ac354000e407e6125b9cad38fe4b7c21b31a
+#57 writing image sha256:8c3e274e3a8efdf8c5265e53c362ac354000e407e6125b9cad38fe4b7c21b31a done
+#57 naming to docker.io/library/petclinic-env-backend:c790590b done
+#57 DONE 0.1s
+
+#58 [backend] resolving provenance for metadata file
+#58 DONE 0.0s
+
+#54 [frontend build 7/7] RUN npx ng build --configuration docker
+#54 31.36 ✔ Browser application bundle generation complete.
+#54 33.86 ✔ Browser application bundle generation complete.
+#54 33.86 - Copying assets...
+#54 33.87 ✔ Copying assets complete.
+#54 33.87 - Generating index html...
+#54 34.09 ✔ Index html generation complete.
+#54 34.10 
+#54 34.10 Initial Chunk Files           | Names         |  Raw Size | Estimated Transfer Size
+#54 34.10 main.5246b24f48d8b1e7.js      | main          |   1.24 MB |               249.35 kB
+#54 34.10 styles.5a832aed5e36d6b9.css   | styles        | 198.13 kB |                24.13 kB
+#54 34.10 scripts.15a866ab6acfa108.js   | scripts       | 150.92 kB |                44.00 kB
+#54 34.10 polyfills.96561b4e147d79cf.js | polyfills     |  33.06 kB |                10.69 kB
+#54 34.10 runtime.cc455d20bec59982.js   | runtime       |   1.73 kB |               879 bytes
+#54 34.10 
+#54 34.10 | Initial Total |   1.62 MB |               329.02 kB
+#54 34.10 
+#54 34.10 Build at: 2026-10-20T04:35:34.263Z - Hash: f8f10cd17cbacfe0 - Time: 32182ms
+#54 34.18 npm notice
+#54 34.18 npm notice New major version of npm available! 10.8.2 -> 12.2.0
+#54 34.18 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+#54 34.18 npm notice To update run: npm install -g npm@12.2.0
+#54 34.18 npm notice
+#54 DONE 34.4s
+
+#59 [frontend runtime 3/4] COPY nginx.conf /etc/nginx/conf.d/default.conf
+#59 CACHED
+
+#60 [frontend runtime 2/4] COPY --from=build /app/dist/ /usr/share/nginx/html/
+#60 CACHED
+
+#61 [frontend runtime 4/4] COPY proxy-backend.conf /etc/nginx/proxy-backend.conf
+#61 CACHED
+
+#62 [frontend] exporting to image
+#62 exporting layers done
+#62 writing image sha256:bc788e840e586ec416e80980653124f9ed3b4fcac7486e2d206b692f5ab8b851 done
+#62 naming to docker.io/library/petclinic-env-frontend:c790590b done
+#62 DONE 0.0s
+
+#63 [frontend] resolving provenance for metadata file
+#63 DONE 0.0s
+
+✅ petclinic-c790590b ready — reaps itself after 30 idle minutes
+   http://localhost:55366
+   (copied to the clipboard)
+ Image petclinic-env-notification:c790590b Building 
+ Image petclinic-env-frontend:c790590b Building 
+ Image petclinic-env-reset:c790590b Building 
+ Image petclinic-env-backend:c790590b Building 
+ Image petclinic-env-notification:c790590b Built 
+ Image petclinic-env-backend:c790590b Built 
+ Image petclinic-env-reset:c790590b Built 
+ Image petclinic-env-frontend:c790590b Built 
+ Network petclinic-c790590b_default Creating 
+ Network petclinic-c790590b_default Created 
+ Volume petclinic-c790590b_pgdata Creating 
+ Volume petclinic-c790590b_pgdata Created 
+ Volume petclinic-c790590b_activity Creating 
+ Volume petclinic-c790590b_activity Created 
+ Volume petclinic-c790590b_seed Creating 
+ Volume petclinic-c790590b_seed Created 
+ Container petclinic-c790590b-notification-1 Creating 
+ Container petclinic-c790590b-db-1 Creating 
+ Container petclinic-c790590b-reaper-1 Creating 
+ Container petclinic-c790590b-reaper-1 Created 
+ Container petclinic-c790590b-db-1 Created 
+ Container petclinic-c790590b-notification-1 Created 
+ Container petclinic-c790590b-backend-1 Creating 
+ Container petclinic-c790590b-backend-1 Created 
+ Container petclinic-c790590b-frontend-1 Creating 
+ Container petclinic-c790590b-reset-1 Creating 
+ Container petclinic-c790590b-reset-1 Created 
+ Container petclinic-c790590b-frontend-1 Created 
+ Container petclinic-c790590b-notification-1 Starting 
+ Container petclinic-c790590b-reaper-1 Starting 
+ Container petclinic-c790590b-db-1 Starting 
+ Container petclinic-c790590b-reaper-1 Started 
+ Container petclinic-c790590b-notification-1 Started 
+ Container petclinic-c790590b-db-1 Started 
+ Container petclinic-c790590b-db-1 Waiting 
+ Container petclinic-c790590b-notification-1 Waiting 
+ Container petclinic-c790590b-notification-1 Healthy 
+ Container petclinic-c790590b-db-1 Healthy 
+ Container petclinic-c790590b-backend-1 Starting 
+ Container petclinic-c790590b-backend-1 Started 
+ Container petclinic-c790590b-backend-1 Waiting 
+ Container petclinic-c790590b-backend-1 Waiting 
+ Container petclinic-c790590b-backend-1 Healthy 
+ Container petclinic-c790590b-reset-1 Starting 
+ Container petclinic-c790590b-backend-1 Healthy 
+ Container petclinic-c790590b-frontend-1 Starting 
+ Container petclinic-c790590b-frontend-1 Started 
+ Container petclinic-c790590b-reset-1 Started 
+ Container petclinic-c790590b-db-1 Waiting 
+ Container petclinic-c790590b-backend-1 Waiting 
+ Container petclinic-c790590b-notification-1 Waiting 
+ Container petclinic-c790590b-frontend-1 Waiting 
+ Container petclinic-c790590b-reset-1 Waiting 
+ Container petclinic-c790590b-reaper-1 Waiting 
+ Container petclinic-c790590b-notification-1 Healthy 
+ Container petclinic-c790590b-reaper-1 Healthy 
+ Container petclinic-c790590b-backend-1 Healthy 
+ Container petclinic-c790590b-db-1 Healthy 
+ Container petclinic-c790590b-reset-1 Healthy 
+ Container petclinic-c790590b-frontend-1 Healthy 
     seed: reset (/__reset)
-    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/ds-audit.py --base-new http://localhost:54520 --base-old http://localhost:54512 --label-new "visits-paginated" --label-old main --screen "Welcome=welcome" --screen "Owners=owners" --screen "Add an owner=owners/add" --screen "Owner details=owners/8" --screen "Edit an owner=owners/8/edit" --screen "Add a pet=owners/8/pets/add" --screen "Pets=pets" --screen "Edit a pet=pets/11/edit" --screen "Book a visit=pets/11/visits/add" --screen "Visits=visits" --screen "Edit a visit=visits/1/edit" --screen "Pet types=pettypes" --screen "Add a pet type=pettypes/add" --screen "Edit a pet type=pettypes/1/edit" --screen "Specialties=specialties" --screen "Edit a specialty=specialties/1/edit" --screen "Vets=vets" --screen "Add a vet=vets/add" --screen "Edit a vet=vets/1/edit" --source petclinic-frontend/src  --assets .human-review/assets --asset-prefix assets --json .human-review/assets/ds-audit.json -o .human-review/assets/ds-audit.html
-[ds-audit] Welcome: capturing http://localhost:54520/welcome
-[ds-audit] Welcome: capturing http://localhost:54512/welcome
-[ds-audit] Owners: capturing http://localhost:54512/owners
-[ds-audit] Owners: capturing http://localhost:54520/owners
-[ds-audit] Add an owner: capturing http://localhost:54520/owners/add
-[ds-audit] Add an owner: capturing http://localhost:54512/owners/add
-[ds-audit] Owner details: capturing http://localhost:54520/owners/8
-[ds-audit] Owner details: capturing http://localhost:54512/owners/8
-[ds-audit] Edit an owner: capturing http://localhost:54520/owners/8/edit
-[ds-audit] Edit an owner: capturing http://localhost:54512/owners/8/edit
-[ds-audit] Add a pet: capturing http://localhost:54520/owners/8/pets/add
-[ds-audit] Add a pet: capturing http://localhost:54512/owners/8/pets/add
-[ds-audit] Pets: capturing http://localhost:54520/pets
-[ds-audit] Pets: capturing http://localhost:54512/pets
-[ds-audit] Edit a pet: capturing http://localhost:54520/pets/11/edit
-[ds-audit] Edit a pet: capturing http://localhost:54512/pets/11/edit
-[ds-audit] Book a visit: capturing http://localhost:54520/pets/11/visits/add
-[ds-audit] Book a visit: capturing http://localhost:54512/pets/11/visits/add
-[ds-audit] Visits: capturing http://localhost:54520/visits
-[ds-audit] Visits: capturing http://localhost:54512/visits
-[ds-audit] Edit a visit: capturing http://localhost:54520/visits/1/edit
-[ds-audit] Edit a visit: capturing http://localhost:54512/visits/1/edit
-[ds-audit] Pet types: capturing http://localhost:54520/pettypes
-[ds-audit] Pet types: capturing http://localhost:54512/pettypes
-[ds-audit] Add a pet type: capturing http://localhost:54520/pettypes/add
-[ds-audit] Add a pet type: capturing http://localhost:54512/pettypes/add
-[ds-audit] Edit a pet type: capturing http://localhost:54512/pettypes/1/edit
-[ds-audit] Edit a pet type: capturing http://localhost:54520/pettypes/1/edit
-[ds-audit] Specialties: capturing http://localhost:54520/specialties
-[ds-audit] Specialties: capturing http://localhost:54512/specialties
-[ds-audit] Edit a specialty: capturing http://localhost:54520/specialties/1/edit
-[ds-audit] Edit a specialty: capturing http://localhost:54512/specialties/1/edit
-[ds-audit] Vets: capturing http://localhost:54520/vets
-[ds-audit] Vets: capturing http://localhost:54512/vets
-[ds-audit] Add a vet: capturing http://localhost:54520/vets/add
-[ds-audit] Add a vet: capturing http://localhost:54512/vets/add
-[ds-audit] Edit a vet: capturing http://localhost:54520/vets/1/edit
-[ds-audit] Edit a vet: capturing http://localhost:54512/vets/1/edit
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/ds-audit.py --base-new http://localhost:52592 --base-old http://localhost:55366 --label-new "visits-paginated" --label-old main --screen "Welcome=welcome" --screen "Owners=owners" --screen "Add an owner=owners/add" --screen "Owner details=owners/8" --screen "Edit an owner=owners/8/edit" --screen "Add a pet=owners/8/pets/add" --screen "Pets=pets" --screen "Edit a pet=pets/11/edit" --screen "Book a visit=pets/11/visits/add" --screen "Visits=visits" --screen "Edit a visit=visits/1/edit" --screen "Pet types=pettypes" --screen "Add a pet type=pettypes/add" --screen "Edit a pet type=pettypes/1/edit" --screen "Specialties=specialties" --screen "Edit a specialty=specialties/1/edit" --screen "Vets=vets" --screen "Add a vet=vets/add" --screen "Edit a vet=vets/1/edit" --source petclinic-frontend/src  --assets .human-review/assets --asset-prefix assets --json .human-review/assets/ds-audit.json -o .human-review/assets/ds-audit.html
+[ds-audit] Welcome: capturing http://localhost:52592/welcome
+[ds-audit] Welcome: capturing http://localhost:55366/welcome
+[ds-audit] Owners: capturing http://localhost:52592/owners
+[ds-audit] Owners: capturing http://localhost:55366/owners
+[ds-audit] Add an owner: capturing http://localhost:52592/owners/add
+[ds-audit] Add an owner: capturing http://localhost:55366/owners/add
+[ds-audit] Owner details: capturing http://localhost:52592/owners/8
+[ds-audit] Owner details: capturing http://localhost:55366/owners/8
+[ds-audit] Edit an owner: capturing http://localhost:52592/owners/8/edit
+[ds-audit] Edit an owner: capturing http://localhost:55366/owners/8/edit
+[ds-audit] Add a pet: capturing http://localhost:52592/owners/8/pets/add
+[ds-audit] Add a pet: capturing http://localhost:55366/owners/8/pets/add
+[ds-audit] Pets: capturing http://localhost:52592/pets
+[ds-audit] Pets: capturing http://localhost:55366/pets
+[ds-audit] Edit a pet: capturing http://localhost:52592/pets/11/edit
+[ds-audit] Edit a pet: capturing http://localhost:55366/pets/11/edit
+[ds-audit] Book a visit: capturing http://localhost:52592/pets/11/visits/add
+[ds-audit] Book a visit: capturing http://localhost:55366/pets/11/visits/add
+[ds-audit] Visits: capturing http://localhost:52592/visits
+[ds-audit] Visits: capturing http://localhost:55366/visits
+[ds-audit] Edit a visit: capturing http://localhost:52592/visits/1/edit
+[ds-audit] Edit a visit: capturing http://localhost:55366/visits/1/edit
+[ds-audit] Pet types: capturing http://localhost:52592/pettypes
+[ds-audit] Pet types: capturing http://localhost:55366/pettypes
+[ds-audit] Add a pet type: capturing http://localhost:52592/pettypes/add
+[ds-audit] Add a pet type: capturing http://localhost:55366/pettypes/add
+[ds-audit] Edit a pet type: capturing http://localhost:52592/pettypes/1/edit
+[ds-audit] Edit a pet type: capturing http://localhost:55366/pettypes/1/edit
+[ds-audit] Specialties: capturing http://localhost:52592/specialties
+[ds-audit] Specialties: capturing http://localhost:55366/specialties
+[ds-audit] Edit a specialty: capturing http://localhost:52592/specialties/1/edit
+[ds-audit] Edit a specialty: capturing http://localhost:55366/specialties/1/edit
+[ds-audit] Vets: capturing http://localhost:52592/vets
+[ds-audit] Vets: capturing http://localhost:55366/vets
+[ds-audit] Add a vet: capturing http://localhost:52592/vets/add
+[ds-audit] Add a vet: capturing http://localhost:55366/vets/add
+[ds-audit] Edit a vet: capturing http://localhost:52592/vets/1/edit
+[ds-audit] Edit a vet: capturing http://localhost:55366/vets/1/edit
 [ds-audit] .human-review/assets/ds-audit.html · 19 screen(s), 2 gap(s), 3 component(s), 2 regression(s) → .human-review/assets/ds-audit.json
+    $ ./start-docker.sh down petclinic-c790590b
+ Container petclinic-c790590b-reaper-1 Stopping 
+ Container petclinic-c790590b-reset-1 Stopping 
+ Container petclinic-c790590b-frontend-1 Stopping 
+ Container petclinic-c790590b-frontend-1 Stopped 
+ Container petclinic-c790590b-frontend-1 Removing 
+ Container petclinic-c790590b-frontend-1 Removed 
+ Container petclinic-c790590b-reset-1 Stopped 
+ Container petclinic-c790590b-reset-1 Removing 
+ Container petclinic-c790590b-reset-1 Removed 
+ Container petclinic-c790590b-backend-1 Stopping 
+ Container petclinic-c790590b-reaper-1 Stopped 
+ Container petclinic-c790590b-reaper-1 Removing 
+ Container petclinic-c790590b-reaper-1 Removed 
+ Container petclinic-c790590b-backend-1 Stopped 
+ Container petclinic-c790590b-backend-1 Removing 
+ Container petclinic-c790590b-backend-1 Removed 
+ Container petclinic-c790590b-db-1 Stopping 
+ Container petclinic-c790590b-notification-1 Stopping 
+ Container petclinic-c790590b-notification-1 Stopped 
+ Container petclinic-c790590b-notification-1 Removing 
+ Container petclinic-c790590b-notification-1 Removed 
+ Container petclinic-c790590b-db-1 Stopped 
+ Container petclinic-c790590b-db-1 Removing 
+ Container petclinic-c790590b-db-1 Removed 
+ Volume petclinic-c790590b_pgdata Removing 
+ Volume petclinic-c790590b_activity Removing 
+ Network petclinic-c790590b_default Removing 
+ Volume petclinic-c790590b_seed Removing 
+ Volume petclinic-c790590b_pgdata Removed 
+ Volume petclinic-c790590b_activity Removed 
+ Volume petclinic-c790590b_seed Removed 
+ Network petclinic-c790590b_default Removed 
+🛑 petclinic-c790590b
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/ds-audit.py --css > .human-review/assets/ds-audit.css

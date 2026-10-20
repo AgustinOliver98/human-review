@@ -1,7 +1,7 @@
 {
  "diagram": "petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml",
  "test": "visits.spec.ts",
- "trace": "130c8ce7599c4f92351e1891241900ac",
+ "trace": "59accf0d21c6b2b6244e610ea338c4f4",
  "traces": 1,
  "spans": 12,
  "services": [
@@ -9,5 +9,5 @@
   "petclinic-backend"
  ],
  "root": "GET",
- "at": "2026-10-10T20:52:03+00:00"
+ "at": "2026-10-20T04:44:41+00:00"
 }

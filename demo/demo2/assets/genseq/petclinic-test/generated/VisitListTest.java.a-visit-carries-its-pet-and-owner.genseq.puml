@@ -3,7 +3,7 @@
 hide footbox
 skinparam hyperlinkUnderline false
 skinparam hyperlinkColor #1A4FA0
-title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:89{Click to open the test} VisitListTest: aVisitCarriesItsPetAndOwner()]]
+title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:89{Click to open the test} Test: VisitListTest: a visit carries its pet and owner]]
 footer traced because this branch wrote it in petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java — generated from real traces of end-to-end test runs, do not edit ❗
 participant Test
 participant Backend

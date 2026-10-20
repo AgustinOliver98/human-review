@@ -55,7 +55,7 @@
         "protocol": "SQL + HTTP",
         "operations": 12,
         "operationsDelta": 0,
-        "calls": 256,
+        "calls": 276,
         "detail": [
           {
             "name": "",
@@ -100,22 +100,22 @@
           {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 14
+            "calls": 15
           },
           {
             "name": "select owners",
             "path": "",
-            "calls": 5
+            "calls": 7
           },
           {
             "name": "select pets",
             "path": "",
-            "calls": 84
+            "calls": 98
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 101
+            "calls": 104
           }
         ],
         "toKind": "db"
@@ -127,12 +127,12 @@
         "protocol": "HTTP",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 1,
+        "calls": 2,
         "detail": [
           {
             "name": "",
             "path": "POST /api/notifications/visit-booked",
-            "calls": 1
+            "calls": 2
           }
         ],
         "toKind": "container"
@@ -142,14 +142,19 @@
         "to": "Backend",
         "status": "same",
         "protocol": "HTTP",
-        "operations": 4,
+        "operations": 5,
         "operationsDelta": 0,
-        "calls": 11,
+        "calls": 13,
         "detail": [
+          {
+            "name": "Add a visit for an owner's pet",
+            "path": "POST /api/owners/{ownerId}/pets/{petId}/visits",
+            "calls": 1
+          },
           {
             "name": "Get an owner by ID",
             "path": "GET /api/owners/{ownerId}",
-            "calls": 2
+            "calls": 3
           },
           {
             "name": "List owners",
@@ -176,12 +181,12 @@
         "protocol": "calls",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 1,
+        "calls": 2,
         "detail": [
           {
             "name": "send-sms",
             "path": "",
-            "calls": 1
+            "calls": 2
           }
         ],
         "toKind": "external"
@@ -388,7 +393,7 @@
         "protocol": "SQL + HTTP",
         "operations": 12,
         "operationsDelta": 0,
-        "calls": 256,
+        "calls": 276,
         "detail": [
           {
             "name": "",
@@ -433,22 +438,22 @@
           {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 14
+            "calls": 15
           },
           {
             "name": "select owners",
             "path": "",
-            "calls": 5
+            "calls": 7
           },
           {
             "name": "select pets",
             "path": "",
-            "calls": 84
+            "calls": 98
           },
           {
             "name": "select visits",
             "path": "",
-            "calls": 101
+            "calls": 104
           }
         ],
         "toKind": "db"
@@ -460,12 +465,12 @@
         "protocol": "HTTP",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 1,
+        "calls": 2,
         "detail": [
           {
             "name": "",
             "path": "POST /api/notifications/visit-booked",
-            "calls": 1
+            "calls": 2
           }
         ],
         "toKind": "container"
@@ -475,14 +480,19 @@
         "to": "Backend",
         "status": "same",
         "protocol": "HTTP",
-        "operations": 4,
-        "operationsDelta": -1,
-        "calls": 11,
+        "operations": 5,
+        "operationsDelta": 0,
+        "calls": 13,
         "detail": [
+          {
+            "name": "Add a visit for an owner's pet",
+            "path": "POST /api/owners/{ownerId}/pets/{petId}/visits",
+            "calls": 1
+          },
           {
             "name": "Get an owner by ID",
             "path": "GET /api/owners/{ownerId}",
-            "calls": 2
+            "calls": 3
           },
           {
             "name": "List owners",
@@ -509,12 +519,12 @@
         "protocol": "calls",
         "operations": 1,
         "operationsDelta": 0,
-        "calls": 1,
+        "calls": 2,
         "detail": [
           {
             "name": "send-sms",
             "path": "",
-            "calls": 1
+            "calls": 2
           }
         ],
         "toKind": "external"
@@ -536,5 +546,5 @@
       "onlyOld": []
     }
   },
-  "base": "f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf"
+  "base": "c790590b10e89e90a7bf228bad0137d09eedef97"
 }

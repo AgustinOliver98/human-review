@@ -1,1 +1,11 @@
-  = diagrams: unchanged, 33.2 s saved
+  * diagrams -> data,packages
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/puml-diff.sh c790590b10e89e90a7bf228bad0137d09eedef97 .human-review/assets/diagrams
+[puml-diff] petclinic-test/generated/VisitListTest.java.avisitcarriesitspetandowner.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_VisitListTest.java.avisitcarriesitspetandowner.genseq.diff.puml
+[puml-diff] petclinic-test/generated/VisitListTest.java.defaultpage-isthetenlatestvisits.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_VisitListTest.java.defaultpage-isthetenlatestvisits.genseq.diff.puml
+[puml-diff] petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.diff.puml
+[puml-diff] petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.diff.puml
+[puml-diff] petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.diff.puml
+[puml-diff] 5 diagram(s) -> .human-review/assets/diagrams (see MANIFEST.tsv)
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base c790590b10e89e90a7bf228bad0137d09eedef97 --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'
+.human-review/assets/conceptual-{original,new,diff}.svg  (added 0 boxes, 0 lines · removed 0 boxes, 0 lines · 0 changed · 0 moved, rendered by drawio)
+  8 concept(s) linked to their class

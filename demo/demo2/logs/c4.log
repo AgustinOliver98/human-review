@@ -1,1 +1,4 @@
-  = c4: unchanged, 17.4 s saved
+  * c4 -> packages
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/playwright-python.sh
+    $ /Users/victorrentea/.cache/human-review/shots-venv/bin/python /Users/victorrentea/workspace/human-review/skills/human-review/scripts/structurizr-views.py --base c790590b10e89e90a7bf228bad0137d09eedef97 --out-dir .human-review/assets/c4
+structurizr-views: 6 view(s) drawn from petclinic-backend/docs/c4model.c1+c2.dsl (C2-Containers=unchanged, C2-BackendOutbound=unchanged, C3-Components-All=unchanged, C3-Repository=unchanged, C3-Mapper=unchanged, C1-Context=unchanged)
