@@ -193,7 +193,7 @@ a.cx-why-line:hover code { text-decoration:underline; }
 a.cg-go { display:inline-block; min-width:14px; text-align:center; border-radius:3px;
           font:700 11px/14px system-ui,sans-serif; color:var(--link); text-decoration:none; }
 a.cg-go:hover { background:var(--link); color:var(--card); }
-.cg-kh a.cg-go, .cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
 .cg-mh a.cg-go { opacity:.45; }
 .cg-n:hover .cg-mh a.cg-go, .cg-n:focus-within .cg-mh a.cg-go { opacity:1; }
 /* Clicked open: a tint of the link blue, and its frame unless the branch's green holds it. */
