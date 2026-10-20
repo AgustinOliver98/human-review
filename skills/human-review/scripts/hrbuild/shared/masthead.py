@@ -194,7 +194,7 @@ def ref_badges(spec: dict, state: dict | None = None) -> str:
     is then free to be a title.
 
     They are chips, not parenthesised asides, because in that row `(test-pr)` beside
-    `files +1 / ✍️40` reads as an unlabelled number. The label is what makes the pair
+    `files +1 / ✏️40` reads as an unlabelled number. The label is what makes the pair
     legible in one pass, and it costs four characters.
 
     The chip carries `N↓` before the base ref when the two refs have drifted apart — the base has moved

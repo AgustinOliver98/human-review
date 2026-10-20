@@ -18,8 +18,9 @@ TESTCHANGES = HERE / "test-changes.py"
 # The scope bar's third sign, beside `+` and `−`. It was `±`, which everywhere else a
 # reader has met it means a *range* — "forty, give or take" — while the count of edited
 # files is exact. A pencil says "someone went in and changed these", which is the fact,
-# and it is the mark the page already uses for an edited row further down.
-PENCIL = "\u270d\ufe0f"
+# and it is the mark the page already uses for an edited row further down. ✏️, not the
+# ✍️ writing hand it was until 20 Oct 2026 (Victor: "replace the hand with a pencil").
+PENCIL = "\u270f\ufe0f"
 
 
 #: A diagram whose file name is an abbreviation a heading should spell out: the card

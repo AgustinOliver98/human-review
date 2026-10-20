@@ -1096,7 +1096,7 @@ def _main(argv=None) -> int:
             if not frag:
                 return "", 0, 0
             # No default heading: the ledger's own summary line — `+56 new · −6 gone ·
-            # ✍10 edited` — is its title, and the anchor (eval run 11). An explicit
+            # ✏️10 edited` — is its title, and the anchor (eval run 11). An explicit
             # `title` still renders.
             return (heading(block, "test-ledger-title", block.get("title", "")) + frag,
                     1, moved)

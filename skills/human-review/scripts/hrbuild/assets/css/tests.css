@@ -68,14 +68,14 @@ ul.req-tests li { list-style:none; }
 /* Edited only through a same-file helper it calls: the hover names the helper. */
 .tnote.tvia { color:var(--drift); cursor:help; border-bottom:1px dotted currentColor; }
 /* The ledger: what the change set did to the tests, one line of counts —
-   `+56 −6 ✍10` — each sign's meaning (and, for the tests gone or no longer running, their
+   `+56 −6 ✏️10` — each sign's meaning (and, for the tests gone or no longer running, their
    names) on its hover. Plain text: it used to fold open into the list of every moved test,
    which on the requirements map repeated the covering card's own rows. */
 .tledger { margin:.9rem 0 1rem; font-variant-numeric:tabular-nums; }
 .tledger { display:inline-flex; gap:.6rem; align-items:baseline; }
 .rm-who[data-tip] { cursor:help; }
 .tledger[data-tip], .tledger [data-tip] { cursor:help; }
-/* The three counts, `+ − ✍️`, each in its slot; an empty slot holds a column only on the
+/* The three counts, `+ − ✏️`, each in its slot; an empty slot holds a column only on the
    covering card (tests.py), anywhere else it takes no room. */
 .tmoves { display:inline-flex; gap:.6rem; }
 .tmoves > :empty { display:none; }

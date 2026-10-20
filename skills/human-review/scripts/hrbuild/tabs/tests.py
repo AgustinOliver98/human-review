@@ -207,7 +207,7 @@ def _names_by_file(rows) -> str:
 
 def render_test_ledger(rows, root: Path) -> tuple[str, int]:
     """What the change set did to the tests, as one line of counts — `(html, how many it
-    moved)`: `+54 −9 ✍7`, each sign's meaning on its hover, and the untouched rest counted
+    moved)`: `+54 −9 ✏️7`, each sign's meaning on its hover, and the untouched rest counted
     on the line's.
 
     It used to fold open into the grouped list of every moved test. Victor dropped the
@@ -234,7 +234,7 @@ def render_test_ledger(rows, root: Path) -> tuple[str, int]:
     moved = len(off) + len(new) + len(gone) + len(edited)
     if not moved and not untouched:
         return "", 0
-    # The three moves are their signs and their counts only, `+54 −9 ✍7` (Victor, 5 Oct
+    # The three moves are their signs and their counts only, `+54 −9 ✏️7` (Victor, 5 Oct
     # 2026): on the covering card's header strip the words and the dots made the line
     # longer than the title it sits beside. The word each sign stands for is on its hover.
     def count(cls: str, face: str, items: list, what: str, named: bool = False) -> str:
@@ -1102,12 +1102,11 @@ def coverage_side(side: str, frag: str, spec: dict, out_dir: Path, root: Path,
             return side
         note = COV_NOT_MEASURED_SCRIPTED if generated else COV_NOT_MEASURED
         return side[:span[1]] + f'<p class="cov-none">{note}</p>' + side[span[1]:]
-    # The shield and the title are one thing to hover (Victor, 7 Oct 2026): the tooltip sat
-    # on the title alone, and the shield beside it - the more tooltip-looking of the two -
-    # answered nothing.
+    # No shield before the title (Victor, 20 Oct 2026): the card's choice (testchapters.js)
+    # lists the AI-paired tests or all of them as often as the measured ones, so the
+    # "measured by a coverage probe" mark no longer speaks for the whole list.
     head = (f'<div class="rm-tkhead"><span class="cov-head" '
             f'data-tip="{html.escape(covcard_tip(doc), quote=True)}">'
-            f'<span class="rm-av cov-av" aria-hidden="true">{COV_SHIELD}</span>'
             f'<span class="rm-who">{covcard_who(spec, out_dir)}</span></span></div>')
     side = re.sub(r'<div class="rm-tkhead">.*?</div>', lambda _: head, side, count=1, flags=re.S)
     # Last in the column, under the card: the suites missing from it are a footnote to it.
@@ -1428,7 +1427,7 @@ REQMAP_CSS = """
   margin-right:-21px;position:relative;z-index:1}
 .reqmap .rm-ch[data-open=yes] > .rm-chh .rm-chcaret{transform:rotate(90deg)}
 .reqmap .rm-chsub{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* The counts are a grid of four fixed columns, `−`, ✍️, `+` and the chapter's total,
+/* The counts are a grid of four fixed columns, `−`, ✏️, `+` and the chapter's total,
    right-aligned and empty when zero, here and in the card title's `.tmoves` alike (whose
    fourth is blank): the numbers stand in columns. The `+N` right before the total, both in
    the Complexity tab's faces - `.cx-badge` and `.cx-n`, `+1 12` (Victor, 19 Oct 2026). */
@@ -1490,12 +1489,14 @@ REQMAP_CSS = """
    title. The title gives way instead, cut with an ellipsis; its hover keeps the rest. A
    page with the changed-tests ledger keeps the wrap that ledger's own row needs. */
 .reqmap .rm-code > .rm-tkhead:not(:has(> .tledger .toff)){flex-wrap:nowrap}
-/* The grand total says the ledger's `− ✍️ +` again, one row up (Victor, 20 Oct 2026: "why
+/* The grand total says the ledger's `− ✏️ +` again, one row up (Victor, 20 Oct 2026: "why
    do I see these numbers twice?"): under it the ledger keeps only "N stopped running",
    and with nothing of that goes altogether. */
 .reqmap .rm-code > .rm-tkhead:has(> .rm-grand) > .tledger .tmoves{display:none}
 .reqmap .rm-code > .rm-tkhead:has(> .rm-grand) > .tledger:not(:has(.toff)){display:none}
-.reqmap .rm-code > .rm-tkhead > .cov-head{flex:0 1 auto;min-width:0}
+.reqmap .rm-code > .rm-tkhead > .cov-head{flex:0 0 auto}
+/* "Tests:" is never cut (Victor, 20 Oct 2026): on a narrow card the choice gives way. */
+.reqmap .rm-code > .rm-tkhead > .cov-head .rm-who{overflow:visible;text-overflow:clip}
 .reqmap .rm-code > .rm-tkhead > .cov-head .rm-who{min-width:0;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 /* The counts take a row of their own, right-aligned, so their three columns end where the
@@ -1558,7 +1559,7 @@ REQMAP_CSS = """
      long; they scroll inside a cap rather than squeeze the list above them to nothing. */
   .reqmap .rm-gap,.reqmap .rm-side > .cov-after{flex:none;max-height:35vh;overflow-y:auto}
 }
-/* The changed-tests counts (`+54 −9 ✍️7`) sit on the card's title row, at its right end. */
+/* The changed-tests counts (`+54 −9 ✏️7`) sit on the card's title row, at its right end. */
 .reqmap .rm-code > .rm-tkhead{flex-wrap:wrap}
 .reqmap .rm-code > .rm-tkhead > .tledger{font-weight:400}
 /* Stacked, the grid is one column: title, ticket, card. The gutter the two columns shared

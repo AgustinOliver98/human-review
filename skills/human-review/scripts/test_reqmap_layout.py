@@ -100,8 +100,8 @@ def test_the_title_row_over_the_card_offers_all_tests_where_the_filters_stood(tm
                               'class="rm-side"')
     assert head < cats < side
     js = T.REQMAP_CHAPTERS_JS
-    assert "var MODES = [['cover', 'covering \\uD83E\\uDD16 the change set'," in js
-    assert "['run', 'running the change set'," in js and "['all', 'all'," in js
+    assert "var MODES = [['cover', 'covering \\uD83E\\uDD16 the change'," in js
+    assert "['run', 'running the change'," in js and "['all', 'all'," in js
     assert "who.textContent = 'Tests:';" in js
     assert "return mode === 'cover' ? paired(row) : !folded(row);" in js
     assert "sec.hidden = !n;" in js                       # an emptied chapter goes

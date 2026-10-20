@@ -78,10 +78,10 @@ def _run10_masthead() -> str:
     spec = {"pr": {"branch": "hr-claude-10", "base": "main",
                    "repo": "https://github.com/victorrentea/petclinic"}}
     bar = "".join(chips.chip_html(c) for c in [
-        {"label": "files", "value": '<span class="added">+6</span> / ✍️26', "tip": "t"},
+        {"label": "files", "value": '<span class="added">+6</span> / ✏️26', "tip": "t"},
         {"label": "lines", "value": '<span class="added">+1330</span> / −292', "tip": "t",
          "href": "https://example.com"},
-        {"label": "tests", "value": "+54 / −9 / ✍️7", "tip": "t", "href": "#t"},
+        {"label": "tests", "value": "+54 / −9 / ✏️7", "tip": "t", "href": "#t"},
         {"face": chips.review_chip_face(10, 6, 6), "tip": "t", "href": "#t"}])
     strip = ('<div class="tabstrip" role="tablist"><button type="button" class="tab" '
              'role="tab" aria-controls="p1">Review</button></div>')

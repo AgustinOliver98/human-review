@@ -154,9 +154,9 @@
   });
   // "covering" carries the 🤖: which test covers which sentence is a model's mapping, not
   // a measurement (Victor, 20 Oct 2026); "running" is measured, so it has none.
-  var MODES = [['cover', 'covering \uD83E\uDD16 the change set',
+  var MODES = [['cover', 'covering \uD83E\uDD16 the change',
                 'Tests paired with a sentence of the ticket, the ones wearing the fork.'],
-               ['run', 'running the change set',
+               ['run', 'running the change',
                 'Tests that ran a changed line, as captured by a coverage probe.'],
                ['all', 'all', 'All tests, as captured by a coverage probe.']];
   var head = map.querySelector('.rm-code > .rm-tkhead');
@@ -173,7 +173,7 @@
     head.insertBefore(pick, who.closest('.cov-head').nextSibling);
   }
   // The grand total, on the card's title row in the chapters' own four columns: the sum of
-  // their `−`, ✍️ and `+` and of the tests listed (Victor, 19 Oct 2026: the masthead's
+  // their `−`, ✏️ and `+` and of the tests listed (Victor, 19 Oct 2026: the masthead's
   // `tests +20` is the chapters' `+11` and `+9`, and nothing on the card added them up).
   var grand = null;
   if (head) {
@@ -262,7 +262,7 @@
     if (row.classList.contains('rm-other')) return false;
     return mode === 'cover' ? paired(row) : !folded(row);
   }
-  // `−`, ✍️, `+` and the total, four slots always, an empty one kept (Victor, 14 Oct 2026:
+  // `−`, ✏️, `+` and the total, four slots always, an empty one kept (Victor, 14 Oct 2026:
   // "align in columns"), so the chapters' counts and the grand total stand in columns.
   function led(st, n, K, what) {
     var k = K ? ' ' + K : '';
@@ -270,7 +270,7 @@
     return (st.deleted ? '<span class="removed" data-tip="' + st.deleted + k + tests(st.deleted)
         + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
       + (st.edited ? '<span class="changed" data-tip="' + st.edited + k + tests(st.edited)
-        + ' edited">\u270D\uFE0F' + st.edited + '</span>' : '<span></span>')
+        + ' edited">\u270F\uFE0F' + st.edited + '</span>' : '<span></span>')
       + (st.new ? '<span class="added" data-tip="' + st.new + ' new' + k + tests(st.new) + '">+'
         + st.new + '</span>' : '<span></span>')
       + '<span class="rm-chn" data-tip="' + n + k + tests(n) + ' ' + what + '">' + n + '</span>';

@@ -376,7 +376,7 @@ def _row(name: str, rel: str, status: str, line: int | None,
 # declaration, its body. The body used to be "up to the next declaration", which for the
 # last test of a file was nothing at all — `next(…, line + 1)`, the declaration line alone —
 # so eval run 8's OwnerSearchThroughLatencyProxyTest, one test with its assertion rewritten,
-# came out `unchanged` and the ✍️ chip read one short. It also charged a changed
+# came out `unchanged` and the ✏️ chip read one short. It also charged a changed
 # `@ValueSource` to the test *above* it, and a helper edited between two tests to the first.
 _BRACED = (".java", ".kt", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".go")
 _STRINGS = re.compile(r"\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`")

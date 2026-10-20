@@ -1,6 +1,6 @@
 """The change set, file by file: what each number on the page is a count of.
 
-The masthead says `files +26 / ✍23` and a package box on the Structure tab is shaded by
+The masthead says `files +26 / ✏️23` and a package box on the Structure tab is shaded by
 how much of the branch landed in it. Both are counts, and a count the reader cannot open
 is one they take on trust. So both carry the list behind them, as `data-tip-pop` (tip.js:
 a tip that takes the pointer, scrolls, and holds its links in the Tab order), each file a

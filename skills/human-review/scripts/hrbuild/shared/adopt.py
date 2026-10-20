@@ -305,7 +305,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             '<b>green</b> = proven · <b>orange</b> = partly · <b>red</b> = no test; AI-matched, may be wrong.',
             'Name colour = kind: E2E and API weigh most, they prove the feature, not one method.',
             'Click a sentence: a line to each test covering it; <b>▲ ▼</b> = more scrolled away.',
-            '<b>− ✍️ +</b> before a total: deleted, edited, new tests.',
+            '<b>− ✏️ +</b> before a total: deleted, edited, new tests.',
             'Dot: the DB data a test starts on; grey = Default, hollow = uses none of its rows.',
         ],
     },
