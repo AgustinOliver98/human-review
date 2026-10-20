@@ -1220,6 +1220,12 @@ def test_the_new_material_controls_are_judged_not_waved_through():
            "<b>combo</b>" in paginator["message"]
     assert sort["element"]["label"] == "matSort on Name, City"
     assert "no component for a <code>sortable table header</code>" in sort["message"]
+    # The rule under the row states the fact, like a `bare` one — no advice paragraph
+    # ("either the design system gets one, or the team agrees…") that read model-written.
+    assert ds.rule_html(paginator, reg, "Owners") == (
+        "An Angular Material paginator (<code>&lt;mat-paginator&gt;</code>); the design "
+        "system has no <code>paginator</code> component.")
+    assert paginator["history"] == "brought in by this branch"
     assert sorted(screen["summary"]["regressions"]) == sorted([paginator["id"], sort["id"]])
     assert screen["summary"]["new"]["foreign"] == 2
     result = ds.build_result([screen], reg)

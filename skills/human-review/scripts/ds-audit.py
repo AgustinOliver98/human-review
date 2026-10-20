@@ -755,8 +755,8 @@ def _kit_finding(side, n, kit, covered, claimed, nodes) -> dict:
         for m in inner)
     return _finding(
         side, n, "foreign", None,
-        f"not from the design system — {tag} is an {what}, and the design system has "
-        f"no component for a <code>{html.escape(kit_role)}</code>{parts}",
+        f"not from the design system — {tag}, an {what}; the design system has no "
+        f"component for a <code>{html.escape(kit_role)}</code>{parts}",
         role_name=kit_role)
 
 
@@ -892,10 +892,10 @@ def rule_html(f: dict, registry: dict, screen: str) -> str:
                 "role should be.")
     if f["verdict"] == "foreign":
         what = kit[0] if kit else f'<code>{html.escape(el["tag"])}</code>'
-        return (f"{_a(what)} ({tag}) is a control from outside the design system, which "
-                f'has no component for a <code>{html.escape(f.get("role") or "")}</code>: '
-                "either the design system gets one, or the team agrees this library is "
-                "allowed here — otherwise every screen picks its own.")
+        # A fact, like the `bare` rule: no advice paragraph on what the team should
+        # agree (20 Oct 2026, Victor: it read as model-written, on a tab that costs $0).
+        return (f"{_a(what)} ({tag}); the design system has no "
+                f'<code>{html.escape(f.get("role") or "")}</code> component.')
     owners = f.get("expected_ds") or []
     offers = " or ".join(_component_tag(d, registry) for d in owners) or "a component"
     used = [n for n in (_other_screens(d, registry, screen) for d in owners) if n]
@@ -2607,7 +2607,7 @@ def build_screen(name, old_snap, new_snap, registry, *, sides_meta, delta,
             # Not "new"/"added": the element's delta column says that, and an element the
             # base already had (a <table> that gains matSort) reads "changed" there —
             # eval runs 14-18 flagged "changed" beside "new on this branch: added".
-            f["history"] = ("brought in by this branch, from outside the design system"
+            f["history"] = ("brought in by this branch"
                             if f["verdict"] == "foreign" else
                             "this branch shipped it bare, never migrated")
             regressions.append(f["id"])
