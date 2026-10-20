@@ -623,7 +623,8 @@
         :s.cov==='unconfirmed'?'<span class="rm-do"> \u00B7 unconfirmed \u00B7 run the 🤖</span>'
         :s.cov==='narrowed'?'<span class="rm-do"> \u00B7 narrowed by '
           +(s.decisionName?esc(s.decisionName):'a recorded decision')+'</span>'
-        :'<span class="rm-do"> \u00B7 '+(s.by==='model'?'🤖 checked by AI':'paired by script')+'</span>';
+        // A model's pairing is its opinion, and says so in one word (Victor, 20 Oct 2026).
+        :'<span class="rm-do">'+(s.by==='model'?' \u2013 🤖 opinion':' \u00B7 paired by script')+'</span>';
     // What a partial or narrowed sentence lacks, in the matching pass's own words (its
     // `gap`): the hatch says "not all of it", and only the hover can say which part
     // without a click (Victor, 5 Oct 2026).

@@ -264,11 +264,15 @@
   }
   // `−`, ✏️, `+` and the total, four slots always, an empty one kept (Victor, 14 Oct 2026:
   // "align in columns"), so the chapters' counts and the grand total stand in columns.
-  function led(st, n, K, what) {
+  // The `−N` is no tip but the popover under it (`goneHtml`): which tests went, each a way
+  // into the IDE (Victor, 20 Oct 2026: "how could you render the tests gone?"). `cat` is
+  // the chapter's kind, '' for the grand total's every kind.
+  function led(st, n, K, what, cat) {
     var k = K ? ' ' + K : '';
     function tests(x) { return ' test' + (x === 1 ? '' : 's'); }
-    return (st.deleted ? '<span class="removed" data-tip="' + st.deleted + k + tests(st.deleted)
-        + ' gone">\u2212' + st.deleted + '</span>' : '<span></span>')
+    return (st.deleted ? '<span class="removed" tabindex="0" data-gone="' + esc(cat || '')
+        + '" aria-label="' + st.deleted + k + tests(st.deleted) + ' deleted">\u2212'
+        + st.deleted + '</span>' : '<span></span>')
       + (st.edited ? '<span class="changed" data-tip="' + st.edited + k + tests(st.edited)
         + ' edited">\u270F\uFE0F' + st.edited + '</span>' : '<span></span>')
       + (st.new ? '<span class="added" data-tip="' + st.new + ' new' + k + tests(st.new) + '">+'
@@ -294,7 +298,7 @@
       });
       // The `+N` sits right in front of the total, as the Complexity tab writes `+1 12`.
       var K = esc(LABEL[c[0]] || c[0].toUpperCase());
-      sec.querySelector('.rm-chled').innerHTML = led(st, n, K, 'listed');
+      sec.querySelector('.rm-chled').innerHTML = led(st, n, K, 'listed', c[0]);
       Object.keys(st).forEach(function (k) { sum[k] += st[k]; });
       total += n;
     });
@@ -331,14 +335,15 @@
   }
   list.addEventListener('click', function (e) {
     var h = e.target.closest('.rm-chh');
-    if (!h) return;
+    // The `−N` answers with its popover, not by folding the chapter it sits on.
+    if (!h || e.target.closest('.removed[data-gone]')) return;
     var sec = h.parentNode;
     openCh(sec, sec.dataset.open !== 'yes');
     window.dispatchEvent(new Event('resize'));
   });
   list.addEventListener('keydown', function (e) {
     var h = e.target.closest && e.target.closest('.rm-chh');
-    if (!h || (e.key !== 'Enter' && e.key !== ' ')) return;
+    if (!h || (e.key !== 'Enter' && e.key !== ' ') || e.target.closest('.removed[data-gone]')) return;
     e.preventDefault();
     openCh(h.parentNode, h.parentNode.dataset.open !== 'yes');
     window.dispatchEvent(new Event('resize'));
@@ -422,18 +427,102 @@
     if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 4);
     pop.style.left = left + 'px'; pop.style.top = top + 'px';
   }
+  // ---- the `−N`: which tests the branch deleted, and where they went -----------------------
+  // Locally each name opens its file in the IDE as a diff, the base commit on the left, the
+  // caret where the removal landed (semcov.py `deleted_ide`): the test is the red block in
+  // front of the reader. Through editor.js, as every diff handle on the page, so VS Code,
+  // IntelliJ, served or off disk all take the route they take for any other diff. Online,
+  // or where the file itself is gone, the name opens the test as it was on GitHub.
+  function online() { return document.documentElement.classList.contains('hr-online'); }
+  function goneRows(cat) {
+    var out = [];
+    Array.prototype.forEach.call(list.querySelectorAll('.rm-t .rm-st[data-st=deleted]'), function (s) {
+      var row = s.closest('.rm-t');
+      if (row && (!cat || row.dataset.cat === cat)) out.push(row);
+    });
+    return out;
+  }
+  function goneLink(t) {
+    var face = esc(human(t.title));
+    // Opened through `openIde` (the popover's click, below), not as a link of its own: the
+    // face is the test's name, and editor.js copies a link's face where no IDE is connected.
+    if (t.ide && !online()) return '<a href="' + esc(t.ide.href) + '" data-gone-id="' + esc(t.id) + '">' + face + '</a>';
+    if (t.href) return '<a href="' + esc(t.href) + '" target="_blank" rel="noopener">' + face + '</a>';
+    return '<span>' + face + '</span>';
+  }
+  function goneHtml(cat) {
+    var rows = goneRows(cat);
+    if (!rows.length) return '';
+    var ide = !online() && rows.some(function (r) { var t = TESTS[r.dataset.id]; return t && t.ide; });
+    var K = cat ? (LABEL[cat] || cat.toUpperCase()) + ' ' : '';
+    return '<p class="rm-cph">' + rows.length + ' ' + esc(K) + 'test' + (rows.length === 1 ? '' : 's')
+      + ' deleted by this branch' + (ide ? ' \u2014 click: the diff in your IDE' : '')
+      + '</p><ul class="tiplist">' + rows.map(function (r) {
+        var t = TESTS[r.dataset.id] || {title: r.dataset.testName || '?'};
+        return '<li>' + goneLink(Object.assign({id: r.dataset.id}, t)) + ' <span class="rm-cpn">'
+          + esc(t.where || (r.dataset.file || '').split('/').pop()) + '</span></li>';
+      }).join('') + '</ul>';
+  }
+  // The deleted row's own links (its file, its excerpt's bar) go the same way: to the IDE
+  // locally, to the base commit on GitHub online — the href they were drawn with. The
+  // handle is a bare diff link with no face, so where no IDE is connected editor.js copies
+  // its `path:line` rather than a test's name.
+  function openIde(ide) {
+    var a = document.createElement('a');
+    a.href = ide.href;
+    a.setAttribute('data-diff-base', ide.base);
+    a.setAttribute('data-diff-path', ide.path);
+    if (ide.uri) a.setAttribute('data-diff-uri', ide.uri);
+    a.hidden = true;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  function goneAim(el) {
+    var a = el.closest && el.closest('.rm-t[data-gone=yes] a.srcref');
+    var row = a && a.closest('.rm-t'), t = row && TESTS[row.dataset.id];
+    return t && t.ide ? {a: a, t: t} : null;
+  }
+  list.addEventListener('click', function (e) {
+    var g = goneAim(e.target);
+    if (!g || online() || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    openIde(g.t.ide);
+  }, true);
+  // Its tip says which of the two the click does, asked as the pointer arrives: a served
+  // page is online until its probe answers. Before the page's tip reads it (document).
+  list.addEventListener('pointerover', function (e) {
+    var g = goneAim(e.target);
+    if (!g) return;
+    if (g.a.dataset.tipOnline === undefined) g.a.dataset.tipOnline = g.a.getAttribute('data-tip') || '';
+    g.a.setAttribute('data-tip', online() ? g.a.dataset.tipOnline : g.t.ide.path
+      + ' \u2014 deleted by this branch: opens as a diff in your IDE, the base commit on the left');
+  });
+
   function showPop(el) {
-    var row = el.closest('.rm-t'), c = row && COVER[(row.dataset.id || '').replace(/@base$/, '')];
-    if (!c) return;
+    var gone = el.matches('.removed[data-gone]'), c = null;
+    if (!gone) {
+      var row = el.closest('.rm-t');
+      c = row && COVER[(row.dataset.id || '').replace(/@base$/, '')];
+      if (!c) return;
+    }
+    var body = gone ? goneHtml(el.dataset.gone) : coverHtml(c);
+    if (!body) return;
     if (!pop) {
       pop = document.createElement('div');
       pop.className = 'rm-covpop';
       pop.setAttribute('role', 'tooltip');
       pop.addEventListener('pointerenter', function () { clearTimeout(hideT); });
       pop.addEventListener('pointerleave', function () { hideSoon(); });
+      pop.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[data-gone-id]'), t = a && TESTS[a.dataset.goneId];
+        if (!t || !t.ide || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        openIde(t.ide);
+      });
       document.body.appendChild(pop);
     }
-    pop.innerHTML = coverHtml(c);
+    pop.innerHTML = body;
     popFor = el;
     pop.classList.add('on');
     placePop(el);
@@ -448,17 +537,28 @@
     run.dataset.cover = 'yes';
   }
   Array.prototype.forEach.call(list.querySelectorAll('.rm-t[data-id]'), arm);
-  list.addEventListener('pointerover', function (e) {
-    var run = e.target.closest && e.target.closest('.rm-run[data-cover]');
+  // On the card, not the list: the grand total's `−N` sits in the title strip above it.
+  var POPS = '.rm-run[data-cover], .removed[data-gone]';
+  map.addEventListener('pointerover', function (e) {
+    var run = e.target.closest && e.target.closest(POPS);
     if (!run) return;
     clearTimeout(hideT);
     if (popFor === run) return;
     clearTimeout(showT);
     showT = setTimeout(function () { showPop(run); }, 150);
   });
-  list.addEventListener('pointerout', function (e) {
-    var run = e.target.closest && e.target.closest('.rm-run[data-cover]');
+  map.addEventListener('pointerout', function (e) {
+    var run = e.target.closest && e.target.closest(POPS);
     if (run && !run.contains(e.relatedTarget)) hideSoon();
+  });
+  // By keyboard too: the `−N` takes a tab stop, and its list is the only way to its names.
+  map.addEventListener('focusin', function (e) {
+    var g = e.target.closest && e.target.closest('.removed[data-gone]');
+    if (g) { clearTimeout(hideT); showPop(g); }
+  });
+  map.addEventListener('focusout', function (e) {
+    var g = e.target.closest && e.target.closest('.removed[data-gone]');
+    if (g && !(pop && pop.contains(e.relatedTarget))) hideSoon();
   });
   list.addEventListener('scroll', hidePop, {passive: true});
   function onEsc(e) { if (e.key === 'Escape') hidePop(); }

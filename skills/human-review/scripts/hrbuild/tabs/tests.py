@@ -1441,6 +1441,8 @@ REQMAP_CSS = """
 .reqmap .rm-chled > .rm-chn{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
   color:var(--fg,#1c1c1c)}
 .reqmap .rm-chled [data-tip]{cursor:help}
+/* The `−N` opens the list of the tests it counts (testchapters.js `goneHtml`). */
+.reqmap .rm-chled > .removed[data-gone]{cursor:pointer}
 .reqmap .rm-ch[data-open=no] > .rm-chb{display:none}
 /* Where a picked sentence's wire runs off the card's top or bottom edge (reqmap.js
    `drawSel`): `▲ 3` - three more of its tests that way. */

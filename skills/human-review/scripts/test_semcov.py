@@ -471,7 +471,8 @@ def test_who_paired_a_sentence_is_said_on_its_hover_not_after_every_clause(tmp_p
     assert "[data-src=model]::after" not in css
     assert 'class="rm-ainote"' not in page
     js = (S.ASSETS / "reqmap.js").read_text(encoding="utf-8")
-    assert "'🤖 checked by AI':'paired by script'" in js
+    assert "' \\u2013 🤖 opinion':' \\u00B7 paired by script'" in js
+    assert "checked by AI" not in js
 
 
 def test_no_count_of_what_is_not_green_sits_over_the_ticket(tmp_path):
@@ -1028,6 +1029,35 @@ def test_a_deleted_test_is_the_kind_of_its_live_siblings():
     row, = S.deleted_rows(doc, Path("/nowhere"), [{"file": "f/o.feature", "cat": "e2e"}])
     assert row["cat"] == "e2e" and row["id"] == "f/o.feature:7@base"
     assert row["baseRef"] == "abc" and row["line"] == 7
+
+
+def test_a_deleted_test_opens_in_the_ide_as_a_diff_where_the_removal_landed(tmp_path, monkeypatch):
+    """Victor, 20 Oct 2026: "how could you render the tests gone? ideally point me to the
+    IDE". Its file as a diff against the base, the caret on its HEAD `line` - the page's
+    ordinary diff handle, as data the card's `−N` popover draws."""
+    monkeypatch.setenv("HUMAN_REVIEW_DIFF_URI_HANDLER", "")
+    root, review, sha = _with_a_deleted_test(tmp_path)
+    _, data = _card(root, review)
+    ide = data["tests"]["test/VisitTest.java:13@base"]["ide"]
+    target = (root / "test/VisitTest.java").resolve()
+    assert ide == {"href": f"vscode://file/{target}:12:1", "base": sha, "path": "test/VisitTest.java"}
+    # The file itself gone: no right-hand side, so no diff - the base link stays.
+    assert S.deleted_ide(root, {"file": "test/Gone.java", "headLine": 3, "baseRef": sha}) is None
+    js = (Path(__file__).parent / "hrbuild" / "assets" / "testchapters.js").read_text(encoding="utf-8")
+    assert "data-gone=\"' + esc(cat || '')" in js and "function goneHtml(cat)" in js
+    assert "openIde(t.ide)" in js and "openIde(g.t.ide)" in js
+
+
+def test_a_deleted_test_takes_the_kind_most_of_its_file_is():
+    """One unmeasured row read as "unit" off the file's text must not outvote the file's
+    measured E2E tests; a file with none live takes its folder's kind where that agrees."""
+    doc = {"base": "abc", "tests": [
+        {"name": "a", "path": "e/v.spec.ts", "line": 9, "status": "deleted", "baseLine": 7},
+        {"name": "b", "path": "f/w.spec.ts", "line": 9, "status": "deleted", "baseLine": 7}]}
+    live = [{"file": "e/v.spec.ts", "cat": "e2e"}, {"file": "e/v.spec.ts", "cat": "e2e"},
+            {"file": "e/v.spec.ts", "cat": "unit"}, {"file": "f/x.spec.ts", "cat": "e2e"}]
+    a, b = S.deleted_rows(doc, Path("/nowhere"), live)
+    assert a["cat"] == "e2e" and b["cat"] == "e2e"
 
 
 def test_a_deleted_test_whose_base_cannot_be_read_stays_listed_and_shut(tmp_path):

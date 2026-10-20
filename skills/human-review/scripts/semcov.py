@@ -45,6 +45,7 @@ import math
 import re
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -682,7 +683,19 @@ def deleted_rows(test_doc: dict | None, root: Path, live: list[dict] = ()) -> li
     feature the browser suite runs is UI like its siblings, not whatever the file's text
     alone suggests."""
     T = _tests_tab()
-    kind = {r["file"]: r["cat"] for r in live}
+    # The kind most of the file's live tests are: one unmeasured row read off the file's
+    # text alone ("unit") must not outvote five a browser run measured as E2E.
+    votes: dict[str, dict] = {}
+    for r in live:
+        v = votes.setdefault(r["file"], {})
+        v[r["cat"]] = v.get(r["cat"], 0) + 1
+    kind = {f: max(v, key=v.get) for f, v in votes.items()}
+    # A file none of whose tests is live still has siblings: a deleted e2e spec in a folder
+    # of e2e specs is E2E, not the "unit" its text alone reads as. Only where they agree.
+    by_dir: dict[str, set] = {}
+    for r in live:
+        by_dir.setdefault(str(Path(r["file"]).parent), set()).add(r["cat"])
+    near = {d: next(iter(c)) for d, c in by_dir.items() if len(c) == 1}
     out, seen = [], set()
     for t in (test_doc or {}).get("tests") or []:
         file, line = t.get("path"), t.get("baseLine")
@@ -693,8 +706,9 @@ def deleted_rows(test_doc: dict | None, root: Path, live: list[dict] = ()) -> li
             continue
         seen.add(rid)
         row = {"id": rid, "file": file, "line": int(line), "title": t.get("name") or "",
-               "suite": "", "cat": kind.get(file) or T._cov_cat({"file": file}, root),
-               "status": "deleted",
+               "suite": "", "cat": (kind.get(file) or near.get(str(Path(file).parent))
+                                    or T._cov_cat({"file": file}, root)),
+               "status": "deleted", "headLine": t.get("line"),
                "viaHelper": [], "hits": {}, "aimed": True,
                "baseRef": t.get("baseSha") or (test_doc or {}).get("base") or ""}
         if t.get("baseUrl"):
@@ -2223,6 +2237,26 @@ def base_part(root: Path, r: dict, cache: dict) -> dict | None:
     return part
 
 
+def deleted_ide(root: Path, r: dict) -> dict | None:
+    """Where a deleted test opens in the IDE (Victor, 20 Oct 2026: "point me to the IDE"):
+    its file as a diff, the base commit on the left and the working tree on the right, the
+    caret on the line the removal landed on (`headLine`), so the test is the red block in
+    front of the reader. The page's ordinary diff handle (`data-diff-base`/`-path`, editor.js)
+    in data form — testchapters.js draws it. None when the file itself is gone: there is no
+    right-hand side to open, and the row keeps its link to the base commit."""
+    file, line, base = r["file"], r.get("headLine"), r.get("baseRef")
+    src = root / file
+    if not line or not base or not src.is_file():
+        return None
+    out = {"href": f"vscode://file/{src.resolve()}:{int(line)}:1", "base": base, "path": file}
+    from hrbuild.shared.snippets import diff_uri_handler
+    handler = diff_uri_handler()
+    if handler:
+        q = urllib.parse.urlencode({"file": str(src.resolve()), "base": base, "line": int(line)})
+        out["uri"] = f"vscode://{handler}/diff?{q}"
+    return out
+
+
 def git_show_hint(r: dict) -> str:
     """Where a deleted test still exists without GitHub: `git show <base>:<path>`."""
     return f"git show {(r.get('baseRef') or 'BASE')[:8]}:{r['file']}"
@@ -2286,6 +2320,9 @@ def render(ticket: dict, blocks: list[dict], rows: list[dict], entries: list[dic
                 tests[r["id"]]["hrefTip"] = DELETED_HREF_TIP
             else:
                 tests[r["id"]]["goneTip"] = git_show_hint(r)
+            ide = deleted_ide(root, r)
+            if ide:
+                tests[r["id"]]["ide"] = ide
         if r.get("viaHelper"):
             # Which helper, on the stamp's hover: the row's own source shows no edit.
             tests[r["id"]]["via"] = T.via_helper_tip(r["viaHelper"])

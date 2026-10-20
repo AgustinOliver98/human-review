@@ -427,7 +427,7 @@
 .reqmap .rm-f[data-cov=unmapped]{background:none;text-decoration:underline dotted;
   text-decoration-color:var(--muted,#8a8a8a);text-underline-offset:3px}
 /* A sentence a model paired, rather than the script, carries `data-src=model` and says so
-   on its hover ("🤖 checked by AI"). It used to put a robot after every such sentence:
+   on its hover ("– 🤖 opinion"). It used to put a robot after every such sentence:
    eval run 8 had thirty of them, one per clause, and the column stopped reading as text;
    run 11's one visible note under the header strip went too — a busy reviewer reads it
    and decides nothing. */
