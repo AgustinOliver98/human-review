@@ -429,7 +429,7 @@
 .reqmap .rm-f[data-cov=unmapped]{background:none;text-decoration:underline dotted;
   text-decoration-color:var(--muted,#8a8a8a);text-underline-offset:3px}
 /* A sentence a model paired, rather than the script, carries `data-src=model` and says so
-   on its hover ("🤖 checked by AI"). It used to put a robot after every such sentence:
+   on its hover ("– 🤖 opinion"). It used to put a robot after every such sentence:
    eval run 8 had thirty of them, one per clause, and the column stopped reading as text;
    run 11's one visible note under the header strip went too — a busy reviewer reads it
    and decides nothing. */
@@ -1136,7 +1136,8 @@
         :s.cov==='unconfirmed'?'<span class="rm-do"> \u00B7 unconfirmed \u00B7 run the 🤖</span>'
         :s.cov==='narrowed'?'<span class="rm-do"> \u00B7 narrowed by '
           +(s.decisionName?esc(s.decisionName):'a recorded decision')+'</span>'
-        :'<span class="rm-do"> \u00B7 '+(s.by==='model'?'🤖 checked by AI':'paired by script')+'</span>';
+        // A model's pairing is its opinion, and says so in one word (Victor, 20 Oct 2026).
+        :'<span class="rm-do">'+(s.by==='model'?' \u2013 🤖 opinion':' \u00B7 paired by script')+'</span>';
     // What a partial or narrowed sentence lacks, in the matching pass's own words (its
     // `gap`): the hatch says "not all of it", and only the hover can say which part
     // without a click (Victor, 5 Oct 2026).
