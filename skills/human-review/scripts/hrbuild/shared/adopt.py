@@ -42,6 +42,12 @@ PETCLINIC = "https://github.com/victorrentea/petclinic/blob/main/petclinic-backe
 #: piece → (what the button gets you, where it starts). A path is under
 #: `skills/human-review/`; a URL is a reference implementation in another repository.
 PIECES: dict[str, tuple[str, str]] = {
+    "review": (
+        "the whole review workflow: the coding agent records its assumptions, an "
+        "adversarial review and what it auto-fixed in a committed review-points.md, and a "
+        "script turns that and the branch into a review page like this one",
+        HOME_URL + "/blob/main/skills/record-review/SKILL.md, SKILL.md, "
+        "reference/review-points.md, scripts/build-review-html.py"),
     "review.assumed": (
         "the coder's assumptions listed for a human reviewer — every place the ticket did "
         "not decide, the reading the coding agent chose, how sure it was, and the "
@@ -141,6 +147,59 @@ PIECES: dict[str, tuple[str, str]] = {
 }
 
 
+def _review_flow() -> str:
+    """Victor's drawing of where this page comes from (20 Oct 2026), redrawn as SVG so it
+    follows the theme: the coder writes, an adversarial reviewer attacks, local hooks and
+    CI guard, and the two skills hang under the moments they run at. The geometry is his,
+    in his drawing's own pixels; the colours are `--flow-*` in adopt.css."""
+    import base64
+    from pathlib import Path
+    png = (Path(__file__).resolve().parent.parent / "assets" / "angry-bot.png").read_bytes()
+    bot = "data:image/png;base64," + base64.b64encode(png).decode()
+    b = 'font-weight="700"'
+    return (
+        '<svg class="hrx-flow" viewBox="0 0 1870 490" role="img" aria-label="The coder '
+        'writes, an adversarial reviewer attacks, local hooks and CI guard; /record-review '
+        'writes review-points.md, /human-review builds this page">'
+        '<rect class="fw" x="20" y="98" width="1292" height="197"/>'
+        '<text x="36" y="190" font-size="46" ' + b + '>\U0001F916 Code Writer</text>'
+        '<text x="36" y="246" font-size="34">direct prompt, plan/interview-first, '
+        'spec-driven…</text>'
+        '<text x="900" y="246" font-size="34">↘auto-fix?</text>'
+        '<rect class="fr" x="400" y="2" width="585" height="194"/>'
+        f'<image href="{bot}" x="412" y="42" width="56" height="54"/>'
+        '<text x="478" y="90" font-size="46" ' + b + '>Adversarial Reviewer</text>'
+        '<text x="692" y="145" font-size="32" text-anchor="middle">/code-review, /review, '
+        '&lt;yours&gt;</text>'
+        '<rect class="fg" x="1115" y="2" width="172" height="262"/>'
+        '<text x="1201" y="100" font-size="46" text-anchor="middle" ' + b + '>Local</text>'
+        '<text x="1201" y="155" font-size="34" text-anchor="middle">harness,</text>'
+        '<text x="1201" y="200" font-size="34" text-anchor="middle">git hooks</text>'
+        '<rect class="fw" x="1425" y="98" width="227" height="197"/>'
+        '<rect class="fg" x="1326" y="2" width="138" height="225"/>'
+        '<text x="1395" y="85" font-size="46" text-anchor="middle" ' + b + '>CI</text>'
+        '<text x="1395" y="135" font-size="34" text-anchor="middle">guards</text>'
+        '<text x="1395" y="180" font-size="34" text-anchor="middle">⏱️⏱️</text>'
+        '<text x="1478" y="165" font-size="46" ' + b + '>Fix CI</text>'
+        '<text x="1468" y="222" font-size="34">same or</text>'
+        '<text x="1440" y="268" font-size="34">new context</text>'
+        '<rect class="fw" x="1690" y="98" width="50" height="197"/>'
+        '<path class="fc" d="M681 313H1005L1088 252L1145 313H1237V475H681Z"/>'
+        '<text x="959" y="358" font-size="34" text-anchor="middle">/human-review:'
+        '<tspan ' + b + '>record-review</tspan></text>'
+        '<text x="959" y="406" font-size="34" text-anchor="middle"><tspan ' + b + '>$0</tspan>'
+        ' writes to `review-points.md`:</text>'
+        '<text x="959" y="454" font-size="34" text-anchor="middle">assumptions, auto-fixed, '
+        'refuted</text>'
+        '<path class="fc" d="M1312 313H1636L1718 252L1775 313H1867V473H1312Z"/>'
+        '<text x="1589" y="358" font-size="34" text-anchor="middle">/human-review:'
+        '<tspan ' + b + '>human-review</tspan></text>'
+        '<text x="1589" y="406" font-size="34" text-anchor="middle"><tspan ' + b + '>&lt;$0.5'
+        '</tspan> generates html report</text>'
+        '<text x="1589" y="454" font-size="34" text-anchor="middle">(90% script-based)</text>'
+        '</svg>')
+
+
 #: The (i) beside every pill: what the reader is looking at, before they copy a prompt for
 #: it (7 Oct 2026, Victor: "whoever goes to click Prompt to get this should first
 #: understand what they're looking at"). Worded as Victor explained each tab at Devoxx
@@ -153,7 +212,17 @@ PIECES: dict[str, tuple[str, str]] = {
 #: draw.io diagrams). `move`: the tab's own "how this was made" line, a CSS selector,
 #: moved into the box so the visible page stays calm (its counts stay live).
 #: `li` lines, then `ex` (one muted example line) or `code` (a tiny snippet; HTML).
+#: `img`: a picture over the lines (inline SVG), for the one box that is about a workflow.
 EXPLAIN: dict[str, dict[str, object]] = {
+    'review': {
+        "img": _review_flow(),
+        "li": [
+            'The coder 🤖 writes; adversarial reviewers attack it; it fixes what holds up.',
+            '<code>/record-review</code> writes what it assumed, fixed and refuted to a file.',
+            'Local hooks and CI guard the rest; <code>/human-review</code> builds this page.',
+            'Read the assumptions first: a wrong guess is a wrong feature.',
+        ],
+    },
     'review.assumed': {
         "li": [
             'Where the ticket was vague, the coder guessed, with how sure it was.',
@@ -409,12 +478,14 @@ DIAGRAM_KINDS = (
 #: the right (a row too long to share its line wraps its own text beside the pill); `col` — under it
 #: in a column of its own (the Demo's transcript, beside the player); `upto` — a row
 #: closing the region that starts at the anchor and runs to the next Round kicker (the
-#: Review tab's three piles). Piece None is a diagram card, whose piece is read off its
+#: Review tab's three piles); `row` — inside the anchor's own row, pinned to its right end
+#: (the Review tab's sticky counts line, which a wrapper would unstick). Piece None is a diagram card, whose piece is read off its
 #: head. A tab whose anchor is missing gets one row at the end of the panel, so a renamed
 #: class costs placement, never the button.
 DIAGRAM_CARD = r'<div class="diagram(?![^"]*\bdgm-bare\b)[^"]*"'
 PLACES: dict[str, tuple[tuple[str | None, str, str | None, str | None], ...]] = {
-    "review": (("review.assumed", "upto", r'<h2 id="assumed"', "first"),
+    "review": (("review", "row", r'<p class="sub counts pilelede', "first"),
+               ("review.assumed", "upto", r'<h2 id="assumed"', "first"),
                ("review.open", "upto", r'<h2 id="first"', "first"),
                ("review.fixed", "upto", r'<h2 id="fixed"', "first")),
     "behaviour": (("behaviour", "col", r'<ol class="transcript"', "first"),),
@@ -500,18 +571,18 @@ IMPACT_LEGEND = (
 
 
 def adopt_html(piece: str, title: str = "", how: str = "in", page: bool = False,
-               explain: bool = True, lead: str = "") -> str:
+               explain: bool = True, lead: str = "", tag: str = "div") -> str:
     prompt = adopt_prompt(piece, title)
     if not prompt:
         return ""
     # A pill on the tab's title row (`page`) is about the whole tab; every other placement,
     # a diagram card's included, is about a smaller area of a screen and keeps the short label.
     label = "Prompt to get this page" if page else "Prompt to get this"
-    return (f'<div class="adoptline adopt-{how}">{lead}<button type="button" class="adopt copycmd" '
+    return (f'<{tag} class="adoptline adopt-{how}">{lead}<button type="button" class="adopt copycmd" '
             f'data-piece="{html.escape(piece)}" data-copy="{html.escape(prompt, quote=True)}" '
             'data-say="Copied — paste it to your coding agent" '
             'data-tip="Copy a prompt for your coding agent to get this into your project">'
-            f'{ROBOT} {label}</button>{explain_button(piece, title) if explain else ""}</div>')
+            f'{ROBOT} {label}</button>{explain_button(piece, title) if explain else ""}</{tag}>')
 
 
 def explain_key(piece: str, title: str = "") -> str | None:
@@ -591,6 +662,14 @@ def place_prompts(tid: str, body: str) -> str:
                 edits.append((hit.start(), hit.start(), '<div class="adopthead">'))
                 edits.append((span[1], span[1], adopt_html(
                     name, title, "title", page=piece is not None) + "</div>"))
+            elif how == "row":
+                # Inside the row, not around it: the row is sticky, and a wrapper would
+                # be the box it sticks in. `data-adoptrow` makes room on its right and
+                # tells explain.js to open the box under the row rather than inside it.
+                opened = _TAG.match(body, hit.start())
+                edits.append((opened.end() - 1, opened.end() - 1, ' data-adoptrow'))
+                edits.append((span[0], span[0], adopt_html(
+                    name, title, "row", page=True, tag="span")))
             elif how == "col":
                 edits.append((hit.start(), hit.start(), '<div class="adoptcol">'))
                 edits.append((span[1], span[1], adopt_html(name, title, "after") + "</div>"))

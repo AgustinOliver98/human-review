@@ -15,6 +15,12 @@
 }
 .adoptline { display:flex; justify-content:flex-end; margin-top:.45rem; }
 .adopt-end { margin-top:.35rem; }
+/* A pill that rides inside a row the row cannot be wrapped around: the Review tab's counts
+   line is sticky, and a wrapper would be the box it sticks in. Pinned to the row's right
+   end, vertically centred, with the row's text kept clear of it. */
+[data-adoptrow] { position:relative; padding-right:13rem; }
+[data-adoptrow] > .adopt-row { position:absolute; right:0; top:50%; margin:0;
+                               transform:translateY(-50%); align-items:center; }
 button.adopt { border:1px solid var(--adopt); background:var(--card); color:var(--adopt);
                cursor:pointer; border-radius:999px; font:600 .72rem/1.6 inherit;
                padding:0 .6rem; white-space:nowrap; }
@@ -151,3 +157,20 @@ button.hrx-i[aria-pressed="true"]{background:var(--hrx-i-on);position:relative;z
 /* Moved into the explainer: the tab's own "how this was made" line. */
 .hrx-moved-away{display:none!important}
 
+/* Under a sticky row: no folder tab (explain.js draws none), a plain border instead. */
+.hrx-box.hrx-under { margin-top:.35rem; border:1.5px solid var(--hrx-bd);
+                     padding:.5rem .85rem .55rem; }
+/* The workflow drawing over the Review tab's bullets: Victor's sketch, his pastel boxes in
+   light, deep tints of the same hues in dark, text in the page's own ink. */
+.hrx-box .hrx-img { margin:.1rem 0 .6rem; }
+.hrx-flow { display:block; width:100%; max-width:56rem; height:auto; color:var(--fg);
+  --flow-w:#cdf9cd; --flow-r:#f2bcbc; --flow-g:#d7ccf2; --flow-c:var(--card); }
+@media (prefers-color-scheme: dark) {
+  .hrx-flow { --flow-w:#1e4a2a; --flow-r:#5a2a30; --flow-g:#3b3060; }
+}
+.hrx-flow text { fill:currentColor; font-family:inherit; }
+.hrx-flow rect, .hrx-flow path { stroke:currentColor; stroke-width:2; }
+.hrx-flow .fw { fill:var(--flow-w); }
+.hrx-flow .fr { fill:var(--flow-r); }
+.hrx-flow .fg { fill:var(--flow-g); }
+.hrx-flow .fc { fill:var(--flow-c); }

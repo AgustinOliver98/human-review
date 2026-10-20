@@ -3646,8 +3646,10 @@ def test_the_lede_is_counts_and_nothing_else(tmp_path):
         tabs=[{"id": "review", "label": "Review", "blocks": [{"type": "findings"}]}]))
     # No pull request: the line's only extra is that fact, as its hover (eval run 11).
     assert ('<p class="sub counts pilelede" data-tip="No pull request yet — no GitHub '
-            'links or publishing."><span class="lede-who"><img class="angry-bot"') in page
-    assert ':</span> <a href="#first">1 open LLM review issue</a></p>' in page
+            'links or publishing." data-adoptrow><span class="lede-who"><img class="angry-bot"') in page
+    # …and the page's prompt pill at its right end (Victor, 20 Oct 2026), nothing else.
+    assert (':</span> <a href="#first">1 open LLM review issue</a>'
+            '<span class="adoptline adopt-row">') in page
     assert "stamped with" not in page and "worst first" not in page
 
 

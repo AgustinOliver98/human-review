@@ -133,6 +133,22 @@ def test_each_review_round_gets_a_button_at_its_own_end():
     assert all(r.endswith("</button></div>") for r in rounds)
 
 
+def test_the_whole_review_rides_the_sticky_counts_line_at_its_right_end():
+    """Victor, 20 Oct 2026: the page's pill on the line that counts assumptions, open and
+    fixed, on its right. Inside the line and not around it — the line is sticky, and a
+    wrapper would be the box it sticks in — so it is a span, and the (i) beside it opens
+    the workflow drawing under the line."""
+    line = '<p class="sub counts pilelede"><a href="#assumed">6 assumptions</a></p>'
+    out = place_prompts("review", line + '<h2 id="assumed">A</h2>')
+    assert out.startswith('<p class="sub counts pilelede" data-adoptrow><a href="#assumed">'
+                          '6 assumptions</a><span class="adoptline adopt-row">')
+    row = out[:out.index("</p>")]
+    assert "Prompt to get this page</button>" in row and 'data-explain="review"' in row
+    assert row.endswith("</button></span>")
+    assert _prompts(row)[0].startswith("Get the whole review workflow")
+    assert "<svg" in EXPLAIN["review"]["img"] and "record-review" in EXPLAIN["review"]["img"]
+
+
 def test_the_tests_button_shares_the_filter_cell_on_the_title_row():
     """The panes fill the window, so the button used to float over their corner; now it
     sits on the title row, after the UI/API/unit filter, in the cell over the card."""
@@ -251,7 +267,7 @@ def test_each_explainer_is_a_few_one_sentence_bullets_and_names_a_real_piece(key
         plain = re.sub(r"<[^>]+>", "", line)
         assert len(plain) <= 90, line
         assert not re.search(r"[.!?]\s+[A-Z$]", plain), f"one sentence per bullet: {line}"
-    assert set(t) <= {"li", "ex", "code", "move"}
+    assert set(t) <= {"li", "ex", "code", "move", "img"}
     assert not ("ex" in t and "code" in t), "at most one tiny example"
     if "ex" in t:
         assert t["ex"].startswith("e.g."), "an example is marked as one: the texts are static"

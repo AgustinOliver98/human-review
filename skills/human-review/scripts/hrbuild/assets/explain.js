@@ -15,7 +15,7 @@
   }
   function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
   function render(t, sec) {
-    var h = '<ul>', mv = t.move ? sec.querySelector(t.move) : null, lead = '', src = '', shot = '';
+    var h = (t.img ? '<div class="hrx-img">' + t.img + '</div>' : '') + '<ul>', mv = t.move ? sec.querySelector(t.move) : null, lead = '', src = '', shot = '';
     if (mv) {
       // The tab's own "how this was made" line moves in: a <details> keeps its summary
       // (the count in it stays the page's own), a plain line comes along as a footnote.
@@ -47,6 +47,12 @@
     var after, pos = 'afterend', cls = '';
     if (hd) { after = hd; }
     else if (head) { after = head; if (sec.id === 'requirements') { pos = 'beforeend'; cls = ' hrx-float'; } }
+    // A pill riding inside a sticky row opens its box under the row, never inside it, and
+    // without the folder tab: the tab would reach up into the row, which is opaque and
+    // pinned, and a box raised over it would slide across the row on scroll.
+    else if (line.parentElement && line.parentElement.hasAttribute('data-adoptrow')) {
+      after = line.parentElement; cls = ' hrx-under';
+    }
     else if (line.closest('.adoptcol')) { after = sec.querySelector('.vidwrap') || line; cls = ' hrx-right'; }
     else { after = line.closest('.adoptfoot') || line; cls = ' hrx-right'; }
     var box = document.getElementById(id);
@@ -61,7 +67,7 @@
     // no stitched borders: the tab's top is a semicircle concentric with the (i), the other
     // outer corners have radius R, the join of tab and panel is concave.
     function notch() {
-      if (box.hidden) return;
+      if (box.hidden || box.classList.contains('hrx-under')) return;
       var R = 8, h = 0.75, pad = 3, gap = 6, b = i.getBoundingClientRect(), r;
       // The tab ends in the panel: pull the panel up so the (i) has little room below.
       box.style.marginTop = ''; r = box.getBoundingClientRect();

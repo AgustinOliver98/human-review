@@ -197,7 +197,7 @@ from hrbuild.shared.masthead import (
 from hrbuild.shared.adopt import (
     DIAGRAM_CARD, DIAGRAM_KINDS, EXPLAIN, PETCLINIC, PIECES, PLACES, ROBOT, _CAPTION, _TAG,
     _close, _last_caption, adopt_html, adopt_prompt, explain_button, explain_data, explain_key,
-    place_prompts, IMPACT_LEGEND
+    place_prompts, IMPACT_LEGEND, _review_flow
 )
 from hrbuild.shared.footer import (
     DEMO_DOCKER_URL, DEMO_PAGES_URL, DEMO2_PAGES_URL, DEMO_ZIP_URL, FOOTER_BOILERPLATE, HOME_URL, INVITATION,
