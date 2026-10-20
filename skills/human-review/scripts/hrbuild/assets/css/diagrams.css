@@ -12,15 +12,13 @@
 .diagram .head > .badge { margin-left:0 !important; }
 .diagram .head > *:has(+ .badge) { margin-right:0 !important; }
 .diagram .head > .badge + * { margin-left:auto !important; }
-/* A draw.io card's presses (Edit in app, Edit on web, Revert) follow the title
-   and its redraw ring at the header's ordinary gap; the file name after them takes the push
-   to the right edge. Both neighbours asked for the free space before — the ring's
-   `margin-right:auto` and the presses' `margin-left:auto` (commands.css) — so the buttons
-   floated in the middle of the header, half its width away from the title they act on
-   (Victor, 9 Oct 2026). */
+/* A draw.io card's presses (Edit in app, Edit on web, Revert) sit right-aligned, at the
+   header's ordinary gap before the file name they act on (Victor, 20 Oct 2026; on 9 Oct
+   they followed the title). Only the presses take the free space: when both they and the
+   file name asked for it, the buttons floated in the middle of the header. */
 .diagram > .head > .tabre:has(+ .rerun-acts) { margin-right:0; }
-.diagram > .head > .rerun-acts { margin-left:0; }
-.diagram > .head > .rerun-acts + * { margin-left:auto; }
+.diagram > .head > .rerun-acts { margin-left:auto !important; }
+.diagram > .head > .rerun-acts + * { margin-left:0 !important; }
 .prov { margin:.5rem 0 0; display:flex; gap:.9rem; flex-wrap:wrap; }
 .prov .srcref { margin-bottom:0; }
 .diagram .head span { color:var(--muted); font-size:.82rem; font-family:ui-monospace,Menlo,monospace; }
