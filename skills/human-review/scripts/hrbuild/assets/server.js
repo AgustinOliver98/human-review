@@ -550,6 +550,60 @@ window.HR = (function () {
     else settle();
   });
 
+  // A review card whose PR thread was resolved on GitHub — in the browser, or from an
+  // IDE's PR panel — is struck through here, and each pile's count gets the struck number
+  // in front of it: `~~2~~/9 open` (Victor, 20 Oct 2026). Asked every 5 s while the tab
+  // is in front, so a thread resolved during a demo shows up while the audience watches.
+  // Links are looked up on every pass: an in-place catch-up swaps the cards.
+  onready(function (j) {
+    if (!j || !j.prThreads) return;
+    function pileOf(li) {
+      return li.classList.contains('n-assumed') ? 'assumed'
+        : li.classList.contains('fixed') ? 'fixed' : 'open';
+    }
+    function mark(el, n) {
+      var old = el.querySelector(':scope > .gh-res-n');
+      if (old) old.remove();
+      if (!n) return;
+      var s = document.createElement('span');
+      s.className = 'gh-res-n';
+      s.setAttribute('data-tip', n + ' of these resolved on GitHub');
+      s.innerHTML = '<s>' + n + '</s>/';
+      el.insertBefore(s, el.firstChild);
+    }
+    function paint(ids) {
+      var got = {}, seen = {}, n = {open: 0, fixed: 0, assumed: 0};
+      ids.forEach(function (i) { got[String(i)] = true; });
+      [].forEach.call(document.querySelectorAll('a.f-gh[href*="#discussion_r"]'), function (a) {
+        var li = a.closest('li'), id = (a.href.match(/discussion_r(\d+)/) || [])[1];
+        if (!li || !id) return;
+        var on = !!got[id];
+        li.classList.toggle('gh-resolved', on);
+        if (on && !seen[id]) { seen[id] = true; n[pileOf(li)]++; }
+      });
+      var lede = {assumed: '#assumed', open: '#first', fixed: '#fixed'};
+      Object.keys(lede).forEach(function (k) {
+        [].forEach.call(document.querySelectorAll('.pilelede a[href="' + lede[k] + '"]'),
+          function (a) { mark(a, n[k]); });
+      });
+      [].forEach.call(document.querySelectorAll('.chip-link[href="#review"] b'), function (b) {
+        var t = b.textContent;
+        var k = /assumption/.test(t) ? 'assumed' : /open/.test(t) ? 'open' : /fixed/.test(t) ? 'fixed' : '';
+        if (k) mark(b, n[k]);
+      });
+    }
+    var misses = 0;
+    (function next(delay) {
+      setTimeout(function () {
+        if (document.hidden) { next(5000); return; }
+        fetch('/__pr_threads__', {cache: 'no-store'})
+          .then(function (r) { if (!r.ok) throw new Error('refused'); return r.json(); })
+          .then(function (t) { misses = 0; if (t && t.resolved) paint(t.resolved); next(5000); })
+          .catch(function () { if (++misses < 3) next(5000); });
+      }, delay);
+    })(0);
+  });
+
   // `follow`: the poller, for a page that loads while a run is already going -- it has
   // the run's id from `status()` and needs the same tail, at the same cadence, to
   // the same end.

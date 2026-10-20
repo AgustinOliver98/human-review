@@ -578,8 +578,8 @@ def chip_html(c: dict) -> str:
     return f'<span class="chip">{inner}</span>'
 
 
-def review_chip_face(open_n: int, fixed_n: int, unsure_n: int) -> str:
-    """`🤖 <b>6 unsure</b> / <angry-bot> <b>10 open</b> · <b>6 fixed</b>` — the masthead's review chip,
+def review_chip_face(open_n: int, fixed_n: int, assumed_n: int) -> str:
+    """`🤖 <b>6 assumptions</b> / <angry-bot> <b>10 open</b> · <b>6 fixed</b>` — the masthead's review chip,
     numbers only, one robot.
 
     Eval run 10: `🤖Code: 6 unsure; 🤖Review: 10 open · 3 refuted, 6 fixed` was 379px of a
@@ -588,18 +588,17 @@ def review_chip_face(open_n: int, fixed_n: int, unsure_n: int) -> str:
     were the words a reader needs once, so they moved to the hover (`review_chip_key`);
     the counts stay, each one with the noun that says what it counts, in the order of the
     work — what the coder guessed at first, then what is left, what was already done.
-    `unsure` is `review.unsure_number` — the assumptions under 70% sure, the lede's own
-    count and the cards' red/amber, not every assumption. With none it is absent rather
+    `assumed_n` is every assumption, the Review tab's `🤖: N assumptions` line's own count
+    — the under-70% share is the hover's (`review_chip_key`). With none it is absent rather
     than zeroed: a zero is a claim the page cannot stand behind. The
     refuted claims are not on the page at all (Victor, 5 Oct 2026), so not here either."""
     rest = f"{_angry_bot()}<b>{open_n} open</b> · <b>{fixed_n} fixed</b>"
-    if not unsure_n:
+    if not assumed_n:
         return rest
     # A slash after the coder's guesses, then the angry robot for what the review left open:
-    # two robots, two moods, one chip.
-    # `assumptions`, not `unsure` (Victor, 20 Oct 2026): the noun the Review tab's line uses.
-    # Still the under-70% count; the hover says so.
-    return f"\U0001f916 <b>{unsure_n} assumption{'' if unsure_n == 1 else 's'}</b> / {rest}"
+    # two robots, two moods, one chip. The same three numbers, in the same order, as the
+    # Review tab's line under the PR description (Victor, 20 Oct 2026).
+    return f"\U0001f916 <b>{assumed_n} assumption{'' if assumed_n == 1 else 's'}</b> / {rest}"
 
 
 @functools.lru_cache(maxsize=None)
@@ -611,11 +610,12 @@ def _angry_bot() -> str:
             f'src="data:image/png;base64,{base64.b64encode(png).decode()}">')
 
 
-def review_chip_key(open_n: int, fixed_n: int, unsure_n: int) -> str:
+def review_chip_key(open_n: int, fixed_n: int, assumed_n: int, unsure_n: int = 0) -> str:
     """The hover's first sentence: the chip's face in the long words it no longer has room
-    for, so `3 unsure` is never left to be guessed at — in the lede's own words."""
-    coder = (f"Coding agent: {unsure_n} assumption{'' if unsure_n == 1 else 's'} "
-             "under 70% sure. ") if unsure_n else ""
+    for, plus how many of the assumptions are under 70% sure — the lede's own words."""
+    unsure = f", {unsure_n} under 70% sure" if unsure_n else ""
+    coder = (f"Coding agent: {assumed_n} assumption{'' if assumed_n == 1 else 's'}"
+             f"{unsure}. ") if assumed_n else ""
     return coder + f"Review: {open_n} open · {fixed_n} fixed."
 
 

@@ -789,8 +789,10 @@ def _main(argv=None) -> int:
                 # refuted, 6 fixed` — was the chip that wrapped the scope bar to a second
                 # row. The counts stay; the agent names moved to the hover's first sentence
                 # (`review_chip_key`), still off the same `pile_numbers`.
-                # `unsure`, by the lede's own rule (`unsure_number`), not every assumption.
-                "face": review_chip_face(open_n, fixed, unsure_number(spec)),
+                # Every assumption, as the Review tab's `🤖: 6 assumptions` line counts
+                # them (Victor, 20 Oct 2026): the face said `3 assumptions` — the under-70%
+                # ones — over a line saying 6. The unsure share is the hover's.
+                "face": review_chip_face(open_n, fixed, assumed),
                 # The total, which the face no longer carries, split by the pass that
                 # raised each item. `by /code-review and /simplify` named the two passes
                 # and left the reader to guess the split — which is the only thing the
@@ -808,7 +810,7 @@ def _main(argv=None) -> int:
                 # and "N assumptions the coding agent recorded while implementing" went:
                 # the face counts them, the Review tab lists them, and neither changes
                 # what a reviewer does next. Who reviewed is the one fact left.
-                "tip": review_chip_key(open_n, fixed, unsure_number(spec))
+                "tip": review_chip_key(open_n, fixed, assumed, unsure_number(spec))
                 + (f" {reviewed}." if reviewed else ""),
             }
             c = {**computed, **{k: v for k, v in c.items() if k != "auto"}}

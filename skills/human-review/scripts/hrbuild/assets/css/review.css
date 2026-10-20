@@ -292,13 +292,14 @@ html.ide-idea a.f-vsc .vsc-ico, html.ide-idea a.pr-vsc { display:none; }
 html.ide-none a.f-vsc, html.ide-none a.pr-vsc, html.hr-online ol.findings > li > a.f-vsc
   { display:none; }
 /* The PR's own description, under the grade (Victor, 8 Oct 2026): the author's words,
-   quoted — a muted box with a left rule, capped in height so a long description does not
-   push the counts line a screen down. */
+   quoted — a muted box with a left rule. It folds from its heading rather than scrolling
+   inside the page (Victor, 20 Oct 2026): one scrollbar per screen. */
 .prdesc { margin:1rem 0 .4rem; padding:.55rem .9rem .6rem; border-left:3px solid var(--line);
           background:color-mix(in srgb, var(--fg) 3%, transparent); border-radius:0 6px 6px 0; }
 .prdesc-h { margin:0 0 .3rem; font:700 .68rem/1.7 inherit; letter-spacing:.09em;
-          text-transform:uppercase; color:var(--muted); }
-.prdesc-body { max-height:18rem; overflow:auto; font-size:.95rem; line-height:1.5; }
+          text-transform:uppercase; color:var(--muted); cursor:pointer; }
+.prdesc:not([open]) > .prdesc-h { margin-bottom:0; }
+.prdesc-body { font-size:.95rem; line-height:1.5; }
 .prdesc-body > :first-child { margin-top:0; }
 .prdesc-body > :last-child { margin-bottom:0; }
 .prdesc-body p, .prdesc-body ul, .prdesc-body pre, .prdesc-body blockquote { margin:.35rem 0; }
@@ -311,3 +312,9 @@ html.ide-none a.f-vsc, html.ide-none a.pr-vsc, html.hr-online ol.findings > li >
 /* The counts line's speakers: 🤖 for the coder, the angry robot for the reviewers. */
 .pilelede .lede-who { white-space:nowrap; }
 .pilelede .lede-who .angry-bot { height:1.05em; width:auto; vertical-align:-.15em; }
+/* A card whose PR thread is resolved on GitHub (server.js, polled): struck through and
+   faded, still on the page, still clickable. Its pile's count wears the struck number. */
+li.gh-resolved .f-title { text-decoration:line-through; }
+li.gh-resolved { opacity:.55; }
+.gh-res-n { font-weight:inherit; color:var(--muted); }
+.gh-res-n s { text-decoration-thickness:2px; }

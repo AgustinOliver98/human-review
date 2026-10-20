@@ -92,6 +92,11 @@ STOP = "/__stop__"
 # The Demo tab's Start, while it runs: which containers its `docker compose up` has made,
 # and how each one is doing. Read-only, polled once a second by the row's chips.
 COMPOSE = "/__compose__"
+# Which of the review's PR threads are resolved on GitHub now — resolved in the browser or
+# from an IDE's PR panel (Victor, 20 Oct 2026). Polled by the Review tab, which strikes the
+# card through; the answer is cached a few seconds so many tabs cost one `gh` call.
+PR_THREADS = "/__pr_threads__"
+PR_THREADS_TTL = 4.0
 
 # The page asks "is there a review server here?" and a *wrong* yes is expensive: the demo
 # published on GitHub Pages is https, so the protocol check this replaced said yes, and
@@ -2054,6 +2059,62 @@ def _host_of(value: str) -> str:
     return value.rsplit(":", 1)[0] if ":" in value else value
 
 
+_PR_THREADS_CACHE: dict = {"at": 0.0, "answer": None}
+_PR_THREADS_LOCK = threading.Lock()
+_PR_THREADS_QUERY = """query($owner:String!,$name:String!,$pr:Int!,$after:String){
+  repository(owner:$owner,name:$name){pullRequest(number:$pr){
+    reviewThreads(first:100,after:$after){pageInfo{hasNextPage endCursor}
+      nodes{isResolved comments(first:1){nodes{databaseId}}}}}}}"""
+
+
+def pr_threads_target(root) -> tuple[str, int] | None:
+    """`(owner/name, number)` of the PR this review pushed its comments to, from the push's
+    own record; None when nothing was pushed — there are no threads to ask about."""
+    try:
+        rec = json.loads((Path(root) / "pr-comments.posted.json").read_text(encoding="utf-8"))
+        return (str(rec["repo"]), int(rec["pr"])) if rec.get("repo") and rec.get("pr") else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def pr_threads(root) -> dict:
+    """`{"resolved": [first comment id, …], "open": n}` over the PR's review threads, the
+    ids the page's `#discussion_r<id>` links end in. `{"error": …}` when GitHub cannot be
+    asked; the page then leaves every card as it was."""
+    with _PR_THREADS_LOCK:
+        if _PR_THREADS_CACHE["answer"] and time.time() - _PR_THREADS_CACHE["at"] < PR_THREADS_TTL:
+            return _PR_THREADS_CACHE["answer"]
+        target = pr_threads_target(root)
+        if not target or not shutil.which("gh"):
+            return {"error": "no pushed PR comments, or no gh"}
+        owner, _, name = target[0].partition("/")
+        resolved, still_open, after = [], 0, None
+        while True:
+            args = ["gh", "api", "graphql", "-f", f"query={_PR_THREADS_QUERY}",
+                    "-F", f"owner={owner}", "-F", f"name={name}", "-F", f"pr={target[1]}"]
+            if after:
+                args += ["-F", f"after={after}"]
+            try:
+                out = subprocess.run(args, capture_output=True, text=True, timeout=20)
+                page = json.loads(out.stdout)["data"]["repository"]["pullRequest"]["reviewThreads"]
+            except (subprocess.SubprocessError, OSError, ValueError, KeyError, TypeError):
+                return {"error": "GitHub did not answer"}
+            for t in page["nodes"]:
+                first = (t.get("comments") or {}).get("nodes") or [{}]
+                if not first[0].get("databaseId"):
+                    continue
+                if t.get("isResolved"):
+                    resolved.append(first[0]["databaseId"])
+                else:
+                    still_open += 1
+            if not page["pageInfo"]["hasNextPage"]:
+                break
+            after = page["pageInfo"]["endCursor"]
+        answer = {"resolved": resolved, "open": still_open}
+        _PR_THREADS_CACHE.update(at=time.time(), answer=answer)
+        return answer
+
+
 def refuse_reason(headers) -> str | None:
     """None when this request may act on the reader's machine; the reason otherwise.
 
@@ -2342,6 +2403,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                              # control on this page is: a button drawn live that turns
                              # out not to apply has already been clicked by then.
                              "rerun": bool(rerun_plan(Handler.root)),
+                             # Whether the Review tab can ask which PR threads are resolved.
+                             "prThreads": pr_threads_target(Handler.root) is not None,
                              # And whether the paid one has anything behind it. A separate
                              # answer because it needs a program the free one does not,
                              # and a page that inferred the second from the first would
@@ -2367,6 +2430,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                                                 "reload": bool(e.get("reload")),
                                                 "label": e.get("label") or ""}
                                          for name, e in declared.items()}})
+            return
+        if self.path.split("?")[0] == PR_THREADS:
+            problem = refuse_reason(self.headers)
+            if problem:
+                self.reply_text(problem, 403)
+                return
+            self.reply_json(pr_threads(Handler.root))
             return
         if self.path.split("?")[0] == COMPOSE:
             problem = refuse_reason(self.headers)

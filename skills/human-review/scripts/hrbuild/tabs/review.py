@@ -1863,9 +1863,11 @@ def pr_description_html(spec) -> str:
     # No link to the PR here: the masthead's title already is one.
     m = _PULL_URL.search(str(got.get("url") or ""))
     repo_url = f"https://github.com/{m.group(1)}" if m else ""
-    return (f'<section class="prdesc" aria-label="Pull request description">'
-            f'<p class="prdesc-h">PR description</p>'
-            f'<div class="prdesc-body">{pr_body_html(body, repo_url)}</div></section>')
+    # Folds away from its own heading, open by default; no inner scrollbar inside the
+    # page's (Victor, 20 Oct 2026) — a description too long to read whole is one to fold.
+    return (f'<details class="prdesc" open aria-label="Pull request description">'
+            f'<summary class="prdesc-h">PR description</summary>'
+            f'<div class="prdesc-body">{pr_body_html(body, repo_url)}</div></details>')
 
 
 def grade_reasons_html(spec) -> str:
@@ -2255,7 +2257,7 @@ def render_assumptions(items, mode: str = "") -> str:
             + _decided_by(f)
             + f' <span class="f-title">{f["title"]}</span>'
             + (f'<p>{f["body"]}</p>' if f.get("body") else "")
-            + (f'<p class="f-alt"><b>Read the other way:</b> {f["alternative"]}</p>'
+            + (f'<p class="f-alt"><b>What I didn’t do:</b> {f["alternative"]}</p>'
                if f.get("alternative") else "")
             + _assumption_why(f)
             + (f"<p>{refs}</p>" if refs else "")

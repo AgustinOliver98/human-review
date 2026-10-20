@@ -3254,7 +3254,7 @@ def test_the_alternative_reading_renders_beside_the_assumption(tmp_path):
         BARE, assumptions=[_assumption(alternative="that a visit carries its own vet")],
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}]}]))
-    assert "Read the other way" in page
+    assert "What I didn’t do:" in page
     assert "carries its own vet" in page
 
 
@@ -5172,7 +5172,7 @@ def test_the_scope_chip_says_the_same_thing_as_the_counts_line(tmp_path):
     declined` beside `6 open, 3 fixed` used to ask the reader which of them to
     believe; both now read `pile_numbers`, so a mismatch cannot recur."""
     src = (HERE / "build-review-html.py").read_text(encoding="utf-8")
-    assert '"face": review_chip_face(open_n, fixed, unsure_number(spec))' in src
+    assert '"face": review_chip_face(open_n, fixed, assumed)' in src
     assert "open_n, fixed, assumed = pile_numbers(spec)" in src
     # `unsure` is the lede's "under 70% sure": 70% itself is green on its card, not unsure.
     spec = {"findings": [{"title": f"f{i}"} for i in range(6)],
@@ -5243,16 +5243,17 @@ def test_the_chip_carries_the_coders_assumptions_as_its_own_sentence(tmp_path):
         # masthead is built, and the chip has to count what survived, not what was
         # written. A number on the masthead that the tab cannot show is a hand-typed
         # number by another route.
-        # Seven unsure and one sure: the chip counts the lede's "under 70% sure" only.
+        # Seven unsure and one sure: the chip counts all eight, as the Review tab's line
+        # does; the hover says how many are under 70% sure.
         assumptions=[_assumption(title=f"s{i}", confidence=.6) for i in range(7)]
         + [_assumption(title="sure", confidence=.75)]
         + [_assumption(title="floating", refs=[], confidence=.5)]),
         env=_sessionless_env())
     # Eval run 10: one robot, the counts only; the two agents are named in the hover.
-    assert ('\U0001f916 <b>7 assumptions</b> / <img class="angry-bot" alt="" aria-hidden="true" '
+    assert ('\U0001f916 <b>8 assumptions</b> / <img class="angry-bot" alt="" aria-hidden="true" '
             'src="data:image/png;base64,') in page and '<b>6 open</b> · <b>3 fixed</b>' in page, \
         "every count bold with its noun, the coder's first"
-    assert "Coding agent: 7 assumptions under 70% sure. Review: 6 open · 3 fixed." in page, \
+    assert "Coding agent: 8 assumptions, 7 under 70% sure. Review: 6 open · 3 fixed." in page, \
         "the hover's first sentence spells out what the face abbreviates"
     assert "recorded while implementing" not in page, \
         "copy pass: the face counts them and the Review tab lists them"
@@ -6248,8 +6249,10 @@ def test_the_review_chip_face_is_counts_only_so_the_scope_bar_keeps_one_row():
     face = build.review_chip_face(1, 0, 0)
     assert "assumption" not in face and face.endswith('<b>1 open</b> · <b>0 fixed</b>'), \
         "no assumptions: that count is absent, not zeroed"
+    assert build.review_chip_key(10, 6, 6, 3) == \
+        "Coding agent: 6 assumptions, 3 under 70% sure. Review: 10 open · 6 fixed."
     assert build.review_chip_key(10, 6, 6) == \
-        "Coding agent: 6 assumptions under 70% sure. Review: 10 open · 6 fixed."
+        "Coding agent: 6 assumptions. Review: 10 open · 6 fixed."
 
 
 def test_without_a_pull_request_the_page_says_so_on_hover_only(tmp_path):
