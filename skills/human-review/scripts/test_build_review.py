@@ -575,10 +575,19 @@ def test_a_snippet_of_a_file_at_the_repo_root_says_only_that_it_opens(tmp_path):
     assert 'data-tip="Open in VS Code"' in out
 
 
-def test_origin_lines_join_the_statement_in_one_reference():
+def test_the_listing_quotes_the_statement_alone_not_where_its_values_came_from():
+    """Victor, 20 Oct 2026: the enclosing method's signature, the declaration a value came
+    from and the `N lines not shown` fold between them were confusing — the card shows
+    the log line and nothing else; the type chips say what each value is."""
     h = {"file": "a/A.java", "line": 93, "end_line": 93,
          "origins": [{"line": 89, "name": "vetId", "kind": "param", "text": ""}]}
-    assert build._logging_ref(h) == "a/A.java:93,89"
+    assert build._logging_ref(h) == "a/A.java:93"
+
+
+def test_origin_lines_join_the_statement_in_one_reference_when_asked_for():
+    h = {"file": "a/A.java", "line": 93, "end_line": 93,
+         "origins": [{"line": 89, "name": "vetId", "kind": "param", "text": ""}]}
+    assert build._logging_ref(h, origins=True) == "a/A.java:93,89"
 
 
 def test_a_statement_with_nothing_to_trace_is_the_reference_it_always_was():
@@ -592,7 +601,7 @@ def test_an_origin_inside_the_statement_is_not_quoted_twice():
     origin is already on screen, and a second copy of it is not evidence."""
     h = {"file": "a/A.java", "line": 20, "end_line": 22,
          "origins": [{"line": 21, "name": "e", "kind": "param", "text": ""}]}
-    assert build._logging_ref(h) == "a/A.java:20-22"
+    assert build._logging_ref(h, origins=True) == "a/A.java:20-22"
 
 
 def test_the_page_caps_how_many_origin_lines_one_entry_may_pull_in():
@@ -604,7 +613,7 @@ def test_the_page_caps_how_many_origin_lines_one_entry_may_pull_in():
          "origins": [{"line": n, "name": f"v{n}", "kind": "local", "text": ""}
                      for n in (10, 20, 30, 40, 45, 48)]}
     assert build.MAX_ORIGIN_LINES_SHOWN == 4
-    assert build._logging_ref(h) == "a/A.java:50,30,40,45,48"   # 10 and 20 are the far ones
+    assert build._logging_ref(h, origins=True) == "a/A.java:50,30,40,45,48"   # 10 and 20 are the far ones
 
 
 def test_the_quoted_origin_keeps_its_real_line_number_behind_a_gap_marker(tmp_path):
@@ -680,9 +689,21 @@ def test_a_rewritten_statement_wears_a_neutral_mark_not_the_added_plus():
     assert build._mark_rewritten(snippet, {**h, "change": "added"}) == snippet
 
 
-def test_the_declaration_of_a_logged_value_is_quoted_with_the_statement():
+def test_only_the_statement_s_own_line_is_quoted_no_context_around_it():
+    """No enclosing method, no declaration of a logged value, no `lines not shown` fold:
+    just the log line, still numbered and marked, still linked to its line and column."""
     out = build._logging_listing([INFO_HIT], REPO_ROOT)
-    assert '<span class="ln">7</span>' in out and '<span class="ln">8</span>' in out
+    assert '<span class="ln">8</span>' in out
+    assert '<span class="ln">7</span>' not in out
+    assert "not shown" not in out and "ln-gap" not in out
+    assert out.count('class="ln-row') == 1
+    assert f'{FIXTURE_REL}:8:9"' in out
+
+
+def test_a_statement_spanning_several_lines_is_quoted_whole():
+    out = build._logging_listing([{**INFO_HIT, "end_line": 9, "origins": []}], REPO_ROOT)
+    assert out.count('class="ln-row') == 2
+    assert '<span class="ln">8</span>' in out and '<span class="ln">9</span>' in out
 
 
 def test_every_resolved_value_wears_an_intellij_style_type_hint_in_front_of_it():
@@ -1428,10 +1449,10 @@ def test_the_footer_says_where_the_page_came_from_and_where_to_see_it(tmp_path):
     page, _ = _build(tmp_path, BARE)
     foot = page[page.index("<footer>"):page.index("</footer>")]
     text = re.sub(r"<[^>]+>", "", foot)
-    assert ("Built by https://github.com/victorrentea/human-review. Browse it online. "
-            "Adopt what you like. Bug or idea → Open an issue.") in text
+    assert ("Built by https://github.com/victorrentea/human-review. Browse online: demo 1 · "
+            "demo 2. Adopt what you like. Bug or idea → + issue.") in text
     assert 'href="https://github.com/victorrentea/human-review"' in foot
-    assert "Browse it <a" in foot and ">online</a>." in foot
+    assert ">demo 1</a>" in foot and ">demo 2</a>" in foot and "/demo2/review.html" in foot
     assert "https://victorrentea.github.io/human-review/" in foot
     assert 'href="https://github.com/victorrentea/human-review/issues/new/choose"' in foot
     # The docker offer and the old closing line are gone.
@@ -1459,7 +1480,7 @@ def test_the_offer_does_not_depend_on_what_the_content_file_says(tmp_path):
     spec = {k: v for k, v in BARE.items() if k != "footer"}
     page, _ = _build(tmp_path, spec)
     foot = page[page.index("<footer>"):page.index("</footer>")]
-    assert "Built by" in foot and "Browse it <a" in foot and ">online</a>." in foot
+    assert "Built by" in foot and "Browse online: <a" in foot and ">demo 2</a>." in foot
 
 
 def test_the_show_all_button_says_what_it_does_next(tmp_path):

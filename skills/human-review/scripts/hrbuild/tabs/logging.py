@@ -69,21 +69,25 @@ def _logging_aside(part, found, what, root: Path, hits=()) -> str:
 MAX_ORIGIN_LINES_SHOWN = 4
 
 
-def _logging_ref(h: dict) -> str:
-    """The snippet reference for one statement: its own line(s), plus the lines its
-    interpolated values were traced back to — `Foo.java:89,93`.
+def _logging_ref(h: dict, origins: bool = False) -> str:
+    """The snippet reference for one statement: its own line(s) — `Foo.java:93`, or
+    `Foo.java:93-95` for a call that spans three physical lines, which stays whole.
 
-    The origins are the extractor's (`logextract.py` walks them syntactically, from the
-    ast-grep graph); all that happens here is the cap and the sort. Nearest-first, so
-    when the budget runs out what survives is the hop closest to the statement — the one
-    a reader would have looked at first anyway — and never a far-away line with the
-    intervening ones silently dropped."""
+    The listing quotes nothing else (Victor, 20 Oct 2026: "remove all the context, it's
+    confusing — leave only the actual line"). The enclosing method's signature, the
+    `Visit visit = …` a value came from and the `— 6 lines not shown` fold between them
+    made the reader hunt for the one line the card is about; the argument type chips
+    already say what each logged value is, and the bar opens the file for anything more.
+
+    `origins=True` still adds the lines the interpolated values were traced back to
+    (`Foo.java:89,93`), capped and nearest-first, for a caller that wants the data flow."""
     end = h.get("end_line") or h["line"]
     spans = [f'{h["line"]}' if end == h["line"] else f'{h["line"]}-{end}']
-    origins = sorted({o["line"] for o in (h.get("origins") or [])
-                      if not (h["line"] <= o["line"] <= end)},
-                     key=lambda n: abs(n - h["line"]))[:MAX_ORIGIN_LINES_SHOWN]
-    spans += [str(n) for n in sorted(origins)]
+    if origins:
+        near = sorted({o["line"] for o in (h.get("origins") or [])
+                       if not (h["line"] <= o["line"] <= end)},
+                      key=lambda n: abs(n - h["line"]))[:MAX_ORIGIN_LINES_SHOWN]
+        spans += [str(n) for n in sorted(near)]
     return f'{h["file"]}:{",".join(spans)}'
 
 
@@ -326,10 +330,8 @@ def _logging_listing(added: list, root: Path) -> str:
     # saying what it was. Stable within each group, so the extractor's order survives.
     added = sorted(added, key=lambda h: h.get("change") == "modified")
     for h in added:
-        # The bar's own link opens at the *first* line of the window, which with origin
-        # lines pulled in is the declaration rather than the statement. Re-aimed at the
-        # hit's own line and column: that is where a reader clicking a logging box expects
-        # to land.
+        # The bar's link is aimed at the hit's own line and column: that is where a reader
+        # clicking a logging box expects to land, not column 1 of its indent.
         snippet = snippet_html(_logging_ref(h), _change_line(h) or None, root, exact=True,
                                link_at=(h["line"], h.get("column", 1)))
         snippet = BADGE_RE.sub("", snippet, count=1)
