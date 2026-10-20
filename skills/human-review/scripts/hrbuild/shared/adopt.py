@@ -166,6 +166,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
         "li": [
             'A quorum of adversarial AI reviewers criticised the code.',
             'These the coder refused or left open.',
+            'The robot tags at the right name the AI reviewers that raised each one.',
             'You decide, top first: <b>must look</b> › <b>worth a look</b> › <b>nit</b>.',
             'The GitHub icon opens the PR comment; the title or IDE icon opens the line in your IDE.',
         ],

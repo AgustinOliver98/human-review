@@ -247,15 +247,16 @@ def test_the_pile_titles_and_intros_are_the_builders(tmp_path, capsys):
 
 
 def test_an_assumption_reads_assumption_and_n_percent(tmp_path):
-    """`assumption (79%)`, as on the reference page — not the item's own
-    `source` as the badge (`implementation decision [79%]`)."""
+    """`assumption(79%)`, one badge — not the item's own `source` as the badge
+    (`implementation decision [79%]`)."""
     spec, _ = _resolved(tmp_path, _report(tmp_path))
     out = _render(spec)
     cards = re.findall(r'<li class="n-assumed">.*?</li>', out, re.S)
     assert len(cards) == 2
     for card in cards:
-        assert '<span class="badge sev-assumed">assumption</span>' in card
-    assert ">(79%)</span>" in out and ">(100%)</span>" in out and "confident<" not in out
+        assert '<span class="badge sev-assumed">assumption(<span class="f-confidence' in card
+    assert ">79%</span>)</span>" in out and ">100%</span>)</span>" in out
+    assert "confident<" not in out
     assert "implementation decision" not in out
     human = next(c for c in cards if "Restrict sorting" in c)
     agent = next(c for c in cards if "Stable column" in c)

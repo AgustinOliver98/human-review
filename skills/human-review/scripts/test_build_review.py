@@ -2268,7 +2268,34 @@ def test_a_source_with_no_documentation_stays_a_plain_stamp():
     """`assumption` is not a command anyone can go and read about, and a stamp linked to
     something that does not describe it is worse than a stamp that stays quiet."""
     out = build.render_findings([{"title": "a", "body": "x", "source": "assumption"}])
-    assert '<span class="f-src">assumption</span>' in out
+    assert '<span class="f-revs"><span class="f-src">assumption</span></span>' in out
+
+
+def test_each_reviewer_is_its_own_tag_without_the_word_reviewer():
+    """`correctness, security and ticket-fit reviewers` is three tags, each its own robot
+    (CSS) and bare name — the robot already says *reviewer* (Victor, 20 Oct 2026)."""
+    out = build.render_findings([{"title": "a", "body": "x",
+                                  "source": "correctness, security and ticket-fit reviewers"}])
+    assert ('<span class="f-revs"><span class="f-src">correctness</span>'
+            '<span class="f-src">security</span><span class="f-src">ticket-fit</span></span>'
+            ) in out
+    assert "reviewer" not in out.split('class="f-title"')[0]
+
+
+def test_the_reviewer_tags_float_right_before_the_kind_badge_in_the_source():
+    """Emitted after the IDE/GitHub icons and before the badge, so the float lands just
+    left of the icons and the title follows the badge straight away."""
+    out = build.render_findings([{"title": "a", "body": "x", "source": "tests reviewer",
+                                  "_ghUrl": "https://github.com/o/r/pull/1#c"}])
+    assert out.index('class="f-gh"') < out.index('class="f-revs"') < out.index('class="badge')
+    fixed = build.render_autofixes([{"title": "a", "source": "tests reviewer"}])
+    assert fixed.index('class="f-revs"') < fixed.index('class="badge')
+
+
+def test_a_reviewers_parenthesised_detail_moves_to_its_tooltip():
+    out = build.render_findings([{"title": "a", "body": "x",
+                                  "source": "CI (SonarCloud java:S1192)"}])
+    assert '<span class="f-src" data-tip="SonarCloud java:S1192">CI</span>' in out
 
 
 def test_a_sourced_effort_and_detail_split_off_the_chip():
@@ -2281,8 +2308,9 @@ def test_a_sourced_effort_and_detail_split_off_the_chip():
         "source": "/code-review high (the PUT-clears-the-vet scenario)"}])
     assert ">/code-review</a>" in out
     assert "high (the PUT-clears-the-vet scenario)" not in out.split(">/code-review</a>")[0]
-    assert 'data-tip="/code-review docs · filed at high effort"' in out
-    assert '<span class="f-src-detail">(the PUT-clears-the-vet scenario)</span>' in out
+    assert ('data-tip="/code-review docs · filed at high effort · '
+            'the PUT-clears-the-vet scenario"') in out
+    assert "f-src-detail" not in out, "the detail is the tag's tooltip, not prose beside it"
 
 
 def test_a_sourced_pass_with_no_detail_still_gets_a_tip_for_its_effort():
@@ -2296,7 +2324,7 @@ def test_a_sourced_pass_with_a_detail_but_no_effort_still_splits(tmp_path):
     out = build.render_findings([{
         "title": "a", "body": "x", "source": "/code-review (duplication)"}])
     assert ">/code-review</a>" in out
-    assert '<span class="f-src-detail">(duplication)</span>' in out
+    assert 'data-tip="/code-review docs · duplication"' in out
     assert "filed at" not in out
 
 
@@ -3034,8 +3062,10 @@ def test_an_assumptions_confidence_reads_verbatim_with_its_tooltip(tmp_path):
     # The tooltip is `CONFIDENCE_TIP`, fixed — not a sentence composed around this item's
     # own number — and the face is a bare percentage in parentheses (Victor, 19 Oct 2026):
     # `(85%)`, the word "confident" moved to the hover.
-    assert ('<span class="f-confidence sev-info" data-tip="Confidence level">'
-            '(85%)</span>') in item
+    # One badge since 20 Oct 2026: `assumption(85%)`, the parentheses in the badge's
+    # purple and only the number on its coloured ground, no space anywhere in between.
+    assert ('<span class="badge sev-assumed">assumption(<span class="f-confidence sev-info" '
+            'data-tip="Confidence level">85%</span>)</span>') in item
     assert "sev-med" not in item, "0.85 is not a low confidence"
 
 
@@ -3051,7 +3081,7 @@ def test_a_confidence_chip_is_coloured_red_amber_green_by_band(tmp_path, confide
                "blocks": [{"type": "assumptions", "mode": "A"}]}]))
     item = re.search(r'<li class="n-assumed">.*?</li>', page, re.S).group(0)
     assert f'class="f-confidence {band}"' in item
-    assert f">({round(confidence * 100)}%)</span>" in item
+    assert f">{round(confidence * 100)}%</span>)</span>" in item
 
 
 def test_the_confidence_chip_is_as_big_as_the_title_and_on_its_baseline(tmp_path):

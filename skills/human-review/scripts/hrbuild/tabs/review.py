@@ -14,6 +14,7 @@ from pathlib import Path
 
 from ..shared.actions import ACTIONS, declare_action, RERUN_ACTION
 from ..shared.bands import _lede_above, _flush_top_bands
+from ..shared.chips import reviewer_names
 from ..shared.commands import command_html
 from ..shared.snippets import DIFF_CONTEXT, diff_html, github_blob_base
 
@@ -453,7 +454,8 @@ PASS_DOCS = {
 
 
 def _finding_source(f) -> str:
-    """Which pass raised it, when the content file says so.
+    """Who raised it, when the content file says so: one tag per reviewer, at the right end
+    of the card's header row.
 
     Optional by design: an item that does not claim a source renders without one rather
     than being attributed to a guess. Provenance exists only where the decision was made,
@@ -464,41 +466,45 @@ def _finding_source(f) -> str:
     The assumptions pile does not come through here at all: its provenance never varies,
     so it is the card's one purple chip rather than a grey stamp behind a second badge.
 
-    A stamp naming a documented pass is the link to that documentation. The stamp already
-    is the question — *what is `/code-review`?* — and answering it in place costs the page
-    nothing, where answering it in prose costs a line under the verdict that every reader
-    who already knows has to read past.
+    Each tag is Victor's angry robot and the reviewer's bare name (20 Oct 2026):
+    `correctness, security and ticket-fit reviewers` is three tags — `correctness`,
+    `security`, `ticket-fit` — the word `reviewer` gone because the robot already says it
+    (`reviewer_names`, the same split the masthead chip's hover counts by). They float to
+    the right, just left of the IDE and GitHub icons, so the title follows the kind badge
+    straight away and every card's provenance sits in the same column.
 
-    `review-points.md`'s `source:` is one field carrying up to three facts the parser
-    never splits apart — the pass, the effort it filed the item at, and which of several
-    same-titled findings this one is (`/code-review high (the PUT-clears-the-vet
-    scenario)`) — because splitting them is a rendering decision, not a parsing one, and
-    `review-points.py` is not this tab's to change. Only the pass name is the link: effort
-    is a fact for the tooltip, not the face, and the parenthesised detail is prose that
-    happens to follow a chip, not part of the chip itself."""
+    A tag naming a documented pass is the link to that documentation: the tag already is
+    the question — *what is `/code-review`?* — and answering it in place costs the page
+    nothing. `review-points.md`'s `source:` is one field carrying up to three facts — the
+    pass, the effort it filed the item at, and which of several same-titled findings this
+    one is (`/code-review high (the PUT-clears-the-vet scenario)`) — and only the pass is
+    the face: the effort and the detail are facts for the tooltip. A parenthesised detail
+    after a reviewer's name (`CI (SonarCloud java:S1192)`) is that tag's tooltip too."""
     src = (f.get("source") or "").strip()
     if not src:
         return ""
     # A known pass may be followed by its effort and a parenthesised detail; an unknown
-    # source (`assumption`, a human name, a linter) never matches and falls straight to
-    # the plain stamp below, whatever it says after the first word.
+    # source (a reviewer, a human name, a linter) never matches and is split per reviewer.
     name = next((n for n in PASS_DOCS if src == n or src.startswith(n + " ")), None)
-    if not name:
-        return f'<span class="f-src">{html.escape(src)}</span>'
-    rest = src[len(name):].strip()
-    detail_m = re.search(r"\(([^()]*)\)\s*$", rest)
-    detail = detail_m.group(1).strip() if detail_m else ""
-    effort = (rest[:detail_m.start()] if detail_m else rest).strip()
-    tip = f"{name} docs"
-    if effort:
-        tip += f" · filed at {effort} effort"
-    # The face is the command, which says nothing about where the link goes or how hard
-    # the pass looked; the tooltip spends itself on the first, as every other tooltip on
-    # this page does, and the detail after the chip spends itself on the second, in plain
-    # text rather than crowded into a face that is also a link.
-    chip = (f'<a class="f-src" href="{html.escape(PASS_DOCS[name])}" target="_blank" '
-            f'rel="noopener" data-tip="{html.escape(tip)}">{html.escape(name)}</a>')
-    return chip + (f' <span class="f-src-detail">({html.escape(detail)})</span>' if detail else "")
+    if name:
+        rest = src[len(name):].strip()
+        detail_m = re.search(r"\(([^()]*)\)\s*$", rest)
+        detail = detail_m.group(1).strip() if detail_m else ""
+        effort = (rest[:detail_m.start()] if detail_m else rest).strip()
+        tip = f"{name} docs"
+        if effort:
+            tip += f" · filed at {effort} effort"
+        if detail:
+            tip += f" · {detail}"
+        tags = [f'<a class="f-src" href="{html.escape(PASS_DOCS[name])}" target="_blank" '
+                f'rel="noopener" data-tip="{html.escape(tip)}">{html.escape(name)}</a>']
+    else:
+        details = re.findall(r"\(([^()]*)\)", src)
+        tip = (f' data-tip="{html.escape("; ".join(d.strip() for d in details))}"'
+               if details else "")
+        tags = [f'<span class="f-src"{tip}>{html.escape(n)}</span>'
+                for _, n in reviewer_names(src)]
+    return '<span class="f-revs">' + "".join(tags) + "</span>"
 
 
 #: Who said the observation, by the words of its `source:` — the label before it. Eval
@@ -2104,8 +2110,9 @@ def _render_finding_items(findings) -> str:
         refs = _finding_refs(f)
         items.append(
             f'<li class="{li_cls}">' + gh_comment_link(f)
-            + f'<span class="badge {cls}">{html.escape(label)}</span>'
+            # Floated right, just left of the icons above it (review.css).
             + _finding_source(f)
+            + f'<span class="badge {cls}">{html.escape(label)}</span>'
             + f' <span class="f-title">{f["title"]}</span>'
             + (f'<p class="f-obs"><b>{_obs_label(f)}:</b> {f["observation"]}</p>'
                if f.get("observation") else "")
@@ -2121,7 +2128,7 @@ def _render_finding_items(findings) -> str:
 
 
 #: The confidence chip's tooltip, fixed rather than composed per item: the face is a bare
-#: `(60%)` since Victor dropped the word "confident" (19 Oct 2026), so the hover names
+#: `60%` since Victor dropped the word "confident" (19 Oct 2026), so the hover names
 #: what the number is.
 CONFIDENCE_TIP = "Confidence level"
 
@@ -2141,13 +2148,25 @@ def _confidence_chip(f) -> str:
     if c is None:
         return ""
     # A percentage, not a rate: `45%` is read at a glance, `0.45` is read as arithmetic.
-    # The lede already says "3 under 70% sure"; the chips now speak the same unit. In
-    # parentheses, without "confident" (Victor, 19 Oct 2026): one bold run with the kind
-    # before it and the title after, the word moved to the hover.
-    shown = f"({round(c * 100)}%)"
+    # The lede already says "3 under 70% sure"; the chips now speak the same unit. Without
+    # "confident" (Victor, 19 Oct 2026), the word moved to the hover. The parentheses are
+    # not the chip's: they are the badge's (`_assumption_badge`), in its purple.
+    shown = f"{round(c * 100)}%"
     band = "sev-high" if c < 0.5 else "sev-med" if is_unsure(f) else "sev-info"
     cls = f"f-confidence {band}"
     return f'<span class="{cls}" data-tip="{CONFIDENCE_TIP}">{shown}</span>'
+
+
+def _assumption_badge(f) -> str:
+    """`assumption(70%)` — one purple badge, the confidence inside it (Victor, 20 Oct 2026).
+
+    The number used to be a pill of its own after the badge, `assumption (70%)`, and read
+    as a second fact beside the kind. It is the kind's own qualifier, so it sits in the
+    badge with no space either side: the word and the parentheses in the badge's purple,
+    only `70%` on its red/amber/green ground. No confidence declared, no parentheses."""
+    chip = _confidence_chip(f)
+    return (f'<span class="badge sev-assumed">{ASSUMPTION_BADGE}'
+            + (f"({chip})" if chip else "") + "</span>")
 
 
 #: The word on every assumption card — fixed, never the item's own `source`. The report
@@ -2224,8 +2243,7 @@ def render_assumptions(items, mode: str = "") -> str:
         # the pile still reads as the one the human owns.
         out.append(
             '<li class="n-assumed">' + gh_comment_link(f)
-            + f'<span class="badge sev-assumed">{ASSUMPTION_BADGE}</span>'
-            + _confidence_chip(f)
+            + _assumption_badge(f)
             + _decided_by(f)
             + f' <span class="f-title">{f["title"]}</span>'
             + (f'<p>{f["body"]}</p>' if f.get("body") else "")
@@ -2266,8 +2284,8 @@ def render_autofixes(fixes, badge: str = "auto-fixed") -> str:
         refs = _finding_refs(f)
         items.append(
             '<li class="fixed">' + gh_comment_link(f)
-            + f'<span class="badge sev-fixed">{html.escape(badge)}</span>'
             + _finding_source(f)
+            + f'<span class="badge sev-fixed">{html.escape(badge)}</span>'
             + f' <span class="f-title">{f["title"]}</span>'
             + (f'<p class="f-obs"><b>{_obs_label(f)}:</b> {f["observation"]}</p>'
                if f.get("observation") else "")

@@ -91,22 +91,23 @@ ol.findings > li.n-assumed { --num-bg:#5b3fa8; border-left:3px solid #5b3fa8; }
    recognises their own intent in one of the two readings without opening anything. */
 .f-alt { color:var(--muted); font-size:.9rem; margin:.35rem 0 0; }
 .f-alt b { color:var(--fg); font-weight:650; }
-/* Who raised it: a provenance stamp, so it is quiet and monospaced, and it sits after the
-   badge where the eye is already looking. It is a link where the pass has documentation —
-   the page names two slash commands a reader may never have run, and the alternative was a
-   line of prose under the verdict explaining them, which every reader after the first has
-   to scroll past. The stamp is the thing being asked about, so it is the thing that
-   answers. Same face either way; only the hover and the cursor say it opens. */
+/* Who raised it: one quiet monospaced tag per reviewer, each led by Victor's angry robot
+   (the masthead's own, `assets/angry-bot.png` at 36px) instead of the word `reviewer`.
+   The group floats to the right end of the header row, just left of the IDE and GitHub
+   icons floated before it (Victor, 20 Oct 2026), so the title follows the kind badge and
+   provenance sits in one column down the pile. A tag is a link where the pass has
+   documentation; same face either way, only the hover and the cursor say it opens. */
+ol.findings > li > .f-revs { float:right; margin:.15rem 0 0 .55rem; display:inline-flex;
+          gap:.3rem; }
 .f-src { font:600 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted);
           border:1px solid var(--line); border-radius:4px; padding:.05rem .35rem; margin-left:.35rem;
-          vertical-align:.05em; }
+          vertical-align:.05em; white-space:nowrap; }
+.f-revs > .f-src { display:inline-flex; align-items:center; gap:.25rem; margin:0; }
+.f-revs > .f-src::before { content:""; width:14px; height:14px; flex:none;
+          background:url("data:image/png;base64,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") center/contain no-repeat; }
+span.f-src[data-tip] { cursor:help; }
 a.f-src { text-decoration:none; }
 a.f-src:hover, a.f-src:focus-visible { color:var(--link); border-color:var(--link); }
-/* The bit of `source:` that is not the pass and not its effort — which finding this is,
-   among several the same pass raised with the same title. Plain text beside the chip,
-   not a second chip: it is prose about this one item, not a second fact worth a border
-   of its own the way the pass name is. */
-.f-src-detail { font-size:.85rem; color:var(--muted); margin-left:.3rem; }
 .f-title { font-weight:650; }
 /* The kind chip (`assumption`, `worth a look`, `fixed`…) in the title's own face, size and
    weight rather than small uppercase (Victor, 19 Oct 2026): kind, `(60%)` and title are

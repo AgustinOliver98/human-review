@@ -227,7 +227,7 @@ from hrbuild.tabs.review import (
     reset_list, resolve_refs, resolve_review_points, REVIEW_POINTS_JSON, scope_chip_face,
     _points_parser, unglue_refs,
     SCOPE_CHIP_MAX_LEN, SEVERITIES, _aftermath_commit, _aftermath_files_tip,
-    _assumptions_block, _code_totals, _confidence_chip, _finding_refs, _finding_source, _fold_note_lists,
+    _assumptions_block, _assumption_badge, _code_totals, _confidence_chip, _finding_refs, _finding_source, _fold_note_lists,
     grade_reasons, grade_reasons_html, _first_clause, _CLAUSE_END, PILE_ROUND, _round_kicker,
     _LEDE_SHOWN, _LIST_OFFSET, _merge_seam_shas, _open_list, _pile_anchor, _raised_by,
     _ref_link, _regenerate_offer, _score_target, _tooling_commit_shas,
