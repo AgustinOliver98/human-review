@@ -349,8 +349,9 @@ def test_the_ticket_title_is_a_link_over_the_ticket(tmp_path):
     this branch is not the issue's, and the frame opened straight into `opened on Jun 13,
     2026` with nothing saying what was opened."""
     out = _laid_out(tmp_path)
-    assert ('<a class="rm-title" href="https://github.com/victorrentea/petclinic/issues/37">'
-            '<span class="rm-ref">Issue <span class="rm-num">#37</span></span>: Link Visit with Vet</a>') in out
+    assert ('<span class="rm-title"><span class="rm-ref">Issue <a class="rm-num" '
+            'href="https://github.com/victorrentea/petclinic/issues/37">#37</a></span>: '
+            'Link Visit with Vet</span>') in out
     head, ticket = _order(out, 'class="tabtitle rm-head"', 'class="rm-ticket"')
     assert head < ticket
 

@@ -1192,9 +1192,10 @@ def ticket_head(ref: dict | None) -> str:
 
     `Issue #37: Link Visit with Vet` — the number rides on the word it numbers, in the
     muted weight. At the end of the title, GitHub's own place for it, it was a long line
-    away from the "Issue" it belongs to. The whole of it is the link; half a title being
-    clickable is a target nobody aims at. With no ticket resolved the row is still there,
-    empty, so both columns under it keep starting level."""
+    away from the "Issue" it belongs to. Only the number is the link (Victor, 20 Oct 2026:
+    "only the number thirty seven should be the link"), as GitHub links `#37` in prose.
+    With no ticket resolved the row is still there, empty, so both columns under it keep
+    starting level."""
     if ref and ref.get("number") is None and ref.get("title"):
         # Not an issue — the requirement text came from the conversation, an OpenSpec
         # change or the front-matter, and the heading says so rather than invent a number.
@@ -1203,10 +1204,10 @@ def ticket_head(ref: dict | None) -> str:
     elif ref and ref.get("number") is not None:
         # "Issue" first, so the heading says what it names before it names it: over the
         # ticket's own frame, a bare title read as the PR's.
-        face = (f'<span class="rm-ref">Issue <span class="rm-num">#{ref["number"]}</span></span>: '
-                f'{html.escape(ref.get("title") or "")}')
-        title = (f'<a class="rm-title" href="{html.escape(ref["url"])}">{face}</a>'
-                 if ref.get("url") else f'<span class="rm-title">{face}</span>')
+        num = (f'<a class="rm-num" href="{html.escape(ref["url"])}">#{ref["number"]}</a>'
+               if ref.get("url") else f'<span class="rm-num">#{ref["number"]}</span>')
+        title = (f'<span class="rm-title"><span class="rm-ref">Issue {num}</span>: '
+                 f'{html.escape(ref.get("title") or "")}</span>')
     else:
         title = ""
     # The tab's own first-line title, the shared `h2.tabtitle` (core.css) every tab that
@@ -1361,13 +1362,11 @@ REQMAP_CSS = """
    its height but not its ink, so the card beside it does not jump. */
 .reqmap[data-semcov=off] .rm-f[data-cov]{background:none}
 .reqmap[data-semcov=off] .rm-legend{visibility:hidden}
-/* The title is the link out to the issue, in the heading's ink rather than link blue. */
-.reqmap .rm-head .rm-title{color:var(--fg,#1c1c1c);text-decoration:none;overflow-wrap:anywhere}
-.reqmap .rm-head .rm-title:hover{text-decoration:underline}
+/* The title in the heading's ink; only its "#25" links out to the issue, in link blue. */
+.reqmap .rm-head .rm-title{color:var(--fg,#1c1c1c);overflow-wrap:anywhere}
 .reqmap .rm-head .rm-num{color:var(--muted,#6b6b6b);font-weight:400}
-/* "Issue #25" reads as the masthead's PR link does: link blue, the number not muted. */
-.reqmap .rm-head .rm-title .rm-ref{color:var(--link)}
-.reqmap .rm-head .rm-title .rm-ref .rm-num{color:inherit;font-weight:inherit}
+.reqmap .rm-head .rm-title .rm-ref .rm-num{color:var(--link);font-weight:inherit;text-decoration:none}
+.reqmap .rm-head .rm-title a.rm-num:hover{text-decoration:underline}
 /* Both keys now sit under what they explain, so the margin that lifted them off it moves
    to the other side. The shared `--rm-key-h` band goes with them: above the frames it
    kept two unequal rows on one line, and under them there is nothing to keep level. */
