@@ -2377,7 +2377,7 @@ function boot() {
   if (typeof SwaggerUIBundle !== 'function') { retryBundle(); return; }
   booted = true;
   var ver = DATA.spec && DATA.spec.info && DATA.spec.info.version;
-  const verEl = root.getElementById('dv-ver') || document.getElementById('dv-ver');
+  const verEl = root.getElementById('dv-ver');
   if (ver && verEl) verEl.textContent = 'v' + ver;
   SwaggerUIBundle({
     spec: DATA.spec,   // already fully dereferenced by the generator
