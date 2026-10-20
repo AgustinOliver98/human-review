@@ -143,104 +143,63 @@ a.cx-why-line:hover code { text-decoration:underline; }
 .cx-why-inc { flex:0 0 2.9rem; text-align:right; font-variant-numeric:tabular-nums;
               font:700 10.5px/1.55 ui-monospace,Menlo,monospace; color:var(--muted); }
 /* ── the call graph ─────────────────────────────────────────────────────────────────
-    The flow drawn left to right: a node per method, its callees in a column to its right,
-    joined by elbow lines drawn from borders alone (no SVG, no layout engine), each ending
-    in an arrowhead on the callee. A node is two badges — the class, and `method()` under
-    it — with its cognitive score beside them. The graph scrolls sideways inside its own
-    box rather than squeeze a deep chain or push the page wider than the window. The top
-    padding leaves room for the `+N` badge that rides above a node's corner. */
-.cg { overflow-x:auto; padding:.55rem 0 .45rem; margin:0 0 .35rem -3.3rem; }
-/* Top-aligned, not centred: a centred parent floats to the middle of however tall its
-    subtree is, and one wide branch then opens a screen of empty space above and below
-    every sibling. Aligned to the top, a node sits level with its first callee and the
-    elbows are drawn at a fixed height — half a node — from the top of each row. */
-.cg-t { display:flex; flex-direction:column; align-items:flex-start;
-        position:relative; }
-/* A node and the callees in other classes, to its right. The stem is the node's column,
-    stretched to the row's height so the rail down to its same-class callees can start
-    under the node however tall the branch beside it grows. */
-.cg-row { display:flex; align-items:flex-start; }
-.cg-stem { align-self:stretch; position:relative; display:flex; align-items:flex-start; }
-.cg-kids { display:flex; flex-direction:column; gap:3px; margin-left:12px; position:relative; }
-.cg-kids::before { content:""; position:absolute; left:-12px; top:var(--cg-mid); width:12px;
-                   border-top:1px solid var(--cg-line); }
-.cg-kids > .cg-t { padding-left:13px; }
-.cg-kids > .cg-t::before { content:""; position:absolute; left:0; top:-3px; bottom:0;
-                           border-left:1px solid var(--cg-line); }
-.cg-kids > .cg-t:first-child::before { top:var(--cg-mid); }
-.cg-kids > .cg-t:last-child::before { bottom:auto; height:calc(var(--cg-mid) + 3px); }
-.cg-kids > .cg-t:only-child::before { display:none; }
-.cg-kids > .cg-t::after { content:""; position:absolute; left:0; top:var(--cg-mid); width:8px;
-                          border-top:1px solid var(--cg-line); }
-/* The arrowhead: a border triangle hung off the callee's left edge, tip on its frame, so
-    every edge reads caller → callee without an SVG. */
-.cg-kids > .cg-t > .cg-row > .cg-stem > .cg-n::before, .cg-kids > .cg-t > .cg-more::before {
-    content:""; position:absolute; left:-7px; top:calc(var(--cg-mid) - 4.5px);
-    border:4px solid transparent; border-left:6px solid var(--cg-arrow); border-right:0; }
-.cg-kids > .cg-t > .cg-more::before { top:calc(50% - 4px); }
-.cg-more { position:relative; }
-/* Calls that stay in the class hang below the caller, flush with its left edge: the rail
-    down from under the caller runs straight into an arrowhead on the callee's top — down
-    means "same file", right means "another class". A second callee cannot take that line,
-    it would run through the first and read as a chain, so under a fork the rail also
-    turns left, runs down outside the boxes and comes back in with a ┐ over each later
-    callee. */
-.cg-down { display:flex; flex-direction:column; align-items:flex-start; gap:10px;
-           padding-top:10px; position:relative; }
-/* The rail starts at the caller's bottom edge, not its middle: a dimmed caller is
-    translucent, and a line from its middle showed through it. */
-.cg-v > .cg-row > .cg-stem::after { content:""; position:absolute; left:8px; top:var(--cg-h);
-                                    bottom:0; border-left:1px solid var(--cg-line); }
-.cg-down::after { content:""; position:absolute; left:8px; top:0; height:3px;
-                  border-left:1px solid var(--cg-line); }
-.cg-fork::before { content:""; position:absolute; left:-6px; top:0; width:14px;
-                   border-top:1px solid var(--cg-line); }
-.cg-fork > .cg-t::before { content:""; position:absolute; left:-6px; top:-10px; bottom:0;
-                           border-left:1px solid var(--cg-line); }
-.cg-fork > .cg-t:last-child::before { bottom:auto; height:3px; }
-.cg-fork > .cg-t + .cg-t::after { content:""; position:absolute; left:-6px; top:-8px; width:14px;
-                                  height:2px; border:solid var(--cg-line); border-width:1px 1px 0 0; }
-.cg-down > .cg-t > .cg-row > .cg-stem > .cg-n::before {
-    content:""; position:absolute; left:3px; top:-7px;
-    border:4px solid transparent; border-top:6px solid var(--cg-arrow); border-bottom:0; }
-/* The edges are drawn to measurements, not to the boxes, so the box's rows have fixed
-    heights: a 1px frame, an 18px class row whose last pixel is the divider, a 20px method row. Every
-    arrow from the left lands on the divider (--cg-mid, its top pixel), and a rail down
-    starts at the bottom edge (--cg-h). */
-.cg { --cg-line:color-mix(in srgb, var(--muted) 55%, transparent); --cg-arrow:var(--muted);
-      --cg-mid:18px; --cg-h:40px; }
-/* A node is one frame cut in two by a rule across its whole width: the class on top,
-    its ↗ right after the name, and the method below with its score hard right — the
-    score is the method's, so it sits on its row. No badge inside the badge: the class
-    used to be a pill of its own and the method a black lozenge, three frames per box.
-    The names are set in the UI face, not monospace: the graph is as wide as its deepest
-    chain times its widest names, and a proportional face buys back a fifth of that. */
-.cg-n { display:inline-grid; grid-template-columns:auto auto; column-gap:6px;
-        align-items:center; padding:0; border:1px solid var(--line); border-radius:6px;
-        background:var(--card); color:inherit; white-space:nowrap; cursor:pointer;
-        position:relative; z-index:1; transition:border-color .12s, background .12s; }
+    The flow drawn left to right: one faded box per class, a column per class depth, its
+    methods stacked inside as solid blocks. The page's script draws the arrows into the
+    <svg> over the columns and slides each box down level with its first caller. The graph
+    scrolls sideways inside its own box rather than push the page wider than the window.
+    The top padding leaves room for the `+N` badge that rides above a block's corner. */
+.cg { overflow-x:auto; padding:.45rem 0 .45rem; margin:0 0 .35rem -3.3rem;
+      --cg-line:color-mix(in srgb, var(--muted) 60%, transparent); --cg-arrow:var(--muted);
+      --cg-hot:color-mix(in srgb, var(--fg) 78%, transparent); }
+.cg-cols { position:relative; display:inline-flex; align-items:flex-start; gap:30px;
+           padding:8px 10px 4px 2px; }
+/* Over the boxes' tint, under the blocks: an arrow inside a class runs round the box's
+    left margin, and ends on a block's frame, never across its text. */
+.cg-svg { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; z-index:1; }
+.cg-svg .cg-e { fill:none; stroke:var(--cg-line); stroke-width:1.2; }
+.cg-svg .cg-ah { fill:var(--cg-arrow); }
+/* The edges that lead to what the branch changed are the path the reader came for. */
+.cg-svg .cg-e.cg-hot { stroke:var(--cg-hot); stroke-width:1.6; }
+.cg-svg .cg-ah.cg-hot { fill:var(--cg-hot); }
+.cg-col { display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+/* A class: a faint tint of its hue and a hairline of it, named once on top. The left
+    padding is the lane the same-class arrows run in. */
+.cg-k { position:relative; padding:0 8px 8px 18px; border-radius:9px;
+        background:color-mix(in srgb, var(--cg-hue, var(--muted)) 7%, transparent);
+        border:1px solid color-mix(in srgb, var(--cg-hue, var(--muted)) 30%, transparent); }
 .cg-h0 { --cg-hue:#b45309; } .cg-h1 { --cg-hue:#be185d; } .cg-h2 { --cg-hue:#6d28d9; }
 .cg-h3 { --cg-hue:#0e7490; } .cg-h4 { --cg-hue:#c2410c; } .cg-h5 { --cg-hue:#a21caf; }
+.cg-kh { display:flex; align-items:center; gap:3px; height:22px; margin-left:-10px; }
+.cg-c { font:500 10.5px/14px system-ui,sans-serif; color:var(--cg-hue, var(--muted)); }
+.cg-ms { display:flex; flex-direction:column; align-items:stretch; gap:9px; }
+/* A method: a solid card on the faded box, its name bold, its score hard right. The
+    names are set in the UI face, not monospace: the graph is as wide as its deepest chain
+    times its widest names, and a proportional face buys back a fifth of that. */
+.cg-n { display:grid; grid-template-columns:1fr auto; column-gap:8px; align-items:center;
+        padding:0; border:1px solid color-mix(in srgb, var(--fg) 24%, var(--line));
+        border-radius:6px; background:var(--card); color:inherit; white-space:nowrap;
+        cursor:pointer; position:relative; z-index:2;
+        box-shadow:0 1px 2px color-mix(in srgb, #000 14%, transparent);
+        transition:border-color .12s, background .12s; }
 .cg-n:hover { border-color:var(--link); }
 .cg-n:focus-visible { outline:2px solid var(--link); outline-offset:1px; }
-/* Clicked: the box takes the link blue — frame, ring and a tint — so the one being read
-    stands out of the graph around it. */
-.cg-n.cg-open { border-color:var(--link); box-shadow:0 0 0 1px var(--link) inset;
-                background:color-mix(in srgb, var(--link) 12%, var(--card)); opacity:1; }
-.cg-c { grid-column:1 / 3; display:flex; align-items:center; gap:3px; height:18px;
-        box-sizing:border-box; padding:0 6px;
-        border-bottom:1px solid var(--line);
-        font:500 10.5px/14px system-ui,sans-serif; color:var(--cg-hue, var(--muted)); }
-.cg-m { grid-column:1; display:flex; align-items:center; height:20px; padding-left:6px;
-        font:600 10.5px/14px system-ui,sans-serif; }
-.cg-cog { grid-column:2; grid-row:2; padding-right:6px; font:700 9.5px/1.3 ui-monospace,Menlo,monospace;
-          text-align:right; font-variant-numeric:tabular-nums; }
+.cg-mh { display:flex; align-items:center; gap:4px; height:24px; padding-left:7px; }
+.cg-m { display:flex; align-items:center; font:600 11.5px/14px system-ui,sans-serif; }
+.cg-cog { grid-column:2; grid-row:1; padding-right:7px; font:700 10px/1.3 ui-monospace,Menlo,monospace;
+          text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
 /* ↗ is the only way into the editor from the graph, so it is a real target, not a glyph:
-    a small square that fills blue under the pointer. */
+    a small square that fills blue under the pointer. On a block it stays quiet until the
+    block is under the pointer — the method's name is what the block is for. */
 a.cg-go { display:inline-block; min-width:14px; text-align:center; border-radius:3px;
           font:700 11px/14px system-ui,sans-serif; color:var(--link); text-decoration:none; }
 a.cg-go:hover { background:var(--link); color:var(--card); }
-.cg-c a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-kh a.cg-go, .cg-mh a.cg-go { min-width:12px; font-size:10.5px; line-height:1; }
+.cg-mh a.cg-go { opacity:.45; }
+.cg-n:hover .cg-mh a.cg-go, .cg-n:focus-within .cg-mh a.cg-go { opacity:1; }
+/* Clicked open: a tint of the link blue, and its frame unless the branch's green holds it. */
+.cg-n.cg-open { background:color-mix(in srgb, var(--link) 8%, var(--card)); opacity:1; }
+.cg-n.cg-open:not(.cg-add):not(.cg-cut) { border-color:var(--link);
+    box-shadow:0 0 0 1px var(--link) inset; }
 /* The fold's caret sits in front of the method name, the word a reader clicks on — the
     full-size ▶, not ▸: at the name's own size ▸ was a speck, and a speck does not say
     "this opens". */
@@ -249,21 +208,22 @@ a.cg-go:hover { background:var(--link); color:var(--card); }
                   transition:transform .12s; }
 .cg-n:hover .cg-tog::before { color:var(--link); }
 .cg-open .cg-tog::before { transform:rotate(90deg); color:var(--link); }
-.cg-lines { display:none; grid-column:1 / 3; margin:0 0 1px; padding:3px 6px 0;
+.cg-lines { display:none; grid-column:1 / 3; margin:0 0 1px; padding:3px 7px 0;
             border-top:1px dashed var(--line); cursor:auto; }
 .cg-open > .cg-lines { display:block; }
 .cg-lines a.cx-why-line code { font-size:11px; }
 .cg-d { font:700 9.5px/1 ui-monospace,Menlo,monospace; position:absolute; top:-6px; right:-6px;
         padding:1px 3px; border-radius:6px; background:var(--card); }
-.cg-zero { opacity:.55; }
-.cg-more { font:700 10px/18px ui-monospace,Menlo,monospace; color:var(--muted); padding:0 6px;
-           margin-top:calc(var(--cg-mid) - 9.5px); border:1px dashed var(--line);
-           border-radius:6px; cursor:help; }
+.cg-zero { opacity:.7; }
+.cg-zero .cg-m { font-weight:500; }
+.cg-more { font:700 10px/16px ui-monospace,Menlo,monospace; color:var(--muted); padding:0 5px;
+           border:1px dashed var(--line); border-radius:6px; cursor:help; }
 /* A method whose score this branch raised wears the added colour on its frame and its
-    number; one it lowered, the removed colour. */
-.cg-add { border-color:var(--cx-added); box-shadow:0 0 0 1px var(--cx-added) inset; }
+    number — open or shut; one it lowered, the removed colour. */
+.cg-n.cg-add { border-color:var(--cx-added); box-shadow:0 0 0 1px var(--cx-added) inset; }
+.cg-n.cg-add.cg-open { background:color-mix(in srgb, var(--cx-added) 7%, var(--card)); }
 .cg-add .cg-d, .cg-add .cg-cog { color:var(--cx-added); }
-.cg-cut { border-color:var(--cx-removed); }
+.cg-n.cg-cut { border-color:var(--cx-removed); }
 .cg-cut .cg-d { color:var(--cx-removed); }
 /* Lines of methods folded into `+N`: one closed fold under the graph, never lost. */
 .cx-why-rest > summary { cursor:pointer; font-size:.78rem; color:var(--muted); margin:.1rem 0 .3rem; }

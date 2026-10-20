@@ -695,28 +695,28 @@
           "line": 32,
           "name": "OWNERS",
           "type": "String",
-          "text": "public static final String OWNERS = \"\"\"\n            [\n              { \"id\": 1, \"firstName\": \"George\", \"lastName\": \"Franklin\", \"address\": \"110 W. Liberty St.\",\n                \"city\": \"Madison\", \"telephone\": \"6085551023\",\n                \"pets\": [ { \"id\": 1, \"name\": \"Leo\", \"birthDate\": \"2010-09-07\",\n                            \"type\": { \"id\": 1, \"name\": \"cat\" }, \"ownerId\": 1, \"visits\": [] } ] },\n              { \"id\": 2, \"firstName\": \"Betty\", \"lastName\": \"Davis\", \"address\": \"638 Cardinal Ave.\",\n                \"city\": \"Sun Prairie\", \"telephone\": \"6085551749\", \"pets\": [] }\n            ]\"\"\";"
+          "text": "public static final String OWNERS = \"\"\"\n            [\n              { \"id\": 1, \"firstName\": \"George\", \"lastName\": \"Franklin\", \"address\": \"110 W. Liberty St.\",\n                \"city\": \"Madison\", \"telephone\": \"6085551023\",\n                \"pets\": [ { \"id\": 1, \"name\": \"Leo\", \"birthDate\": \"2010-09-07\",\n                            \"type\": { \"id\": 1, \"name\": \"cat\" }, \"ownerId\": 1,\n                            \"visits\": [\n                              { \"id\": 1, \"date\": \"2013-01-01\", \"description\": \"neutered\", \"petId\": 1,\n                                \"vetId\": 3, \"vetFirstName\": \"Linda\", \"vetLastName\": \"Douglas\" },\n                              { \"id\": 2, \"date\": \"2013-01-02\", \"description\": \"annual checkup\", \"petId\": 1 } ] } ] },\n              { \"id\": 2, \"firstName\": \"Betty\", \"lastName\": \"Davis\", \"address\": \"638 Cardinal Ave.\",\n                \"city\": \"Sun Prairie\", \"telephone\": \"6085551749\", \"pets\": [] }\n            ]\"\"\";"
         },
         {
-          "line": 42,
+          "line": 46,
           "name": "PETS",
           "type": "String",
-          "text": "public static final String PETS = \"\"\"\n            [\n              { \"id\": 1, \"name\": \"Leo\", \"birthDate\": \"2010-09-07\", \"type\": { \"id\": 1, \"name\": \"cat\" },\n                \"ownerId\": 1, \"visits\": [] },\n              { \"id\": 2, \"name\": \"Basil\", \"birthDate\": \"2012-08-06\", \"type\": { \"id\": 2, \"name\": \"hamster\" },\n                \"ownerId\": 2,\n                \"visits\": [ { \"id\": 1, \"date\": \"2013-01-01\", \"description\": \"rabies shot\", \"petId\": 2 } ] }\n            ]\"\"\";"
+          "text": "public static final String PETS = \"\"\"\n            [\n              { \"id\": 1, \"name\": \"Leo\", \"birthDate\": \"2010-09-07\", \"type\": { \"id\": 1, \"name\": \"cat\" },\n                \"ownerId\": 1, \"visits\": [] },\n              { \"id\": 2, \"name\": \"Basil\", \"birthDate\": \"2012-08-06\", \"type\": { \"id\": 2, \"name\": \"hamster\" },\n                \"ownerId\": 2,\n                \"visits\": [ { \"id\": 1, \"date\": \"2013-01-01\", \"description\": \"rabies shot\", \"petId\": 2,\n                              \"vetId\": 1, \"vetFirstName\": \"James\", \"vetLastName\": \"Carter\" } ] }\n            ]\"\"\";"
         },
         {
-          "line": 51,
+          "line": 56,
           "name": "VISITS",
           "type": "String",
-          "text": "public static final String VISITS = \"\"\"\n            [\n              { \"id\": 1, \"date\": \"2013-01-01\", \"description\": \"rabies shot\", \"petId\": 7 },\n              { \"id\": 2, \"date\": \"2013-01-02\", \"description\": \"annual checkup\", \"petId\": 8 }\n            ]\"\"\";"
+          "text": "public static final String VISITS = \"\"\"\n            [\n              { \"id\": 1, \"date\": \"2013-01-01\", \"description\": \"rabies shot\", \"petId\": 7,\n                \"vetId\": 1, \"vetFirstName\": \"James\", \"vetLastName\": \"Carter\" },\n              { \"id\": 2, \"date\": \"2013-01-02\", \"description\": \"annual checkup\", \"petId\": 8 }\n            ]\"\"\";"
         },
         {
-          "line": 57,
+          "line": 63,
           "name": "SPECIALTIES",
           "type": "String",
           "text": "public static final String SPECIALTIES = \"\"\"\n            [\n              { \"id\": 1, \"name\": \"radiology\", \"description\": \"x-rays, broken bones, imaging\" },\n              { \"id\": 2, \"name\": \"surgery\", \"description\": \"operations, spaying, neutering\" },\n              { \"id\": 3, \"name\": \"dentistry\", \"description\": \"teeth cleaning, extractions\" }\n            ]\"\"\";"
         },
         {
-          "line": 64,
+          "line": 70,
           "name": "PET_TYPES",
           "type": "String",
           "text": "public static final String PET_TYPES = \"\"\"\n            [\n              { \"id\": 1, \"name\": \"cat\" },\n              { \"id\": 2, \"name\": \"dog\" },\n              { \"id\": 3, \"name\": \"hamster\" }\n            ]\"\"\";"

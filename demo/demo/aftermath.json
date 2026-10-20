@@ -1,7 +1,7 @@
 {
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "review_short": "be762955",
- "head": "49c7f06cefb2e2e6eac35604e788ea7d8458d13a",
+ "head": "1bd1e444f1796cb676349a523a50c8f00e446218",
  "takeover": null,
  "generated_globs": [
   "**/generated/**",
@@ -1341,22 +1341,50 @@
    "measured": true,
    "taken_over": false,
    "takeover": false
+  },
+  {
+   "sha": "1bd1e444f1796cb676349a523a50c8f00e446218",
+   "short": "1bd1e444",
+   "when": "2026-10-20T09:09:29+02:00",
+   "subject": "API examples show the visit's vet: one visit with a vet, one without",
+   "files": [
+    {
+     "path": "openapi.yaml",
+     "added": 18,
+     "deleted": 1,
+     "binary": false,
+     "generated": true
+    },
+    {
+     "path": "petclinic-backend/src/main/java/victor/training/petclinic/rest/ApiExamples.java",
+     "added": 9,
+     "deleted": 3,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 27,
+   "deleted": 4,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
   }
  ],
  "totals": {
-  "commits": 35,
-  "files": 81,
-  "added": 1658,
-  "deleted": 496,
+  "commits": 36,
+  "files": 83,
+  "added": 1685,
+  "deleted": 500,
   "code": {
-   "files": 69,
-   "added": 1521,
-   "deleted": 364
+   "files": 70,
+   "added": 1530,
+   "deleted": 367
   },
   "generated": {
-   "files": 12,
-   "added": 137,
-   "deleted": 132
+   "files": 13,
+   "added": 155,
+   "deleted": 133
   }
  },
  "clean": false

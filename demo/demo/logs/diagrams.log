@@ -12,6 +12,7 @@
 [puml-diff] petclinic-test/generated/visit-vet.feature.book-a-visit-with-nobody-yet-as-its-vet-and-see-it-read-no-vet-everywhere.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_visit-vet.feature.book-a-visit-with-nobody-yet-as-its-vet-and-see-it-read-no-vet-everywhere.genseq.diff.puml
 [puml-diff] 10 diagram(s) -> .human-review/assets/diagrams (see MANIFEST.tsv)
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base e51068416d74ff456cc90d281f4d0aa9995285ac --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'
-.human-review/assets/conceptual-{original,new,diff}.svg  (added 0 boxes, 1 line · removed 0 boxes, 0 lines · 0 changed · 5 moved, rendered by drawio)
-  + edge Vet-Visit — green (new)
+.human-review/assets/conceptual-{original,new,diff}.svg  (added 0 boxes, 1 line, 1 note · removed 0 boxes, 0 lines · 0 changed · 0 moved, rendered by drawio)
+  + edge Vet-Visit — red (automation's to-do)
+  + annotation Please re-lay out the red elements and set their colour back to default, then delete this label. — red (automation's to-do)
   8 concept(s) linked to their class
