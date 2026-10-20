@@ -32,8 +32,10 @@ BODY = (
     'C.puml</a>'
     '<a id="desk" class="dgm-edit" href="drawio:///r/D.drawio.png">Edit in app</a>'
     '<a id="web" class="dgm-edit" href="https://app.diagrams.net/#R">Edit on web</a>'
-    '<span class="takeaway-online">Browse it <a id="online" '
-    'href="https://victorrentea.github.io/human-review/demo/review.html">online</a>. </span>'
+    '<span class="takeaway-online">Browse online: <a id="online" '
+    'href="https://victorrentea.github.io/human-review/demo/review.html">demo 1</a> · '
+    '<a id="online2" href="https://victorrentea.github.io/human-review/demo2/review.html">'
+    'demo 2</a>. </span>'
     '<div class="diskline">/r/.human-review/review.html</div>'
     + build.TIP_JS + build.EDITOR_JS + '</body></html>')
 
@@ -43,7 +45,7 @@ STATE = """() => {
           start: op('.cmd-copy'), desk: op('#desk'), web: op('#web'), adopt: op('.adopt'),
           src: q('#src').getAttribute('href'), srcTip: q('#src').getAttribute('data-tip'),
           own: q('#own').getAttribute('href'), disk: getComputedStyle(q('.diskline')).display,
-          browse: q('.takeaway-online').hidden,
+          browse: !document.getElementById('online') && !!document.getElementById('online2'),
           serveTip: q('#hr-serve').getAttribute('data-tip')};
 }"""
 
@@ -115,7 +117,7 @@ def test_online_greys_what_needs_the_mac_and_sends_references_to_github(browser)
     assert s["web"] == "1" and s["adopt"] == "1", "what works online stays as it is"
     assert s["src"] == f"{BLOB}/src/A.java#L12" and s["srcTip"] == "Open on GitHub: src/A.java"
     assert s["own"].startswith("vscode:"), "the review's own folder is not on GitHub"
-    assert s["disk"] == "none" and s["browse"], "no path of the Mac, no link to itself"
+    assert s["disk"] == "none" and s["browse"], "no path of the Mac, no link to itself, the other demo linked"
     assert s["serveTip"] == "To see it work: click Serve."
     page.click(".cmd-copy", force=True)
     assert _toast(page) == build.LOCAL_HINT, "a click explains instead of copying"

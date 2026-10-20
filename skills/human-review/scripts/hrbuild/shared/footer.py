@@ -17,6 +17,9 @@ HOME_URL = "https://github.com/victorrentea/human-review"
 # verbatim, with no slug known at build time — so every page points at the one canonical
 # demo, and the gallery stays one click away from there.
 DEMO_PAGES_URL = "https://victorrentea.github.io/human-review/demo/review.html"
+#: The second published demo (petclinic#53, server-side paging), named beside the first so
+#: a reader can compare two reviews (Victor, 20 Oct 2026).
+DEMO2_PAGES_URL = "https://victorrentea.github.io/human-review/demo2/review.html"
 
 # Still built and still linked from the index, just not from here: `.github/workflows/
 # demo-zip.yml` attaches a zip per snapshot to a rolling release. The footer used to offer
@@ -86,10 +89,11 @@ TAKEAWAY = (
     '<span class="takeaway">'
     f'Built by <a href="{HOME_URL}" target="_blank" rel="noopener">{HOME_URL}</a>. '
     # Its own span: server.js hides the sentence on the page it links to.
-    f'<span class="takeaway-online">Browse it <a href="{DEMO_PAGES_URL}" target="_blank" '
-    'rel="noopener">online</a>. </span>'
+    f'<span class="takeaway-online">Browse online: <a href="{DEMO_PAGES_URL}" target="_blank" '
+    'rel="noopener">demo 1</a> · '
+    f'<a href="{DEMO2_PAGES_URL}" target="_blank" rel="noopener">demo 2</a>. </span>'
     'Adopt what you like. Bug or idea → '
-    f'<a href="{ISSUES_URL}" target="_blank" rel="noopener">Open an issue</a>.'
+    f'<a href="{ISSUES_URL}" target="_blank" rel="noopener" data-tip="Open an issue">+ issue</a>.'
     '</span>'
 )
 

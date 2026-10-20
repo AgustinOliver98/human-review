@@ -538,11 +538,15 @@ window.HR = (function () {
       [].forEach.call(document.querySelectorAll(LOCAL), function (el) {
         el.setAttribute('aria-disabled', 'true');
       });
-      // The footer's "Browse it online", read on that very page: a link to itself.
+      // The footer's "Browse online: demo 1 · demo 2", read on one of those pages: the
+      // link to itself becomes its plain name, the other demo stays a link.
       [].forEach.call(document.querySelectorAll('.takeaway-online a[href]'), function (a) {
         var to = new URL(a.href, location.href);
         if (to.host === location.host && to.pathname === location.pathname) {
-          a.closest('.takeaway-online').hidden = true;
+          var here = document.createElement('span');
+          here.textContent = a.textContent;
+          here.setAttribute('aria-current', 'page');
+          a.replaceWith(here);
         }
       });
     }
