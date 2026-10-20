@@ -379,6 +379,23 @@ def rebuild_interpreter() -> str:
     return shlex.quote(sys.executable)
 
 
+def page_stylesheets(spec: dict, out_dir: Path) -> list[str]:
+    """`extraCss`, plus the stylesheet each script-owned fragment on the page brought.
+
+    A canonical section (`own_layout`) pastes `assets/<x>.html` whole, and the step that
+    wrote it wrote its `assets/<x>.css` beside it; the fragment is unstyled without it.
+    Leaving that pairing to the content file let a page ship the UX tab bare (demo2, 20 Oct
+    2026: legend chips run together, the screenshot out of its frame, "frame the changes"
+    drawing nothing) because the guide forgot one `extraCss` line."""
+    out = list(spec.get("extraCss") or [])
+    for sec in spec.get("sections") or []:
+        inc = sec.get("includeHtml") or ""
+        css = inc[:-len(".html")] + ".css" if inc.endswith(".html") else ""
+        if css and css not in out and (out_dir / css).is_file():
+            out.append(css)
+    return out
+
+
 def main(argv=None) -> int:
     """`_main`, with the snippet base it moves put back afterwards.
 
@@ -892,7 +909,8 @@ def _main(argv=None) -> int:
             f'{face}</a>'
             if target else f'<span class="titlescore {band}">{face}</span>')
 
-    extra_css = "".join((out_dir / c).read_text(encoding="utf-8") for c in spec.get("extraCss", []))
+    extra_css = "".join((out_dir / c).read_text(encoding="utf-8")
+                        for c in page_stylesheets(spec, out_dir))
     # The snippet extractor owns its own token colours, so the page asks it for them
     # rather than keeping a second copy that would drift from the highlighter.
     extra_css += subprocess.run(

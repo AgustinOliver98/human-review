@@ -135,6 +135,16 @@ def test_a_gap_the_base_already_had_leaves_the_pill_alone(tmp_path):
     assert 'class="tab"' in btn and "warn" not in btn
 
 
+def test_the_ux_stylesheet_comes_with_the_fragment_without_an_extracss_line(tmp_path):
+    """demo2 (20 Oct 2026): the content file listed no `assets/ds-audit.css`, so the tab
+    shipped unstyled — legend chips run together, the screenshot out of its frame, and
+    "frame the changes" toggling frames nobody had drawn."""
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "assets" / "ds-audit.css").write_text(ds.CSS + "\n", encoding="utf-8")
+    page = _build(tmp_path, ds.render(_result_from_capture(), ""))
+    assert page.count(".dsa-legend {") == 1
+
+
 def test_a_span_caret_goes_link_blue_with_its_row_like_the_pseudo_ones():
     """The UX tab's screen rows moved from a `summary::before` caret to `span.disclose`;
     the hover colour (and the gap before the verdict icon) stayed with the old one, so the
