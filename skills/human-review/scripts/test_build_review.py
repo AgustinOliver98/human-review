@@ -3977,10 +3977,13 @@ def test_a_trace_row_is_addressed_by_its_test_and_the_header_says_which_page_thi
     assert "chip.textContent = 'Served'" in page
     # And in the tab strip, where a reader picks between several of these — one per
     # branch, a static copy beside a live one — long before anything in the page is on
-    # screen. Play and not a green dot: green here means a check passed, and a tab that
-    # turned green because a server is up would be saying the branch is fine.
-    assert "document.title = '\u25b6\ufe0f ' + document.title" in page
-    assert "document.title.indexOf('\u25b6') !== 0" in page, "prepended once, not per probe"
+    # screen: the favicon glows green, and goes back when the server is stopped. The
+    # icon and not the title, which is cut off before a prefix on it is read.
+    assert 'id="hr-favicon"' in page and f'data-served="{build.FAVICON_SERVED}"' in page
+    assert "#22c55e" in build.FAVICON_SERVED_SVG and build.FAVICON_EMOJI in build.FAVICON_SERVED_SVG
+    assert "icon.href = icon.dataset.served;" in page
+    assert "icon.href = icon.dataset.static;" in page, "stopping puts the plain face back"
+    assert "document.title = " not in page[page.index("<script"):], "the title stays as built"
     # Served, the diagram block stops sending the reader to a terminal: the first offer
     # in its sentence becomes one that does the job, and the wording is rewritten to match.
     # The diagram block reads the same in both worlds; only the hover changes, from what

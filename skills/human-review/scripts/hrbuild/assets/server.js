@@ -361,17 +361,15 @@ window.HR = (function () {
 
   onready(function (j) {
     if (!j) return;
-    // A play mark in front of the tab's title, where the favicon already is. A reader
-    // keeps several of these open — one per branch, a static copy of an old one beside a
-    // live one — and the tab strip is where they pick between them, long before anything
-    // in the page is on screen. The badge in the title row says the same thing, but only
-    // to someone already looking at the page.
-    //
-    // Play and not a green dot: green on this page means a check passed, and a report
-    // whose tab turns green when a server happens to be up would be saying the branch is
-    // fine. This says one thing only — something is running behind it.
-    if (document.title.indexOf('▶') !== 0) {
-      document.title = '▶️ ' + document.title;
+    // The favicon glows green: a reader keeps several of these open — one per branch, a
+    // static copy of an old one beside a live one — and the tab strip is where they pick
+    // between them, long before anything in the page is on screen. The icon and not the
+    // title, because at forty tabs the icon is all of the tab that is left. The badge in
+    // the title row says the same thing, but only to someone already looking at the page.
+    var icon = document.getElementById('hr-favicon');
+    if (icon && icon.dataset.served) {
+      if (!icon.dataset.static) icon.dataset.static = icon.href;
+      icon.href = icon.dataset.served;
     }
     // Nothing left to copy: the Serve line is the one that got the reader here.
     var serveChip = document.getElementById('hr-serve');
@@ -416,7 +414,7 @@ window.HR = (function () {
           chip.classList.remove('chip-served');
           chip.setAttribute('data-tip', 'The review server was stopped. Buttons on this page '
             + 'no longer run anything; start it again with the Serve command.');
-          document.title = document.title.replace(/^\u25B6\uFE0F /, '');
+          if (icon && icon.dataset.static) icon.href = icon.dataset.static;
           if (window.HR.flash) window.HR.flash('Review server stopped');
         }).catch(function (e) {
           stop.disabled = false;

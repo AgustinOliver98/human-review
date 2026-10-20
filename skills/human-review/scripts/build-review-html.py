@@ -190,7 +190,7 @@ from hrbuild.shared.chips import (
     patch_equivalent, NO_FETCH_ENV, fetch_base
 )
 from hrbuild.shared.masthead import (
-    FAVICON, FAVICON_EMOJI, FAVICON_SVG, masthead_html, outside_note, page_title, ref_badges,
+    FAVICON, FAVICON_EMOJI, FAVICON_SVG, FAVICON_SERVED, FAVICON_SERVED_SVG, masthead_html, outside_note, page_title, ref_badges,
     title_ticket_ref, OUTSIDE_ID, outside_badge, _outside_where, _split_outside,
     _picked_outside
 )
@@ -1527,7 +1527,7 @@ def _main(argv=None) -> int:
 <html lang="en"{commit_stamp(root, out_dir)}><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(spec.get('title', 'Review guide'))}</title>
-<link rel="icon" type="image/svg+xml" href="{FAVICON}">
+<link rel="icon" type="image/svg+xml" id="hr-favicon" href="{FAVICON}" data-served="{FAVICON_SERVED}">
 {PAINT_HOLD_JS}
 <style>{CSS}{FOOTER_CSS}{extra_css.rstrip()}
 {LATE_CSS}{XREF_CSS}</style></head>

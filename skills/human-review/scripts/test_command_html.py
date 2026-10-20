@@ -202,9 +202,7 @@ def test_one_renderer_and_not_a_copy_per_caller():
     body = body[:body.index("\ndef ", 1)]
     assert "CMD_PLAY" in body and "CMD_COPY" in body
     # The glyphs reach a button in exactly one place, bar the masthead chips, which name
-    # the constant rather than retyping the character. (The play triangle still marks the
-    # browser tab of a served page — a different statement, in the title, not on a
-    # control — so counting characters alone would count that too.)
+    # the constant rather than retyping the character.
     for glyph in (build.CMD_RUN, build.CMD_COPY, build.CMD_PLAY):
         for at in [m for m in range(len(src)) if src.startswith(glyph, m)]:
             line = src[src.rindex("\n", 0, at) + 1:src.index("\n", at)]

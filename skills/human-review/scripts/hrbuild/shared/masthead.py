@@ -21,6 +21,21 @@ FAVICON_SVG = (
     'Noto Color Emoji,sans-serif">' + FAVICON_EMOJI + "</text></svg>"
 )
 FAVICON = "data:image/svg+xml;base64," + base64.b64encode(FAVICON_SVG.encode()).decode()
+# The same face in a green glow: the tab of a page a review server is behind. The tab
+# strip is where a reader picks between a live copy and a static one, and the icon is
+# the one part of a tab that stays legible at forty tabs wide — a mark in front of the
+# title is cut off before it is read. The face shrinks to leave the halo room to show.
+FAVICON_SERVED_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+    '<defs><radialGradient id="g"><stop offset=".6" stop-color="#22c55e"/>'
+    '<stop offset="1" stop-color="#22c55e" stop-opacity="0"/></radialGradient></defs>'
+    '<circle cx="50" cy="50" r="50" fill="url(#g)"/>'
+    '<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="64" '
+    'font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">'
+    + FAVICON_EMOJI + "</text></svg>"
+)
+FAVICON_SERVED = ("data:image/svg+xml;base64,"
+                  + base64.b64encode(FAVICON_SERVED_SVG.encode()).decode())
 
 
 def page_title(spec: dict) -> str:
