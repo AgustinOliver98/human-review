@@ -82,9 +82,10 @@
         ev.preventDefault(); ev.stopPropagation();
         jump(entry.pair);
       });
-      // Right before the 🎭 when the row has one (trace.js runs first), else before the file
-      // link: ⇥ then 🎭, the order Victor asked for on 19 Oct 2026.
-      where.parentNode.insertBefore(a, row.querySelector('.rm-tv') || where);
+      // Right after the 🎭 when the row has one, else before the file link: 🎭 then ⇥
+      // (Victor, 20 Oct 2026 — it was ⇥ then 🎭 from 19 Oct).
+      var tv = row.querySelector('.rm-tv');
+      where.parentNode.insertBefore(a, tv ? tv.nextSibling : where);
     });
   }
   // A swapped Sequence panel brings a new registry: every ⇥ on the page is redrawn from it.

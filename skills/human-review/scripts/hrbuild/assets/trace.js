@@ -72,7 +72,8 @@
           });
         });
       }
-      where.parentNode.insertBefore(tv, where);
+      // In front of the ⇥ when seqlink.js got there first: 🎭 then ⇥ either way.
+      where.parentNode.insertBefore(tv, row.querySelector('.rm-seq') || where);
     });
   }
   document.addEventListener('hr:swapped', function (ev) {
