@@ -29,9 +29,10 @@ table.costtab tr.costgroup:first-child td { padding-top:.4rem; }
 /* What the row is measuring, under the row's own name. On its own line because these are
    the caveats that keep the number honest — which window was costed, which command was
    priced — and a reader scanning the money column should be able to skip them, not have
-   them wrapped into the label. */
+   them wrapped into the label. Dimmed below --muted (Victor, 20 Oct 2026): the tool and
+   model lines are footnotes, and at plain muted they competed with the row names. */
 .costsub { display:block; color:var(--muted); font-size:.8rem; font-weight:400;
-             line-height:1.45; margin-top:.1rem; }
+             line-height:1.45; margin-top:.1rem; opacity:.6; }
 .costsub code { font-size:.95em; }
 .costnote { color:var(--muted); font-weight:400; }
 /* A measured zero is an answer, not a gap — the tab was produced by a script, so it cost
