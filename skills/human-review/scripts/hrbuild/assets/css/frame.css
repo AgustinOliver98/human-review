@@ -54,7 +54,8 @@ button.tab { border:1px solid var(--line); border-bottom:0; background:var(--car
 /* Hover now has to be a *different* state from resting, not the arrival of one: the card
    ground is already there, so the pointer buys the accent wash and the link colour on the
    edge — the same pair `a.chip-link` uses, for the same reason. */
-button.tab:hover { color:var(--fg); background:var(--accent-soft); border-color:var(--link); }
+button.tab:hover { color:var(--fg); background:var(--accent-soft); border-color:var(--link);
+             --tab-bd:var(--link); }
 /* Selected is the tab the page below belongs to, so it is made *of* the page: the page's
    own ground, the strip's own hairline running up its sides and over its top, and nothing
    at its foot — it reaches 1px down over the line under the strip, which breaks there, and the panel reads as the tab's
@@ -68,16 +69,21 @@ button.tab[aria-selected="true"] { background:var(--bg); color:var(--fg); border
    makes a tab look like it grows out of the page rather than being set down on it. Each is
    a quarter circle cut out of a --bg square: inside the circle is the strip, the ring is
    the hairline, outside is the tab's own ground. `--tf` is the flare radius; the tabs are
-   spaced a little wider than it so a flare never lands on a neighbour. */
+   spaced a little wider than it so a flare never lands on a neighbour. The ring is drawn in
+   `--tab-bd`, the colour the tab's own border has right now: a hover that turns the sides
+   amber or blue turns the flares with them, or the foot of the tab stays grey under a
+   coloured outline (Victor, 20 Oct 2026). */
 .tabstrip { --tf:7px; }
 button.tab[aria-selected="true"]::before, button.tab[aria-selected="true"]::after {
   content:""; position:absolute; bottom:0; width:var(--tf); height:var(--tf); pointer-events:none; }
 button.tab[aria-selected="true"]::before { left:calc(-1 * var(--tf));
   background:radial-gradient(circle at 0 0, transparent calc(var(--tf) - 1px),
-             var(--line) calc(var(--tf) - 1px), var(--line) var(--tf), var(--bg) calc(var(--tf) + .5px)); }
+             var(--tab-bd, var(--line)) calc(var(--tf) - 1px), var(--tab-bd, var(--line)) var(--tf),
+             var(--bg) calc(var(--tf) + .5px)); }
 button.tab[aria-selected="true"]::after { right:calc(-1 * var(--tf));
   background:radial-gradient(circle at 100% 0, transparent calc(var(--tf) - 1px),
-             var(--line) calc(var(--tf) - 1px), var(--line) var(--tf), var(--bg) calc(var(--tf) + .5px)); }
+             var(--tab-bd, var(--line)) calc(var(--tf) - 1px), var(--tab-bd, var(--line)) var(--tf),
+             var(--bg) calc(var(--tf) + .5px)); }
 button.tab .n { font:700 .7rem/1 ui-monospace,Menlo,monospace; opacity:.6;
                 font-variant-numeric:tabular-nums; }
 /* A tab the reviewer must not skip — a blocked merge — is red. It used to wear a `!` in
@@ -86,14 +92,16 @@ button.tab .n { font:700 .7rem/1 ui-monospace,Menlo,monospace; opacity:.6;
    The label *is* the alarm now, and it stays the alarm when the tab is open: the tab takes
    the page's ground like any other, and the word keeps its red. */
 button.tab.alarm { color:#c62828; }
-button.tab.alarm:hover { color:#a41f1f; background:var(--accent-soft); border-color:#c62828; }
-button.tab[aria-selected="true"].alarm { background:var(--bg); color:#c62828; border-color:var(--line); }
+button.tab.alarm:hover { color:#a41f1f; background:var(--accent-soft); border-color:#c62828;
+             --tab-bd:#c62828; }
+button.tab[aria-selected="true"].alarm { background:var(--bg); color:#c62828; }
 /* Same alarm, one notch down: a required approval that is not the escalation of last
    resort (an ordinary CODEOWNERS reviewer, not the team guarding the guardrails) reads
    as amber rather than red, so the strip does not cry wolf on a routine sign-off. */
 button.tab.warn { color:#b56b00; }
-button.tab.warn:hover { color:#8f5500; background:var(--accent-soft); border-color:#b56b00; }
-button.tab[aria-selected="true"].warn { background:var(--bg); color:#b56b00; border-color:var(--line); }
+button.tab.warn:hover { color:#8f5500; background:var(--accent-soft); border-color:#b56b00;
+             --tab-bd:#b56b00; }
+button.tab[aria-selected="true"].warn { background:var(--bg); color:#b56b00; }
 /* A verdict the strip can carry without words: green nothing changed, amber changed
    but nothing breaks, red a caller breaks. A number there ("+3") counted changes,
    which is not the question anyone opens that tab with. */
@@ -102,10 +110,10 @@ button.tab .n.dot-green, button.tab .n.dot-amber, button.tab .n.dot-red {
   display:inline-block; vertical-align:middle; }
 @media (prefers-color-scheme:dark) {
   button.tab.alarm { color:#ff8a8a; }
-  button.tab.alarm:hover { color:#ffb0b0; border-color:#ff8a8a; }
+  button.tab.alarm:hover { color:#ffb0b0; border-color:#ff8a8a; --tab-bd:#ff8a8a; }
   button.tab[aria-selected="true"].alarm { color:#ff8a8a; }
   button.tab.warn { color:#e6c07b; }
-  button.tab.warn:hover { color:#f0d39a; border-color:#e6c07b; }
+  button.tab.warn:hover { color:#f0d39a; border-color:#e6c07b; --tab-bd:#e6c07b; }
   button.tab[aria-selected="true"].warn { color:#e6c07b; }
 }
 button.tab .n.dot-green { background:#2e9e5b; }
