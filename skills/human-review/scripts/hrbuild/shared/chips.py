@@ -597,7 +597,9 @@ def review_chip_face(open_n: int, fixed_n: int, unsure_n: int) -> str:
         return rest
     # A slash after the coder's guesses, then the angry robot for what the review left open:
     # two robots, two moods, one chip.
-    return f"\U0001f916 <b>{unsure_n} unsure</b> / {rest}"
+    # `assumptions`, not `unsure` (Victor, 20 Oct 2026): the noun the Review tab's line uses.
+    # Still the under-70% count; the hover says so.
+    return f"\U0001f916 <b>{unsure_n} assumption{'' if unsure_n == 1 else 's'}</b> / {rest}"
 
 
 @functools.lru_cache(maxsize=None)

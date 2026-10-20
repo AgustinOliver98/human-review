@@ -3492,13 +3492,14 @@ def test_the_list_lede_counts_all_three_piles(tmp_path):
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}, {"type": "findings"},
                           {"type": "autofixes"}]}]))
-    assert "2 implementation assumptions" in page
+    assert "2 assumptions" in page
     assert "yours to confirm" not in page, \
         "the card's own purple chip already says which pile it is"
     assert "9 open LLM review issues" in page
     assert "3 auto-fixed" in page
-    assert ('<a href="#assumed">2 implementation assumptions</a> &middot; '
-            '<a href="#first">9 open LLM review issues</a> &middot; '
+    assert ('<span class="lede-who">\U0001f916:</span> <a href="#assumed">2 assumptions</a> / '
+            '<span class="lede-who"><img class="angry-bot"') in page
+    assert (':</span> <a href="#first">9 open LLM review issues</a> &middot; '
             '<a href="#fixed">3 auto-fixed</a>') in page, \
         "in round order — what was assumed while coding, then what the review raised and "\
         "fixed — and every clause is the jump to the chapter it counts"
@@ -3518,7 +3519,7 @@ def test_the_lede_counts_the_coder_pile_at_zero_too(tmp_path):
         BARE, findings=[{"title": "f", "body": "<p>b</p>"}],
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}, {"type": "findings"}]}]))
-    assert "0 implementation assumptions" in page
+    assert "0 assumptions" in page
     assert "1 open LLM review issue" in page
 
 
@@ -3558,8 +3559,8 @@ def test_the_lede_lands_on_the_pile_that_opens_the_list_whichever_it_is(tmp_path
         assumptions=[_assumption()],
         tabs=[{"id": "review", "label": "Review",
                "blocks": [{"type": "assumptions", "mode": "A"}, {"type": "findings"}]}]))
-    assert page.count("1 implementation assumption</a>") == 1, "said once, not once per pile"
-    assert page.index("1 implementation assumption</a>") < page.index("Requires human review")
+    assert page.count("1 assumption</a>") == 1, "said once, not once per pile"
+    assert page.index("1 assumption</a>") < page.index("Requires human review")
 
 
 def test_the_lede_is_counts_and_nothing_else(tmp_path):
@@ -3571,7 +3572,8 @@ def test_the_lede_is_counts_and_nothing_else(tmp_path):
         tabs=[{"id": "review", "label": "Review", "blocks": [{"type": "findings"}]}]))
     # No pull request: the line's only extra is that fact, as its hover (eval run 11).
     assert ('<p class="sub counts pilelede" data-tip="No pull request yet — no GitHub '
-            'links or publishing."><a href="#first">1 open LLM review issue</a></p>') in page
+            'links or publishing."><span class="lede-who"><img class="angry-bot"') in page
+    assert ':</span> <a href="#first">1 open LLM review issue</a></p>' in page
     assert "stamped with" not in page and "worst first" not in page
 
 
@@ -5037,7 +5039,7 @@ def test_the_counts_line_says_open_not_declined(tmp_path):
     build.reset_list()
     lede = build.opening_lede(spec)
     assert "1 open review issue" in lede and "1 auto-fixed" in lede
-    assert "2 implementation assumptions" in lede
+    assert "2 assumptions" in lede
     assert "declined" not in lede and "open LLM review issue" not in lede
     # Open leads: it is the pile the reader still owes a decision to, in both
     # vocabularies, and the fixed pile is what is already done either way.
@@ -5055,7 +5057,7 @@ def test_a_content_file_that_writes_its_own_piles_keeps_the_old_wording():
     lede = build.opening_lede(spec)
     assert "6 open LLM review issues" in lede
     assert "4 auto-fixed" in lede
-    assert "6 implementation assumptions" in lede
+    assert "6 assumptions" in lede
 
 
 def test_a_band_is_drained_not_repeated():
@@ -5194,7 +5196,7 @@ def test_the_chip_carries_the_coders_assumptions_as_its_own_sentence(tmp_path):
         + [_assumption(title="floating", refs=[], confidence=.5)]),
         env=_sessionless_env())
     # Eval run 10: one robot, the counts only; the two agents are named in the hover.
-    assert ('\U0001f916 <b>7 unsure</b> / <img class="angry-bot" alt="" aria-hidden="true" '
+    assert ('\U0001f916 <b>7 assumptions</b> / <img class="angry-bot" alt="" aria-hidden="true" '
             'src="data:image/png;base64,') in page and '<b>6 open</b> · <b>3 fixed</b>' in page, \
         "every count bold with its noun, the coder's first"
     assert "Coding agent: 7 assumptions under 70% sure. Review: 6 open · 3 fixed." in page, \
@@ -6188,10 +6190,10 @@ def test_the_review_chip_face_is_counts_only_so_the_scope_bar_keeps_one_row():
     a 1040px bar and wrapped it, taking the sticky header from 108px to 164px. And the
     refuted count is gone from it altogether (Victor, 5 Oct 2026)."""
     face = build.review_chip_face(10, 6, 6)
-    assert face.startswith('\U0001f916 <b>6 unsure</b> / <img class="angry-bot"')
+    assert face.startswith('\U0001f916 <b>6 assumptions</b> / <img class="angry-bot"')
     assert face.endswith('<b>10 open</b> · <b>6 fixed</b>')
     face = build.review_chip_face(1, 0, 0)
-    assert "unsure" not in face and face.endswith('<b>1 open</b> · <b>0 fixed</b>'), \
+    assert "assumption" not in face and face.endswith('<b>1 open</b> · <b>0 fixed</b>'), \
         "no assumptions: that count is absent, not zeroed"
     assert build.review_chip_key(10, 6, 6) == \
         "Coding agent: 6 assumptions under 70% sure. Review: 10 open · 6 fixed."

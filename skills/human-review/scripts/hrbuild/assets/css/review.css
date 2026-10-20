@@ -307,3 +307,7 @@ html.ide-none a.f-vsc, html.ide-none a.pr-vsc, html.hr-online ol.findings > li >
 .prdesc-body blockquote { padding-left:.7rem; border-left:2px solid var(--line); color:var(--muted); }
 .prdesc-body pre { overflow:auto; padding:.4rem .6rem; border-radius:4px;
           background:color-mix(in srgb, var(--fg) 6%, transparent); font-size:.85rem; }
+
+/* The counts line's speakers: 🤖 for the coder, the angry robot for the reviewers. */
+.pilelede .lede-who { white-space:nowrap; }
+.pilelede .lede-who .angry-bot { height:1.05em; width:auto; vertical-align:-.15em; }

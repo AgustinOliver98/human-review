@@ -14,7 +14,7 @@ from pathlib import Path
 
 from ..shared.actions import ACTIONS, declare_action, RERUN_ACTION
 from ..shared.bands import _lede_above, _flush_top_bands
-from ..shared.chips import reviewer_names
+from ..shared.chips import reviewer_names, _angry_bot
 from ..shared.commands import command_html
 from ..shared.snippets import DIFF_CONTEXT, diff_html, github_blob_base
 
@@ -2041,7 +2041,8 @@ def opening_lede(spec) -> str:
         # news. Mode C is the case where a zero would be the lie instead — nobody was in a
         # position to be asked — so it says that rather than counting an empty pile.
         assumed = len(spec.get("assumptions", []))
-        # `6 implementation assumptions`, flat. `coder` named who produced them, which the
+        # `🤖: 6 assumptions` (Victor, 20 Oct 2026): the robot in front says whose they are,
+        # so `implementation` went. Before that: `6 implementation assumptions`, flat. `coder` named who produced them, which the
         # card's own purple `assumption` chip says where the reader is standing, and `to
         # check` named the work — in a line whose other two clauses are bare counts, so the
         # asymmetry read as a fourth fact rather than as the same shape said three times.
@@ -2055,10 +2056,17 @@ def opening_lede(spec) -> str:
         parts.insert(0, clause(
             "coder could not be asked"
             if block.get("mode") == "C" and not assumed
-            else f"{assumed} implementation assumption{'' if assumed == 1 else 's'}",
+            else f"{assumed} assumption{'' if assumed == 1 else 's'}",
             "assumptions", "assumed"))
     if not parts:
         return ""
+    # Who speaks, as on the masthead chip: the coder's robot before its assumptions, a slash,
+    # the adversarial reviewer's angry robot before what the review left open and fixed.
+    coder = parts[:1] if block is not None else []
+    review = parts[len(coder):]
+    line = " / ".join(([f'<span class="lede-who">\U0001f916:</span> {coder[0]}'] if coder else [])
+                      + ([f'<span class="lede-who">{_angry_bot()}:</span> '
+                          + " &middot; ".join(review)] if review else []))
     _LEDE_SHOWN = True
     # The stamp clause went the same way as "greyed out" and "yours to confirm": every
     # item carries its source beside its own title, so a line announcing that they do
@@ -2077,7 +2085,7 @@ def opening_lede(spec) -> str:
     # The PR's own words go right under the grade (Victor, 8 Oct 2026): what the change
     # claims to be, read before the counts of what was found in it.
     return (grade_reasons_html(spec) + pr_description_html(spec) + _flush_top_bands()
-            + f'<p class="sub counts pilelede"{no_pr_line(spec)}>' + " &middot; ".join(parts)
+            + f'<p class="sub counts pilelede"{no_pr_line(spec)}>' + line
             + push_pr_button(spec) + "</p>" + push_pr_dialog(spec)
             + PILELEDE_SPY_JS)
 
