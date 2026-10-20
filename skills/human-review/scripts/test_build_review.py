@@ -5509,7 +5509,7 @@ def test_ci_green_links_to_the_run_it_rests_on(tmp_path):
 
 @pytest.mark.parametrize("gate,face", [
     ("failure", '<a href="https://github.com/acme/shop/actions/runs/37" target="_blank" '
-                'rel="noopener">CI</a> failed on 0746abc5'),
+                'rel="noopener">CI</a> \u274c on 0746abc5'),
     ("skipped", 'No <a href="https://github.com/acme/shop/actions/runs/37" target="_blank" '
                 'rel="noopener">build</a> proved this commit')])
 def test_ci_red_or_pending_links_a_word_of_its_own_bullet(tmp_path, gate, face):
