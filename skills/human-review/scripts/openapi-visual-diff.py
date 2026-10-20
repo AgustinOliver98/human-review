@@ -1412,6 +1412,21 @@ TEMPLATE = r"""<!doctype html>
   .swagger-ui td.response-col_description:has(ul.tab li:last-child.active) .response-control-examples { display: none; }
   .swagger-ui .response-control-examples { display: flex; align-items: center; gap: 8px; }
   .swagger-ui .response-control-examples__title { font-size: 11px; color: var(--dv-muted); }
+  /* "Schema" and "Example Value" read as the choice they are: a radio before each, Schema
+     first (the page opens on it). Order only: the DOM keeps Swagger's, so `li:last-child`
+     above is still Schema. */
+  .swagger-ui ul.tab { display: flex; align-items: center; gap: 14px; }
+  .swagger-ui ul.tab li:first-of-type { order: 2; }
+  .swagger-ui ul.tab li { padding: 0 !important; }
+  .swagger-ui ul.tab li::after { display: none !important; }
+  .swagger-ui ul.tab li button.tablinks { display: inline-flex; align-items: center; gap: 6px; }
+  .swagger-ui ul.tab li button.tablinks::before {
+    content: ""; flex: 0 0 auto; width: 11px; height: 11px; box-sizing: border-box;
+    border: 1.5px solid var(--dv-muted); border-radius: 50%;
+  }
+  .swagger-ui ul.tab li.active button.tablinks::before {
+    border-color: var(--dv-fg); background: radial-gradient(circle, var(--dv-fg) 0 2.5px, transparent 3px);
+  }
 </style>
 </head>
 <body>
