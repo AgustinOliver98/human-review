@@ -190,7 +190,7 @@ from hrbuild.shared.chips import (
     patch_equivalent, NO_FETCH_ENV, fetch_base
 )
 from hrbuild.shared.masthead import (
-    FAVICON, FAVICON_EMOJI, FAVICON_SVG, FAVICON_SERVED, FAVICON_SERVED_SVG, masthead_html, outside_note, page_title, ref_badges,
+    FAVICON, FAVICON_EMOJI, FAVICON_SVG, FAVICON_SERVED, FAVICON_SERVED_EMOJI, FAVICON_SERVED_SVG, masthead_html, outside_note, page_title, ref_badges,
     title_ticket_ref, OUTSIDE_ID, outside_badge, _outside_where, _split_outside,
     _picked_outside
 )

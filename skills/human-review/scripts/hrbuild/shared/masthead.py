@@ -24,7 +24,9 @@ FAVICON = "data:image/svg+xml;base64," + base64.b64encode(FAVICON_SVG.encode()).
 # The same face in a green glow: the tab of a page a review server is behind. The tab
 # strip is where a reader picks between a live copy and a static one, and the icon is
 # the one part of a tab that stays legible at forty tabs wide — a mark in front of the
-# title is cut off before it is read. The face shrinks to leave the halo room to show.
+# title is cut off before it is read. The face shrinks to leave the halo room to show, and
+# becomes one at a laptop (Victor, 20 Oct 2026): someone is at work behind this one.
+FAVICON_SERVED_EMOJI = "\U0001F9D1\u200D\U0001F4BB"
 FAVICON_SERVED_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
     '<defs><radialGradient id="g"><stop offset=".6" stop-color="#22c55e"/>'
@@ -32,7 +34,7 @@ FAVICON_SERVED_SVG = (
     '<circle cx="50" cy="50" r="50" fill="url(#g)"/>'
     '<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="64" '
     'font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">'
-    + FAVICON_EMOJI + "</text></svg>"
+    + FAVICON_SERVED_EMOJI + "</text></svg>"
 )
 FAVICON_SERVED = ("data:image/svg+xml;base64,"
                   + base64.b64encode(FAVICON_SERVED_SVG.encode()).decode())
