@@ -2,7 +2,7 @@
 """What building human-review itself has cost, in Claude API list-price dollars.
 
 A one-off measurement, re-run by hand. Nothing in the build calls this: the figure it
-printed on 8 Oct 2026 is hardcoded in `hrbuild/tabs/cost.py` (`TOOLING_INVESTMENT`) as a
+printed on 20 Oct 2026 is hardcoded in `hrbuild/tabs/cost.py` (`TOOLING_INVESTMENT`) as a
 dated baseline, because a number that silently moves every build would read as "this PR".
 
 How it measures
@@ -14,10 +14,11 @@ How it measures
   kept; a resumed or forked session copies earlier messages into a new file, so each id is
   owned by the file that started earliest.
 * **Priced per message, per model**, at the list prices in `PRICES` (verified against
-  https://platform.claude.com/docs/en/about-claude/pricing on 8 Oct 2026): input, output,
-  5m cache writes at 1.25x input, 1h writes at 2x, cache reads at the model's own rate
-  (0.1x, 0.05x on Opus/Sonnet 5.5, 0.025x on Fable/Mythos 5.1), web search $10/1k, fast
-  mode and `inference_geo: us` multipliers where the usage says so.
+  https://platform.claude.com/docs/en/about-claude/pricing on 8 Oct 2026, re-read
+  unchanged on 20 Oct 2026): input, output, 5m cache writes at 1.25x input, 1h writes
+  at 2x, cache reads at the model's own rate (0.1x, 0.05x on Opus/Sonnet 5.5, 0.025x on
+  Fable/Mythos 5.1), web search $10/1k, fast mode and `inference_geo: us` multipliers
+  where the usage says so.
 * **Which sessions are human-review** is decided per session tree (the main transcript
   plus its `subagents/agent-*.jsonl`), from tool calls, never prose — CLAUDE.md/AGENTS.md
   mention human-review in every workspace session:
@@ -54,7 +55,7 @@ from pathlib import Path
 PROJECTS = Path(os.path.expanduser("~/.claude/projects"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import harness_cost as hc  # noqa: E402
-PRICE_SOURCE = "https://platform.claude.com/docs/en/about-claude/pricing (read 2026-10-08)"
+PRICE_SOURCE = "https://platform.claude.com/docs/en/about-claude/pricing (read 2026-10-20)"
 
 # $ per MTok: (input, output, cache read). Writes are 1.25x / 2x input for 5m / 1h.
 # Most specific id first: `price_key` takes the first prefix the model id starts with.

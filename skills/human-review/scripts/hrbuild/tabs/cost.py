@@ -526,25 +526,25 @@ COST_TITLE = '<h2 class="tabtitle">PR Cost</h2>'
 
 #: What building human-review ITSELF has cost — the tool, not the change on this page.
 #: A dated baseline, hardcoded on purpose: nothing recomputes it, because a figure that
-#: crept up every build would read as this PR's bill. Measured on 8 Oct 2026 by
+#: crept up every build would read as this PR's bill. Measured on 20 Oct 2026 by
 #: `scripts/tools/tooling-cost.py` (re-run by hand; no build step calls it): every Claude
 #: Code transcript on Victor's Mac, deduped by `message.id`, priced per model at the API
-#: list price (platform.claude.com/docs/en/about-claude/pricing, read 8 Oct 2026). A session
+#: list price (platform.claude.com/docs/en/about-claude/pricing, read 20 Oct 2026). A session
 #: counts when it ran in this repo, was a `claude -p` eval run, or when at least half its
 #: tool calls (subagents included) named a human-review path. The buckets are main threads;
 #: every bucket's subagents are one line of their own. They sum to `usd`. The three times
-#: (re-measured 8 Oct 2026, 14:00) are `harness_cost.claude_human_time` and
+#: (measured 20 Oct 2026, 11:28) are `harness_cost.claude_human_time` and
 #: `claude_busy_spans` over the same sessions: the human's, the agents' added up, and the
 #: agents' union — the hours in which something was being built.
 TOOLING_INVESTMENT = {
-    "usd": 3546, "sessions": 186, "first": "27 Aug 2026", "asof": "8 Oct 2026",
-    "buckets": [("human-review repo", 999), ("workspace sessions", 712),
-                ("subagents", 1576), ("eval runs (claude -p)", 224),
-                ("petclinic checkouts, after the move", 32), ("other projects", 3)],
-    "models": [("Opus 5", 1782), ("Opus 5.5", 1453), ("Fable 5.1", 170),
-               ("Sonnet 5", 101), ("Sonnet 5.5", 40)],
-    "borderline": {"sessions": 21, "usd": 1338, "prorated": 575},
-    "humanSeconds": 104813, "agentSeconds": 1226755, "wallSeconds": 578725,
+    "usd": 3986, "sessions": 227, "first": "27 Aug 2026", "asof": "20 Oct 2026",
+    "buckets": [("human-review repo", 1120), ("workspace sessions", 795),
+                ("subagents", 1809), ("eval runs (claude -p)", 226),
+                ("petclinic checkouts, after the move", 33), ("other projects", 3)],
+    "models": [("Opus 5.5", 1883), ("Opus 5", 1782), ("Fable 5.1", 170),
+               ("Sonnet 5", 101), ("Sonnet 5.5", 49)],
+    "borderline": {"sessions": 29, "usd": 1360, "prorated": 583},
+    "humanSeconds": 122285, "agentSeconds": 1587010, "wallSeconds": 795131,
 }
 
 
