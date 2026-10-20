@@ -1643,3 +1643,13 @@ def test_a_js_guardrail_that_reads_the_diagram_is_its_tested_badge(tmp_path):
     # A mention in a comment is not the test opening the file.
     test.write_text("// reads docs/frontend-packages.puml\n", encoding="utf-8")
     assert diagrams.diagram_provenance("web/docs/frontend-packages.puml", tmp_path) == ""
+
+
+def test_a_schema_dumped_from_a_migrated_database_says_it_follows_the_scripts():
+    """`Generated from DB schema` hid where the schema comes from: when the generator
+    builds it with Flyway/Liquibase migrations, the badge says the incremental scripts
+    (Victor, 20 Oct 2026). A plain dump stays `DB schema`."""
+    from hrbuild.shared.diagrams import _prov_source
+    assert _prov_source("Flyway.configure()...; DatabaseMetaData md") == \
+        "DB schema built from incremental scripts"
+    assert _prov_source("SELECT * FROM information_schema.columns") == "DB schema"

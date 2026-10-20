@@ -405,6 +405,11 @@ _PROV_SOURCES = (
     (re.compile(r"pom\.xml|<modules?>", re.I), "pom.xml"),
     (re.compile(r"genseq|opentelemetry|\btraces?\b", re.I), "traces"),
     (re.compile(r"openapi", re.I), "OpenAPI"),
+    # A schema dumped from a database the migrations built: the diagram follows the
+    # incremental scripts, not a hand-kept DDL file — say so (Victor, 20 Oct 2026).
+    (re.compile(r"(?s)(?=.*(?:flyway|liquibase|db/migration))"
+                r".*(?:information_schema|DatabaseMetaData|pg_dump|\bDB\.sql\b|schema\.sql)",
+                re.I), "DB schema built from incremental scripts"),
     (re.compile(r"information_schema|DatabaseMetaData|pg_dump|\bDB\.sql\b|schema\.sql",
                 re.I), "DB schema"),
     (re.compile(r"com\.tngtech\.archunit|ClassFileImporter|src/main/java|getDeclaredFields"),
