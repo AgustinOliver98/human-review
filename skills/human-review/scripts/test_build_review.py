@@ -1392,7 +1392,7 @@ def test_the_show_all_button_sits_after_the_footer_not_in_the_strip(tmp_path):
     strip = page[page.index('class="tabstrip"'):]
     assert "allbtn" not in strip[:strip.index("</div>")]
     foot = page[page.index("<footer>"):page.index("</footer>")]
-    assert "allbtn" in foot and "Single page" in foot
+    assert "allbtn" in foot and "One page" in foot
 
 
 def test_the_footer_is_one_centred_line_ending_on_its_control_then_the_path(tmp_path):
@@ -1408,16 +1408,17 @@ def test_the_footer_is_one_centred_line_ending_on_its_control_then_the_path(tmp_
     assert "footer .footrow > span { display:inline; }" in page
     line = foot[foot.index('<p class="footrow">'):foot.index("</p>")]
     assert line.count("<span") >= 2 and "<div" not in line
-    assert 'class="allbtn"' not in line and "allbar" not in foot
-    # The path, then the clipboard: text first, the mark that acts on it after.
-    disk = foot[foot.index('class="diskline"'):]
+    # One line (Victor, 20 Oct 2026): the sentence, the toggle, then two faint marks.
+    assert 'class="allbtn"' in line and "allbar" not in foot
+    disk = line[line.index('class="diskline"'):]
+    assert line.index('class="allbtn"') < line.index('class="diskline"')
+    # 📂 reveals in Finder (once a server says it can), 📋 copies; the path is not shown.
     assert disk.index('id="hr-diskpath"') < disk.index('class="diskcopy copycmd"')
-    assert disk.index("</span>") < disk.index("\U0001F4CB")
-    # Off disk the path is plain text: no hover promising a click until a server says so.
-    span = disk[disk.index("<span"):disk.index("</span>")]
+    span = disk[disk.index('<span class="diskpath"'):]
+    span = span[:span.index("</span>")]
+    assert "\U0001F4C2" in span and "/" not in span.split(">", 1)[1]
     assert "data-tip" not in span and "button" not in span
-    # The single-page toggle ends that second line (Victor, 20 Oct 2026).
-    assert disk.index('class="diskcopy copycmd"') < disk.index('class="allbtn"') < disk.index("</div>")
+    assert ".diskline:has(.diskpath.reveals) .diskcopy { display:none; }" in page
 
 
 def test_the_footer_says_where_the_page_came_from_and_where_to_see_it(tmp_path):
@@ -1466,9 +1467,9 @@ def test_the_show_all_button_says_what_it_does_next(tmp_path):
     carried the state while the button sat among the tabs, and at the foot of the page
     there is nothing beside it to read a highlight against."""
     page, _ = _build(tmp_path, BARE)
-    assert 'data-label-off="⇄ Single page"' in page
+    assert 'data-label-off="⇄ One page"' in page
     assert 'data-label-on="⇄ back to one tab at a time"' in page
-    assert ">⇄ Single page</button>" in page, "the unpressed label is also the markup"
+    assert ">⇄ One page</button>" in page, "the unpressed label is also the markup"
     assert "(single)" not in page
 
 

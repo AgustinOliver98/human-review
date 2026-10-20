@@ -129,13 +129,14 @@ button.allbtn:hover { color:var(--fg); border-color:var(--link); }
 button.allbtn[aria-pressed="true"] { background:var(--link); border-color:var(--link); color:var(--on-fill); }
 /* The page's path on disk, then the 📋 that copies it. The path is plain text off disk;
    served, editor.js adds `.reveals` and a click shows the file in Finder. */
-footer .diskline { text-align:center; line-height:1.5; }
-.diskpath { color:var(--muted); font:.72rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-            overflow-wrap:anywhere; }
-.diskpath.reveals { cursor:pointer; }
-.diskpath.reveals:hover { color:var(--fg); text-decoration:underline; }
-button.diskcopy { border:0; background:none; cursor:pointer; padding:0 0 0 .35rem;
-                  font:.8rem/1.5 inherit; opacity:.75; }
+footer .diskline { margin-left:.35rem; white-space:nowrap; }
+/* 📂 only where the server can reveal the file; 📋 only where it cannot. Both faint. */
+.diskpath { display:none; cursor:pointer; opacity:.35; font-size:.85rem; }
+.diskpath.reveals { display:inline; }
+.diskpath.reveals:hover { opacity:1; }
+.diskline:has(.diskpath.reveals) .diskcopy { display:none; }
+button.diskcopy { border:0; background:none; cursor:pointer; padding:0;
+                  font:.8rem/1.5 inherit; opacity:.35; }
 button.diskcopy:hover { opacity:1; }
 .panel[hidden] { display:none; }
 /* Every panel is its own stacking context, so nothing a tab raises can climb over the

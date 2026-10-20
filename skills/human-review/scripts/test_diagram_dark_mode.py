@@ -277,7 +277,7 @@ def test_the_c2_boxes_hold_their_labels_in_both_themes():
 #: here is not an edge case a reader has to go looking for.
 FILLED = (("pressed Diff", "--view-diff"), ("pressed New", "--view-new"),
           ("pressed Old", "--view-old"), ("a pressed focus level", "--link"),
-          ("Single page", "--link"))
+          ("One page", "--link"))
 
 
 def _tokens(block: str) -> dict:

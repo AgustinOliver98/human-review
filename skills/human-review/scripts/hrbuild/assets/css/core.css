@@ -289,6 +289,5 @@ details[open] > summary .disclose::before { content:"\25BC\FE0E"; }
 html.hr-online :is([data-local], a[href^="drawio:"], a[href^="vscode:"]) {
   opacity:.45; cursor:not-allowed; }
 html.hr-online svg :is([data-local], a[href^="drawio:"], a[href^="vscode:"]) { opacity:1; }
-/* The path of the page on the machine that built it, and its 📋: nothing to do online. The
-   single-page toggle at the end of that line stays. */
-html.hr-online .diskline > :not(.allbtn) { display:none; }
+/* The path of the page on the machine that built it, and its 📋: nothing to do online. */
+html.hr-online .diskline { display:none; }

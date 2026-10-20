@@ -152,6 +152,7 @@ from hrbuild.shared.genseq import (
     genseq_by_test, GENSEQ_CALL_TITLE, genseq_details, genseq_details_at_base,
     genseq_details_at_render, genseq_file, genseq_overlay, genseq_overlay_copy,
     committed_since, _overlay_state, GENSEQ_OVERLAY, GENSEQ_HANDLE, HTTP_VERBS, MAPPING_ANNOTATION, MAPPING_NAMED_PATH,
+    MAPPING_NAMED_CONSTANT, MAPPING_POSITIONAL_CONSTANT, STRING_CONSTANT, _string_constants,
     MAPPING_POSITIONAL_PATH, METHOD_NAME, pair_anchor, REQUEST_METHOD, SKIP_DIRS,
     spring_handlers, test_of_genseq, TYPE_DECL, _annotation_span, _controller_routes,
     _declared_test, _details_carrier, _join_route, _mapping_path, _with_handlers
@@ -1440,9 +1441,9 @@ def _main(argv=None) -> int:
         # reads to its full stop, and the footer stays two lines.
         allbtn_html = (
             ' <button type="button" class="allbtn" aria-pressed="false" '
-            'data-label-off="⇄ Single page" data-label-on="⇄ back to one tab at a time" '
+            'data-label-off="⇄ One page" data-label-on="⇄ back to one tab at a time" '
             'data-tip="All tabs on one page (for \u2318F)">'
-            "⇄ Single page</button>"
+            "⇄ One page</button>"
         )
         # Where this page sits on disk, on its own centred line under that sentence. The URL
         # bar says 127.0.0.1:7655 when it is served, which names a port and not a checkout —
@@ -1452,13 +1453,18 @@ def _main(argv=None) -> int:
         # Two controls, not one. The 📋 after the path copies it, served or not. The path
         # itself is plain text until the probe says this server can `open -R` it — then
         # editor.js turns it into a Finder link, the way it raises the VSC badge.
+        # Victor, 20 Oct 2026: the path itself was never read, and the footer is one line.
+        # So two faint marks at its end, for his own use: 📂 shows the file in Finder once
+        # the server says it can (editor.js adds `.reveals`), 📋 copies the path where it
+        # cannot — never both.
         diskline_html = (
-            '<div class="diskline">'
-            f'<span class="diskpath" id="hr-diskpath">{html.escape(str(out_path))}</span>'
+            '<span class="diskline">'
+            '<span class="diskpath" id="hr-diskpath" aria-label="Show this file in Finder">'
+            '\U0001F4C2</span>'
             '<button type="button" class="diskcopy copycmd" '
             f'data-copy="{html.escape(str(out_path), quote=True)}" '
             'data-say="Copied the path of this page" aria-label="Copy the path" '
-            f'data-tip="Copy this path">{CMD_COPY}</button>{allbtn_html}</div>'
+            f'data-tip="Copy this page\'s path">{CMD_COPY}</button></span>'
         )
         body_html = "\n".join(panels)
         # These two facts used to be appended to the page as a `<p class="sub">` — and the
@@ -1529,7 +1535,7 @@ def _main(argv=None) -> int:
 {lede_html}
 
 {body_html}
-<footer><p class="footrow"><span>{_link_home(spec.get('footer', ''))}</span> {TAKEAWAY}</p>{diskline_html}</footer>
+<footer><p class="footrow"><span>{_link_home(spec.get('footer', ''))}</span> {TAKEAWAY}{allbtn_html}{diskline_html}</p></footer>
 </div>
 {SERVER_JS}
 {CAPTION_JS}
