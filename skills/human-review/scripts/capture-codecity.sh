@@ -96,10 +96,10 @@ const [city, out, mode] = process.argv.slice(1);
       sel.dispatchEvent(new Event("change", {bubbles: true}));
       interacted = true;
     }
-    // The colour is the pages own choice, not ours: since code-city bc6279e a city whose
-    // change set moved any coupling opens on "Δ outgoing coupling", and otherwise on what
-    // it always opened on. Read back, so the note under the shot names the colour it was
-    // taken in rather than one this script assumes.
+    // The colour is the pages own choice, not ours: since code-city a099bba a city with a
+    // change set opens on "outgoing coupling" (the Δ colours are gone), and otherwise on
+    // what it always opened on. Read back, so the note under the shot names the colour it
+    // was taken in rather than one this script assumes.
     const color = document.getElementById("colorMetric")?.selectedOptions?.[0]?.textContent?.trim() || "";
     return { changed: document.getElementById("changeCount")?.textContent?.trim() || "", color, interacted };
   }, mode);

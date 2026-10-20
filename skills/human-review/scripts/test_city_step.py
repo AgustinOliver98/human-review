@@ -170,8 +170,8 @@ def test_capture_still_copies_a_city_that_lives_elsewhere(tmp_path):
 
 
 def test_capture_names_the_colour_the_shot_was_taken_in():
-    """The city picks its own opening colour — "Δ outgoing coupling" when the change set
-    moved any coupling, something else when it did not — so the line under the shot reads
+    """The city picks its own opening colour — "outgoing coupling" when there is a change
+    set to diff against, something else when there is not — so the line under the shot reads
     the colour back off the page instead of assuming one. Grep-shaped: the rig above fakes
     `node`, and the JS is the thing that has to keep doing this."""
     src = (HERE / "capture-codecity.sh").read_text(encoding="utf-8")
@@ -188,7 +188,7 @@ def test_the_colour_rides_into_the_lit_note(tmp_path, monkeypatch):
     class Shot(Shell):
         def __call__(self, cmd, ctx, check=True, capture=False):
             super().__call__(cmd, ctx, check, capture)
-            out = "8 changed · coloured by Δ outgoing coupling\n" if "capture-codecity" in cmd else ""
+            out = "8 changed · coloured by outgoing coupling\n" if "capture-codecity" in cmd else ""
             return subprocess.CompletedProcess(cmd, 0, out, "")
 
     monkeypatch.setattr(steps, "sh", Shot())
@@ -197,7 +197,7 @@ def test_the_colour_rides_into_the_lit_note(tmp_path, monkeypatch):
 
     steps._city(ctx)
 
-    assert any("codecity lit: 8 changed · coloured by Δ outgoing coupling" in n for n in ctx.notes)
+    assert any("codecity lit: 8 changed · coloured by outgoing coupling" in n for n in ctx.notes)
 
 
 # ── the city is coloured by the coverage the test step measured ─────────────────────
