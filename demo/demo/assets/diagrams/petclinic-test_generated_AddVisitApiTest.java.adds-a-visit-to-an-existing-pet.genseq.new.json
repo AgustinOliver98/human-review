@@ -799,7 +799,7 @@
         }
       ]
     },
-    "1u89s0g": {
+    "073bucx": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -807,7 +807,7 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES (?, ?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-05-12', 'Annual check-up 1792471845257', 1, ?, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-05-12', 'Annual check-up 1792566135909', 1, ?, ?)"
           }
         }
       ]
@@ -821,21 +821,21 @@
         }
       ]
     },
-    "1lrtt21": {
+    "141dma2": {
       "title": "Test → Backend: POST /api/owners/{ownerId}/pets/{petId}/visits",
       "steps": [
         {
           "label": "request body",
-          "text": "{\n  \"date\": \"2026-05-12\",\n  \"description\": \"Annual check-up 1792471845257\"\n}"
+          "text": "{\n  \"description\": \"Annual check-up 1792566135909\",\n  \"date\": \"2026-05-12\"\n}"
         }
       ]
     },
-    "1o0pfqr": {
+    "0hodvlc": {
       "title": "Backend → Test: 200",
       "steps": [
         {
           "label": "response body",
-          "text": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"McCallister\",\n  \"address\": \"671 Lincoln Boulevard\",\n  \"city\": \"Winnetka\",\n  \"telephone\": \"8474461990\",\n  \"id\": 1,\n  \"pets\": [\n    {\n      \"name\": \"Axel\",\n      \"birthDate\": \"2018-12-24\",\n      \"type\": {\n        \"name\": \"hamster\",\n        \"id\": 6\n      },\n      \"id\": 1,\n      \"ownerId\": 1,\n      \"visits\": [\n        {\n          \"date\": \"2026-05-12\",\n          \"description\": \"Annual check-up 1792471845257\",\n          \"id\": 29,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        },\n        {\n          \"date\": \"2025-12-27\",\n          \"description\": \"ate the Christmas tinsel; kept under observation\",\n          \"id\": 1,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        }\n      ]\n    }\n  ]\n}"
+          "text": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"McCallister\",\n  \"address\": \"671 Lincoln Boulevard\",\n  \"city\": \"Winnetka\",\n  \"telephone\": \"8474461990\",\n  \"id\": 1,\n  \"pets\": [\n    {\n      \"name\": \"Axel\",\n      \"birthDate\": \"2018-12-24\",\n      \"type\": {\n        \"name\": \"hamster\",\n        \"id\": 6\n      },\n      \"id\": 1,\n      \"ownerId\": 1,\n      \"visits\": [\n        {\n          \"date\": \"2026-05-12\",\n          \"description\": \"Annual check-up 1792566135909\",\n          \"id\": 29,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        },\n        {\n          \"date\": \"2025-12-27\",\n          \"description\": \"ate the Christmas tinsel; kept under observation\",\n          \"id\": 1,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        }\n      ]\n    }\n  ]\n}"
         }
       ]
     }

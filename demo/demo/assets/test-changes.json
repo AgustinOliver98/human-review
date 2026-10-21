@@ -1,5 +1,5 @@
 {
-  "base": "e51068416d74ff456cc90d281f4d0aa9995285ac",
+  "base": "664c5b3b453fb758230de01e407064c45d07a844",
   "totals": {
     "added": 22,
     "modified": 0,
@@ -283,13 +283,13 @@
       "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
       "path": "petclinic-test/src/visit-vet.feature",
       "status": "added",
-      "line": 9
+      "line": 11
     },
     {
       "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
       "path": "petclinic-test/src/visit-vet.feature",
       "status": "added",
-      "line": 20
+      "line": 22
     }
   ]
 }

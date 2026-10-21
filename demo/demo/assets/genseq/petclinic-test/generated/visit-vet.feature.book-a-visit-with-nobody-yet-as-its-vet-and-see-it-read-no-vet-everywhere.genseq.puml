@@ -3,7 +3,7 @@
 hide footbox
 skinparam hyperlinkUnderline false
 skinparam hyperlinkColor #1A4FA0
-title [[src://petclinic-test/src/visit-vet.feature:20{Click to open the test} Test: Book a visit with nobody yet as its vet, and see it read "No vet" everywhere]]
+title [[src://petclinic-test/src/visit-vet.feature:22{Click to open the test} Test: Book a visit with nobody yet as its vet, and see it read "No vet" everywhere]]
 footer traced because this branch wrote it in src/visit-vet.feature — generated from real traces of end-to-end test runs, do not edit ❗
 participant Browser
 participant Backend
@@ -11,13 +11,25 @@ participant DB
 participant NotificationService
 participant "«module»\nCommons" as Commons
 participant "SMS gateway"
+Browser -> Backend: Get an owner by ID\nGET /api/owners/{ownerId}
+activate Backend
+Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/OwnerRepository.java:14{Click to open OwnerRepository.findById} OwnerRepository.findById ↗]]
+activate Backend
+group tx
+Backend -> DB: [[genseq://0x8aana{Click for the statement behind this call} select owners ⊕]]
+end
+deactivate Backend
+Backend -> DB: [[genseq://18567ho{Click for the statement behind this call} select pets ⊕]]
+Backend -> DB: [[genseq://1eq1h2q{Click for the statement behind this call} select visits ⊕]]
+Backend --> Browser: [[genseq://1bhasc1{Click for this call’s JSON body} 200 ⊕]]
+deactivate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/rest/OwnerRestController.java:193{Click to open OwnerRestController.bookVisit} book-visit ↗]]
 activate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VetRepository.java:19{Click to open VetRepository.findByIdOrNull} VetRepository.findByIdOrNull ↗]]
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:14{Click to open VisitRepository.save} VisitRepository.save ↗]]
 activate Backend
 group tx
-Backend -> DB: [[genseq://0kgt5c2{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
+Backend -> DB: [[genseq://1qneoom{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
 end
 deactivate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/OwnerRepository.java:14{Click to open OwnerRepository.findById} OwnerRepository.findById ↗]]

@@ -89,7 +89,7 @@
         }
       ]
     },
-    "0sgwvvd": {
+    "1n8576n": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -97,7 +97,7 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES (?, ?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-05-12', 'Annual check-up 1792471806703', 1, ?, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-05-12', 'Annual check-up 1792566038433', 1, ?, ?)"
           }
         }
       ]
@@ -111,21 +111,21 @@
         }
       ]
     },
-    "0ir9mla": {
+    "0xspel8": {
       "title": "Browser → Backend: POST /api/owners/{ownerId}/pets/{petId}/visits",
       "steps": [
         {
           "label": "request body",
-          "text": "{\n  \"date\": \"2026-05-12\",\n  \"description\": \"Annual check-up 1792471806703\",\n  \"vetId\": null,\n  \"id\": null,\n  \"pet\": {\n    \"name\": \"Axel\",\n    \"birthDate\": \"2018-12-24\",\n    \"type\": {\n      \"name\": \"hamster\",\n      \"id\": 6\n    },\n    \"id\": 1,\n    \"ownerId\": 1,\n    \"visits\": [\n      {\n        \"date\": \"2025-12-27\",\n        \"description\": \"ate the Christmas tinsel; kept under observation\",\n        \"id\": 1,\n        \"petId\": 1,\n        \"petName\": \"Axel\",\n        \"ownerId\": 1,\n        \"ownerFirstName\": \"Kevin\",\n        \"ownerLastName\": \"McCallister\",\n        \"vetId\": null,\n        \"vetFirstName\": null,\n        \"vetLastName\": null\n      }\n    ]\n  }\n}"
+          "text": "{\n  \"date\": \"2026-05-12\",\n  \"description\": \"Annual check-up 1792566038433\",\n  \"vetId\": null,\n  \"id\": null,\n  \"pet\": {\n    \"name\": \"Axel\",\n    \"birthDate\": \"2018-12-24\",\n    \"type\": {\n      \"name\": \"hamster\",\n      \"id\": 6\n    },\n    \"id\": 1,\n    \"ownerId\": 1,\n    \"visits\": [\n      {\n        \"date\": \"2025-12-27\",\n        \"description\": \"ate the Christmas tinsel; kept under observation\",\n        \"id\": 1,\n        \"petId\": 1,\n        \"petName\": \"Axel\",\n        \"ownerId\": 1,\n        \"ownerFirstName\": \"Kevin\",\n        \"ownerLastName\": \"McCallister\",\n        \"vetId\": null,\n        \"vetFirstName\": null,\n        \"vetLastName\": null\n      }\n    ]\n  }\n}"
         }
       ]
     },
-    "0qc4vko": {
+    "19s6tx2": {
       "title": "Backend → Browser: 200",
       "steps": [
         {
           "label": "response body",
-          "text": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"McCallister\",\n  \"address\": \"671 Lincoln Boulevard\",\n  \"city\": \"Winnetka\",\n  \"telephone\": \"8474461990\",\n  \"id\": 1,\n  \"pets\": [\n    {\n      \"name\": \"Axel\",\n      \"birthDate\": \"2018-12-24\",\n      \"type\": {\n        \"name\": \"hamster\",\n        \"id\": 6\n      },\n      \"id\": 1,\n      \"ownerId\": 1,\n      \"visits\": [\n        {\n          \"date\": \"2026-05-12\",\n          \"description\": \"Annual check-up 1792471806703\",\n          \"id\": 29,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        },\n        {\n          \"date\": \"2025-12-27\",\n          \"description\": \"ate the Christmas tinsel; kept under observation\",\n          \"id\": 1,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        }\n      ]\n    }\n  ]\n}"
+          "text": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"McCallister\",\n  \"address\": \"671 Lincoln Boulevard\",\n  \"city\": \"Winnetka\",\n  \"telephone\": \"8474461990\",\n  \"id\": 1,\n  \"pets\": [\n    {\n      \"name\": \"Axel\",\n      \"birthDate\": \"2018-12-24\",\n      \"type\": {\n        \"name\": \"hamster\",\n        \"id\": 6\n      },\n      \"id\": 1,\n      \"ownerId\": 1,\n      \"visits\": [\n        {\n          \"date\": \"2026-05-12\",\n          \"description\": \"Annual check-up 1792566038433\",\n          \"id\": 29,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        },\n        {\n          \"date\": \"2025-12-27\",\n          \"description\": \"ate the Christmas tinsel; kept under observation\",\n          \"id\": 1,\n          \"petId\": 1,\n          \"petName\": \"Axel\",\n          \"ownerId\": 1,\n          \"ownerFirstName\": \"Kevin\",\n          \"ownerLastName\": \"McCallister\",\n          \"vetId\": null,\n          \"vetFirstName\": null,\n          \"vetLastName\": null\n        }\n      ]\n    }\n  ]\n}"
         }
       ]
     }

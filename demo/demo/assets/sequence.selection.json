@@ -4,7 +4,7 @@
   {
    "path": "petclinic-test/src/visit-vet.feature",
    "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
-   "line": 9,
+   "line": 11,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -20,7 +20,7 @@
   {
    "path": "petclinic-test/src/visit-vet.feature",
    "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
-   "line": 20,
+   "line": 22,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -203,7 +203,7 @@
    {
     "path": "petclinic-test/src/visit-vet.feature",
     "name": "Book a visit attended by a vet, and see the vet on the owner page and on all visits",
-    "line": 9,
+    "line": 11,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -211,7 +211,7 @@
    {
     "path": "petclinic-test/src/visit-vet.feature",
     "name": "Book a visit with nobody yet as its vet, and see it read \"No vet\" everywhere",
-    "line": 20,
+    "line": 22,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -239,20 +239,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 27.8
+   "seconds": 44.9
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 16.5
+   "seconds": 64.5
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 17.1
+   "seconds": 38.4
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 4.3
+   "seconds": 6.9
   }
  ],
- "at": "2026-10-20T04:51:16+00:00"
+ "at": "2026-10-21T07:03:43+00:00"
 }
