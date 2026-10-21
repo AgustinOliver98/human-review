@@ -14,19 +14,6 @@
         }
       ]
     },
-    "0cvbten": {
-      "title": "VisitRepository.findAllWithPetAndOwner",
-      "steps": [
-        {
-          "label": "",
-          "text": "SELECT pt1_0.id, pt1_0.name\nFROM types pt1_0\nWHERE pt1_0.id=?",
-          "alternate": {
-            "label": "",
-            "text": "SELECT pt1_0.id, pt1_0.name\nFROM types pt1_0\nWHERE pt1_0.id=6"
-          }
-        }
-      ]
-    },
     "070fg5f": {
       "title": "VisitRepository.findAllWithPetAndOwner",
       "steps": [
@@ -79,6 +66,19 @@
         }
       ]
     },
+    "0cvbten": {
+      "title": "VisitRepository.findAllWithPetAndOwner",
+      "steps": [
+        {
+          "label": "",
+          "text": "SELECT pt1_0.id, pt1_0.name\nFROM types pt1_0\nWHERE pt1_0.id=?",
+          "alternate": {
+            "label": "",
+            "text": "SELECT pt1_0.id, pt1_0.name\nFROM types pt1_0\nWHERE pt1_0.id=6"
+          }
+        }
+      ]
+    },
     "0gohwr7": {
       "title": "SELECT count(v) FROM Visit v JOIN v.pet p JOIN p.owner",
       "steps": [
@@ -88,12 +88,12 @@
         }
       ]
     },
-    "1dhteos": {
+    "1gl89nl": {
       "title": "Backend → Browser: 200",
       "steps": [
         {
           "label": "response body",
-          "text": "{\n  \"content\": [\n    {\n      \"date\": \"2026-05-12\",\n      \"description\": \"Annual check-up 1792471415519\",\n      \"id\": 29,\n      \"petId\": 1,\n      \"petName\": \"Axel\",\n      \"ownerId\": 1,\n      \"ownerFirstName\": \"Kevin\",\n      \"ownerLastName\": \"McCallister\"\n    },\n    {\n      \"date\": \"2026-05-03\",\n      \"description\": \"surgical suture removal\",\n      \"id\": 25,\n      \"petId\": 20,\n      \"petName\": \"Gromit\",\n      \"ownerId\": 16,\n      \"ownerFirstName\": \"Wallace\",\n      \"ownerLastName\": \"Wensleydale\"\n    },\n    {\n      \"date\": \"2026-05-03\",\n      \"description\": \"annual general checkup\",\n      \"id\": 26,\n      \"petId\": 3,\n      \"petName\": \"Milton\",\n      \"ownerId\": 3,\n      \"ownerFirstName\": \"Erwin\",\n      \"ownerLastName\": \"Schroedinger\"\n    },\n    {\n      \"date\": \"2026-05-02\",\n      \"description\": \"wound on front paw\",\n      \"id\": 23,\n      \"petId\": 32,\n      \"petName\": \"Toby of Lambeth\",\n      \"ownerId\": 26,\n      \"ownerFirstName\": \"Sherlock\",\n      \"ownerLastName\": \"Holmes\"\n    },\n    {\n      \"date\": \"2026-05-02\",\n      \"description\": \"post-vaccine follow-up\",\n      \"id\": 24,\n      \"petId\": 15,\n      \"petName\": \"Lassie\",\n      \"ownerId\": 12,\n      \"ownerFirstName\": \"Sam\",\n      \"ownerLastName\": \"Carraclough\"\n    },\n    {\n      \"date\": \"2026-05-01\",\n      \"description\": \"plumage check\",\n      \"id\": 22,\n      \"petId\": 31,\n      \"petName\": \"Grip\",\n      \"ownerId\": 25,\n      \"ownerFirstName\": \"Charles\",\n      \"ownerLastName\": \"Dickens\"\n    },\n    {\n      \"date\": \"2026-04-28\",\n      \"description\": \"horseshoeing\",\n      \"id\": 21,\n      \"petId\": 30,\n      \"petName\": \"Rocinante\",\n      \"ownerId\": 24,\n      \"ownerFirstName\": \"Alonso\",\n      \"ownerLastName\": \"Quixano\"\n    },\n    {\n      \"date\": \"2026-04-25\",\n      \"description\": \"rabies vaccine\",\n      \"id\": 20,\n      \"petId\": 29,\n      \"petName\": \"Figaro\",\n      \"ownerId\": 23,\n      \"ownerFirstName\": \"Mister\",\n      \"ownerLastName\": \"Geppetto\"\n    },\n    {\n      \"date\": \"2026-04-20\",\n      \"description\": \"dental exam\",\n      \"id\": 19,\n      \"petId\": 28,\n      \"petName\": \"Jaq\",\n      \"ownerId\": 22,\n      \"ownerFirstName\": \"Lady\",\n      \"ownerLastName\": \"Tremaine\"\n    },\n    {\n      \"date\": \"2026-04-15\",\n      \"description\": \"checkup\",\n      \"id\": 18,\n      \"petId\": 27,\n      \"petName\": \"Lucifer\",\n      \"ownerId\": 22,\n      \"ownerFirstName\": \"Lady\",\n      \"ownerLastName\": \"Tremaine\"\n    }\n  ],\n  \"totalElements\": 29,\n  \"totalPages\": 3,\n  \"number\": 0,\n  \"size\": 10\n}"
+          "text": "{\n  \"content\": [\n    {\n      \"date\": \"2026-05-03\",\n      \"description\": \"surgical suture removal\",\n      \"id\": 25,\n      \"petId\": 20,\n      \"petName\": \"Gromit\",\n      \"ownerId\": 16,\n      \"ownerFirstName\": \"Wallace\",\n      \"ownerLastName\": \"Wensleydale\"\n    },\n    {\n      \"date\": \"2026-05-03\",\n      \"description\": \"annual general checkup\",\n      \"id\": 26,\n      \"petId\": 3,\n      \"petName\": \"Milton\",\n      \"ownerId\": 3,\n      \"ownerFirstName\": \"Erwin\",\n      \"ownerLastName\": \"Schroedinger\"\n    },\n    {\n      \"date\": \"2026-05-02\",\n      \"description\": \"wound on front paw\",\n      \"id\": 23,\n      \"petId\": 32,\n      \"petName\": \"Toby of Lambeth\",\n      \"ownerId\": 26,\n      \"ownerFirstName\": \"Sherlock\",\n      \"ownerLastName\": \"Holmes\"\n    },\n    {\n      \"date\": \"2026-05-02\",\n      \"description\": \"post-vaccine follow-up\",\n      \"id\": 24,\n      \"petId\": 15,\n      \"petName\": \"Lassie\",\n      \"ownerId\": 12,\n      \"ownerFirstName\": \"Sam\",\n      \"ownerLastName\": \"Carraclough\"\n    },\n    {\n      \"date\": \"2026-05-01\",\n      \"description\": \"plumage check\",\n      \"id\": 22,\n      \"petId\": 31,\n      \"petName\": \"Grip\",\n      \"ownerId\": 25,\n      \"ownerFirstName\": \"Charles\",\n      \"ownerLastName\": \"Dickens\"\n    },\n    {\n      \"date\": \"2026-04-28\",\n      \"description\": \"horseshoeing\",\n      \"id\": 21,\n      \"petId\": 30,\n      \"petName\": \"Rocinante\",\n      \"ownerId\": 24,\n      \"ownerFirstName\": \"Alonso\",\n      \"ownerLastName\": \"Quixano\"\n    },\n    {\n      \"date\": \"2026-04-25\",\n      \"description\": \"rabies vaccine\",\n      \"id\": 20,\n      \"petId\": 29,\n      \"petName\": \"Figaro\",\n      \"ownerId\": 23,\n      \"ownerFirstName\": \"Mister\",\n      \"ownerLastName\": \"Geppetto\"\n    },\n    {\n      \"date\": \"2026-04-20\",\n      \"description\": \"dental exam\",\n      \"id\": 19,\n      \"petId\": 28,\n      \"petName\": \"Jaq\",\n      \"ownerId\": 22,\n      \"ownerFirstName\": \"Lady\",\n      \"ownerLastName\": \"Tremaine\"\n    },\n    {\n      \"date\": \"2026-04-15\",\n      \"description\": \"checkup\",\n      \"id\": 18,\n      \"petId\": 27,\n      \"petName\": \"Lucifer\",\n      \"ownerId\": 22,\n      \"ownerFirstName\": \"Lady\",\n      \"ownerLastName\": \"Tremaine\"\n    },\n    {\n      \"date\": \"2026-04-10\",\n      \"description\": \"spay/neuter\",\n      \"id\": 13,\n      \"petId\": 22,\n      \"petName\": \"Toby\",\n      \"ownerId\": 17,\n      \"ownerFirstName\": \"Wendy\",\n      \"ownerLastName\": \"Darling\"\n    }\n  ],\n  \"totalElements\": 28,\n  \"totalPages\": 3,\n  \"number\": 0,\n  \"size\": 10\n}"
         }
       ]
     }

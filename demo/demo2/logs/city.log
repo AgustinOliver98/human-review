@@ -1,9 +1,9 @@
   * city -> city
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/0071f98803ee/skills/human-review/scripts/city-coverage.py --in .human-review/assets/test-coverage.json --out .human-review/assets/codecity-coverage.json
-[city-coverage] 125 file(s): line coverage 68.3%, acceptance 49.6% -> .human-review/assets/codecity-coverage.json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/city-coverage.py --in .human-review/assets/test-coverage.json --out .human-review/assets/codecity-coverage.json
+[city-coverage] 125 file(s): line coverage 68.3%, acceptance 49.5% -> .human-review/assets/codecity-coverage.json
     $ git rev-parse HEAD
-    $ git merge-base f7ebe11c6a5c2d7652f6a1be2b6c75b3f2f3d9bf HEAD
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/0071f98803ee/skills/human-review/scripts/regenerate-codecity.sh --out ".human-review/assets/codecity" --title "Code City" --coverage ".human-review/assets/codecity-coverage.json"
+    $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/regenerate-codecity.sh --out ".human-review/assets/codecity" --title "Code City" --coverage ".human-review/assets/codecity-coverage.json"
 updating the Code City generators in /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/.tools/codecity ...
 repo:  /Users/victorrentea/workspace/petclinic-visits-paginated
 out:   /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity
@@ -14,7 +14,7 @@ coverage: /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review
 Files processed: 99
 Files with parse errors: 0
 Total classes: 122
-Total methods/constructors: 482
+Total methods/constructors: 483
 
 Top 10 classes by complexity:
   complexity	methods	file	class_fqn
@@ -65,8 +65,8 @@ top fan_in:
 loaded 0 bug/regression issue numbers
 flagging bug commits via subject regex (default heuristic): '^(fix|fixed|fixes|bugfix)\\b'
 discovered 6 Maven/Gradle module dir(s)
-walked 994 commits, 59 flagged as bug-linked
-touched 2462 distinct file paths (across all history)
+walked 1013 commits, 60 flagged as bug-linked
+touched 2477 distinct file paths (across all history)
 found 99 current non-test java files
 loaded complexity for 99 files
 loaded fan-in/out for 99 files
@@ -79,11 +79,13 @@ wrote 4 axes of change over 55 classes to /Users/victorrentea/workspace/petclini
 [5/7] render interactive HTML...
 wrote /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codemap.html (85.5 KB)
 [6/7] render Code City HTML...
+/Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/.tools/codecity/render_codecity.py:1793: SyntaxWarning: "\." is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\."? A raw string is also an option.
+  /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 coupling the change set moved (class: fan-out, fan-in):
   VisitPageDto.java: out +1, in +1
   VisitRestController.java: out +1, in +0
   VisitDto.java: out +0, in +1
-wrote /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codecity.html (1321.9 KB)
+wrote /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codecity.html (1325.6 KB)
 [7/7] render combined side-by-side (2D codemap <-> 3D city)...
 wrote /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/combined.html (3.1 KB)
 done -> /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codemap.html
@@ -91,4 +93,4 @@ city -> /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/a
 both -> /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/combined.html
 
 open /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codecity.html
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/0071f98803ee/skills/human-review/scripts/capture-codecity.sh .human-review/assets/codecity.png highlight .human-review/assets/codecity/codecity.html
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/capture-codecity.sh .human-review/assets/codecity.png highlight .human-review/assets/codecity/codecity.html

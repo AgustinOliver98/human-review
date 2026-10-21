@@ -3,7 +3,7 @@ caption <color:#2E7D32>added</color> or <color:#C62828><s>removed</s></color>
 hide footbox
 skinparam hyperlinkUnderline false
 skinparam hyperlinkColor #1A4FA0
-title [[src://petclinic-test/src/owner-search.feature:26{Click to open the test} Test: Searching with an empty last name lists every owner]] - Diff
+title [[src://petclinic-test/src/owner-search.feature:27{Click to open the test} Test: Searching with an empty last name lists every owner]] - Diff
 footer @generate_sequence in src/owner-search.feature — generated from real traces of end-to-end test runs, do not edit ❗
 participant Browser
 participant Backend
@@ -79,7 +79,7 @@ Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
-Backend -[#2E7D32]-> Browser: [[genseq://01pgtfc{Click for this call’s JSON body} 200 ⊕]]
+Backend -[#2E7D32]-> Browser: [[genseq://0g04fuh{Click for this call’s JSON body} 200 ⊕]]
 deactivate Backend
 Browser -> Backend: List owners\nGET /api/owners
 activate Backend
@@ -152,6 +152,6 @@ Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
 Backend -[#C62828]> DB: <color:#C62828><s>select pets</s></color>
-Backend -[#2E7D32]-> Browser: [[genseq://01pgtfc{Click for this call’s JSON body} 200 ⊕]]
+Backend -[#2E7D32]-> Browser: [[genseq://0g04fuh{Click for this call’s JSON body} 200 ⊕]]
 deactivate Backend
 @enduml

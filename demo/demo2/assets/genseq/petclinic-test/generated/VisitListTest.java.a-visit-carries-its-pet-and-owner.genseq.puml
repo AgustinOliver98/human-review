@@ -8,10 +8,6 @@ footer traced because this branch wrote it in petclinic-backend/src/test/java/vi
 participant Test
 participant Backend
 participant DB
-Test -> Backend: Hibernate Query
-activate Backend
-Backend -> DB: [[genseq://1ha30s4{Click for the statement behind this call} DELETE FROM Visit ⊕]]
-deactivate Backend
 Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/OwnerRepository.java:19{Click to open OwnerRepository.save} OwnerRepository.save ↗]]
 activate Backend
 Backend -> DB: [[genseq://1x3fmx0{Click for the statement behind this call} insert for victor.training.petclinic.domain.Owner ⊕]]
@@ -22,11 +18,11 @@ Backend -> DB: [[genseq://0ji1js5{Click for the statement behind this call} PetT
 deactivate Backend
 Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/PetRepository.java:18{Click to open PetRepository.save} PetRepository.save ↗]]
 activate Backend
-Backend -> DB: [[genseq://1xyvwcm{Click for the statement behind this call} insert for victor.training.petclinic.domain.Pet ⊕]]
+Backend -> DB: [[genseq://08brujg{Click for the statement behind this call} insert for victor.training.petclinic.domain.Pet ⊕]]
 deactivate Backend
 Test -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:16{Click to open VisitRepository.save} VisitRepository.save ↗]]
 activate Backend
-Backend -> DB: [[genseq://0ccc7li{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
+Backend -> DB: [[genseq://15t4cj9{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
 deactivate Backend
 Test -> Backend: listVisits\nGET /api/visits
 activate Backend

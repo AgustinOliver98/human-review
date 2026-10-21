@@ -4,7 +4,7 @@
   {
    "path": "petclinic-test/src/visits.spec.ts",
    "name": "shows the ten latest visits on initial load",
-   "line": 34,
+   "line": 37,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -20,7 +20,7 @@
   {
    "path": "petclinic-test/src/visits.spec.ts",
    "name": "clicking a column header sorts by it and keeps the sort in the URL",
-   "line": 44,
+   "line": 47,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -36,7 +36,7 @@
   {
    "path": "petclinic-test/src/visits.spec.ts",
    "name": "a page of 5 visits, then the next one",
-   "line": 55,
+   "line": 58,
    "status": "added",
    "why": "written by this branch",
    "suite": "e2e"
@@ -44,7 +44,7 @@
   {
    "path": "petclinic-test/src/visits.spec.ts",
    "name": "Visits Page",
-   "line": 7,
+   "line": 10,
    "status": "modified",
    "why": "edited by this branch",
    "suite": "e2e"
@@ -336,7 +336,7 @@
    {
     "path": "petclinic-test/src/visits.spec.ts",
     "name": "shows the ten latest visits on initial load",
-    "line": 34,
+    "line": 37,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -344,7 +344,7 @@
    {
     "path": "petclinic-test/src/visits.spec.ts",
     "name": "clicking a column header sorts by it and keeps the sort in the URL",
-    "line": 44,
+    "line": 47,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -352,7 +352,7 @@
    {
     "path": "petclinic-test/src/visits.spec.ts",
     "name": "a page of 5 visits, then the next one",
-    "line": 55,
+    "line": 58,
     "status": "added",
     "why": "written by this branch",
     "suite": "e2e"
@@ -360,7 +360,7 @@
    {
     "path": "petclinic-test/src/visits.spec.ts",
     "name": "Visits Page",
-    "line": 7,
+    "line": 10,
     "status": "modified",
     "why": "edited by this branch",
     "suite": "e2e"
@@ -388,20 +388,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 28.4
+   "seconds": 40.6
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 16.8
+   "seconds": 23.2
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 16.9
+   "seconds": 24.2
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 4.7
+   "seconds": 4.6
   }
  ],
- "at": "2026-10-20T04:44:45+00:00"
+ "at": "2026-10-21T07:14:45+00:00"
 }

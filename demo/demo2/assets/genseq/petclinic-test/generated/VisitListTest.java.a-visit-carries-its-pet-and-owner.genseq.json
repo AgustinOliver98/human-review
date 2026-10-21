@@ -1,15 +1,6 @@
 {
   "version": 2,
   "details": {
-    "1ha30s4": {
-      "title": "DELETE FROM Visit",
-      "steps": [
-        {
-          "label": "",
-          "text": "DELETE FROM visits v1_0"
-        }
-      ]
-    },
     "1x3fmx0": {
       "title": "insert for victor.training.petclinic.domain.Owner",
       "steps": [
@@ -32,7 +23,7 @@
         }
       ]
     },
-    "1xyvwcm": {
+    "08brujg": {
       "title": "insert for victor.training.petclinic.domain.Pet",
       "steps": [
         {
@@ -40,12 +31,12 @@
           "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES ('2010-10-10', 'Leo', 27, 1)"
+            "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES ('2010-10-10', 'Leo', 1, 1)"
           }
         }
       ]
     },
-    "0ccc7li": {
+    "15t4cj9": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -53,7 +44,7 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-01', 'rabies shot', 33, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-01', 'rabies shot', 1, ?)"
           }
         }
       ]

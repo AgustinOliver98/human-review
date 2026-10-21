@@ -22,11 +22,7 @@
      "strength": "asserted",
      "why": "sorts by the Pet header and compares the grid rows with the API's pet,asc page",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);",
-     "by": "model",
-     "evidence": [
-      "sort (name)",
-      "column (name)"
-     ]
+     "by": "model"
     }
    ],
    "by": "model"
@@ -52,12 +48,7 @@
      "strength": "asserted",
      "why": "picks 5 rows per page, goes to the next page, and compares the rows with the API's second page of 5",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);",
-     "by": "model",
-     "evidence": [
-      "≈page (covered change)",
-      "page (name)",
-      "5 (name)"
-     ]
+     "by": "model"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:121",
@@ -82,5 +73,9 @@
     }
    ]
   }
- ]
+ ],
+ "stale": {
+  "why": "4 candidate test(s) the model was never shown: visits.spec.ts:47, visits.spec.ts:10, visits.spec.ts:58, visits.spec.ts:37",
+  "command": "rerun-model.py"
+ }
 }

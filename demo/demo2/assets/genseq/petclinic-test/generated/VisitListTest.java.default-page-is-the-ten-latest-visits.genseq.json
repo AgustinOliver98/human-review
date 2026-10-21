@@ -1,15 +1,6 @@
 {
   "version": 2,
   "details": {
-    "1ha30s4": {
-      "title": "DELETE FROM Visit",
-      "steps": [
-        {
-          "label": "",
-          "text": "DELETE FROM visits v1_0"
-        }
-      ]
-    },
     "1x3fmx0": {
       "title": "insert for victor.training.petclinic.domain.Owner",
       "steps": [
@@ -32,7 +23,7 @@
         }
       ]
     },
-    "0a0hnfx": {
+    "08brujg": {
       "title": "insert for victor.training.petclinic.domain.Pet",
       "steps": [
         {
@@ -40,12 +31,12 @@
           "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES ('2010-10-10', 'Leo', 28, 1)"
+            "text": "INSERT INTO pets (birth_date, name, owner_id, type_id)\nVALUES ('2010-10-10', 'Leo', 1, 1)"
           }
         }
       ]
     },
-    "05jrj4o": {
+    "0yd4ti6": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -53,12 +44,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-01', 'checkup 0', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-01', 'checkup 0', 1, ?)"
           }
         }
       ]
     },
-    "100qx0k": {
+    "1d89m7e": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -66,12 +57,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-02', 'checkup 1', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-02', 'checkup 1', 1, ?)"
           }
         }
       ]
     },
-    "1woqjkc": {
+    "1122xuq": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -79,12 +70,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-03', 'checkup 2', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-03', 'checkup 2', 1, ?)"
           }
         }
       ]
     },
-    "12b7m6o": {
+    "1e9984m": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -92,12 +83,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-04', 'checkup 3', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-04', 'checkup 3', 1, ?)"
           }
         }
       ]
     },
-    "18psurs": {
+    "1np6aku": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -105,12 +96,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-05', 'checkup 4', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-05', 'checkup 4', 1, ?)"
           }
         }
       ]
     },
-    "0a1zcak": {
+    "1qct9g2": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -118,12 +109,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-06', 'checkup 5', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-06', 'checkup 5', 1, ?)"
           }
         }
       ]
     },
-    "0a3ip44": {
+    "089v7ai": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -131,12 +122,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-07', 'checkup 6', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-07', 'checkup 6', 1, ?)"
           }
         }
       ]
     },
-    "045t1u8": {
+    "0kh1gpy": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -144,12 +135,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-08', 'checkup 7', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-08', 'checkup 7', 1, ?)"
           }
         }
       ]
     },
-    "0n6ys8o": {
+    "1ppdmwu": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -157,12 +148,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-09', 'checkup 8', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-09', 'checkup 8', 1, ?)"
           }
         }
       ]
     },
-    "1d7tbyl": {
+    "0p7j1vd": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -170,12 +161,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-10', 'checkup 9', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-10', 'checkup 9', 1, ?)"
           }
         }
       ]
     },
-    "1nn5kfk": {
+    "0bab2me": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -183,12 +174,12 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-11', 'checkup 10', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-11', 'checkup 10', 1, ?)"
           }
         }
       ]
     },
-    "0agpkre": {
+    "0dprkyo": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -196,7 +187,7 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES (?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-12', 'checkup 11', 34, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time)\nVALUES ('2026-01-12', 'checkup 11', 1, ?)"
           }
         }
       ]
