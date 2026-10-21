@@ -21,18 +21,25 @@ FAVICON_SVG = (
     'Noto Color Emoji,sans-serif">' + FAVICON_EMOJI + "</text></svg>"
 )
 FAVICON = "data:image/svg+xml;base64," + base64.b64encode(FAVICON_SVG.encode()).decode()
-# The same face in a green glow: the tab of a page a review server is behind. The tab
-# strip is where a reader picks between a live copy and a static one, and the icon is
-# the one part of a tab that stays legible at forty tabs wide — a mark in front of the
-# title is cut off before it is read. The face shrinks to leave the halo room to show, and
-# becomes one at a laptop (Victor, 20 Oct 2026): someone is at work behind this one.
+# The tab of a page a review server is behind: the face at a laptop, drawn round with a
+# black outline and a white glow outside it. The tab strip is where a reader picks between
+# a live copy and a static one, and the icon is the one part of a tab that stays legible at
+# forty tabs wide — a mark in front of the title is cut off before it is read. Outline and
+# glow are grown from the emoji's own silhouette (`feMorphology`), so they hug the face;
+# 6 units of the 100 are 2px at the 32px a Retina tab strip draws it (Victor, 21 Oct 2026).
 FAVICON_SERVED_EMOJI = "\U0001F9D1\u200D\U0001F4BB"
 FAVICON_SERVED_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-    '<defs><radialGradient id="g"><stop offset=".6" stop-color="#22c55e"/>'
-    '<stop offset="1" stop-color="#22c55e" stop-opacity="0"/></radialGradient></defs>'
-    '<circle cx="50" cy="50" r="50" fill="url(#g)"/>'
-    '<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-size="64" '
+    '<defs><filter id="o" x="-30%" y="-30%" width="160%" height="160%">'
+    '<feMorphology in="SourceAlpha" operator="dilate" radius="6" result="line"/>'
+    '<feMorphology in="SourceAlpha" operator="dilate" radius="11" result="wide"/>'
+    '<feGaussianBlur in="wide" stdDeviation="4" result="soft"/>'
+    '<feFlood flood-color="#fff"/><feComposite in2="soft" operator="in" result="glow"/>'
+    '<feFlood flood-color="#000"/><feComposite in2="line" operator="in" result="ink"/>'
+    '<feMerge><feMergeNode in="glow"/><feMergeNode in="glow"/><feMergeNode in="ink"/>'
+    '<feMergeNode in="SourceGraphic"/></feMerge></filter></defs>'
+    '<text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-size="66" '
+    'filter="url(#o)" '
     'font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">'
     + FAVICON_SERVED_EMOJI + "</text></svg>"
 )

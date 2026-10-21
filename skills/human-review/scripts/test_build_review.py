@@ -3984,7 +3984,7 @@ def test_a_trace_row_is_addressed_by_its_test_and_the_header_says_which_page_thi
     # screen: the favicon glows green, and goes back when the server is stopped. The
     # icon and not the title, which is cut off before a prefix on it is read.
     assert 'id="hr-favicon"' in page and f'data-served="{build.FAVICON_SERVED}"' in page
-    assert "#22c55e" in build.FAVICON_SERVED_SVG and "\U0001F9D1\u200D\U0001F4BB" in build.FAVICON_SERVED_SVG
+    assert "feMorphology" in build.FAVICON_SERVED_SVG and "\U0001F9D1\u200D\U0001F4BB" in build.FAVICON_SERVED_SVG
     assert "icon.href = icon.dataset.served;" in page
     assert "icon.href = icon.dataset.static;" in page, "stopping puts the plain face back"
     assert "document.title = " not in page[page.index("<script"):], "the title stays as built"
