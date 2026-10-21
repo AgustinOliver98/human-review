@@ -104,6 +104,27 @@ def test_a_test_whose_body_changed_since_the_pairing_makes_it_stale(tmp_path):
     assert why and f"1 test(s) changed since the model read them: {Path(ids[0]).name}" in why
 
 
+def test_a_test_that_only_moved_lines_keeps_its_pairing(tmp_path):
+    """21 Oct 2026: a `@fixture` tag over visit-vet.feature moved both E2E scenarios two
+    lines down, their ids with them, and the "covering" card lost its whole E2E chapter.
+    Same file, same body: the model did read it, the link follows it."""
+    digest = S.body_digest("Scenario: book with a vet")
+    doc = {"offered": ["e2e/visit-vet.feature:9"],
+           "offeredDigest": {"e2e/visit-vet.feature:9": digest},
+           "sentences": [{"tests": [{"id": "e2e/visit-vet.feature:9"}]}]}
+    now = {"e2e/visit-vet.feature:11": digest}
+    assert S.moved_tests(doc, now) == {"e2e/visit-vet.feature:9": "e2e/visit-vet.feature:11"}
+    moved = S.reanchor(doc, S.moved_tests(doc, now))
+    assert moved["sentences"][0]["tests"][0]["id"] == "e2e/visit-vet.feature:11"
+    assert moved["offeredDigest"] == now
+    # Another body, or another file, is not the test the model read.
+    assert S.moved_tests(doc, {"e2e/visit-vet.feature:11": "f" * 16}) == {}
+    assert S.moved_tests(doc, {"e2e/other.feature:11": digest}) == {}
+    _, review = _repo(tmp_path)
+    _mapping(review, **{k: doc[k] for k in ("offered", "offeredDigest")})
+    assert S.pairing_stale(review, list(now), None, now) is None
+
+
 def test_offered_without_digests_is_judged_on_the_ids_alone(tmp_path):
     """A mapping rerun-model.py wrote before `offeredDigest` existed: a body change cannot
     be told, an unseen candidate still can."""

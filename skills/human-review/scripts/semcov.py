@@ -1907,6 +1907,41 @@ def _names(ids: list[str]) -> str:
     return ", ".join(Path(t).name for t in ids[:4]) + (" …" if len(ids) > 4 else "")
 
 
+def moved_tests(doc, digests_now: dict[str, str] | None) -> dict[str, str]:
+    """`{id the model read: id today}` for each test that only changed line: the same file,
+    the same body (`offeredDigest`), another `:line`. A test id is `path:line`, so any edit
+    above a test - a tag on its Feature, a merge from main - renamed it, and every link the
+    model drew to it dangled: the row lost its fork, and the "covering" choice of the Tests
+    card hid it (21 Oct 2026: visit-vet.feature's two E2E scenarios moved :9 -> :11 and
+    :20 -> :22 under a new `@fixture:default`, and the E2E chapter vanished). Matched on
+    content, never on nearness: a body that changed is a test the model has not read."""
+    then = doc.get("offeredDigest") if isinstance(doc, dict) else None
+    if not isinstance(then, dict) or not digests_now:
+        return {}
+    by = {}
+    for tid, d in digests_now.items():
+        by.setdefault((tid.rsplit(":", 1)[0], d), []).append(tid)
+    out = {}
+    for tid, d in then.items():
+        if tid in digests_now:
+            continue
+        now = [t for t in by.get((tid.rsplit(":", 1)[0], d), []) if t not in then]
+        if len(now) == 1:
+            out[tid] = now[0]
+    return out
+
+
+def reanchor(doc, moved: dict[str, str]):
+    """`doc` with every test id in `moved` renamed, keys and values alike."""
+    if not moved:
+        return doc
+    if isinstance(doc, dict):
+        return {moved.get(k, k): reanchor(v, moved) for k, v in doc.items()}
+    if isinstance(doc, list):
+        return [reanchor(v, moved) for v in doc]
+    return moved.get(doc, doc) if isinstance(doc, str) else doc
+
+
 def pairing_stale(out_dir: Path, offered_now=None, spec: dict | None = None,
                   digests_now: dict[str, str] | None = None) -> str | None:
     """Why the model's pairing (`test-mapping.json`) did not read the tests the card now
@@ -1937,6 +1972,7 @@ def pairing_stale(out_dir: Path, offered_now=None, spec: dict | None = None,
     if not m.is_file():
         return None
     doc = _read_json(m)
+    doc = reanchor(doc, moved_tests(doc, digests_now))
     offered = doc.get("offered") if isinstance(doc, dict) else None
     if not isinstance(offered, list) or not offered_now:
         return None
@@ -2460,11 +2496,13 @@ def write_fragment(spec: dict, out_dir: Path, root: Path) -> str | None:
     g = gather(spec, out_dir, root)
     if g is None:
         return None
-    entries = merge(g["sentences"], g["scripted"], model, g["decisions"])
     asked = model_input(g["ticket"], g["sentences"], g["rows"], g["scripted"], g["docs"],
                         g["decisions"])["tests"]
+    digests = offered_digests(asked)
+    model = reanchor(model, moved_tests(model, digests))
+    entries = merge(g["sentences"], g["scripted"], model, g["decisions"])
     why = pairing_stale(out_dir, [t["id"] for t in asked], spec,
-                        offered_digests(asked)) if model is not None else None
+                        digests) if model is not None else None
     cmd = rerun_command(out_dir, root)
     if why:
         # Loud on purpose: the matrix below is drawn from a pairing that never read some of
