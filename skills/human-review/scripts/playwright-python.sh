@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Print the path of a Python interpreter that can `import playwright` and has Chromium,
 # provisioning it on first use. Shared by publish-demo.sh (the README tour) and
-# publish-demo-shots.sh (the screenshot gallery), so the two keep one venv between them.
+# publish-demo-shots.sh (the screenshot gallery) and by run-steps.py (ds-audit, the trace
+# shot, the C4 views), so they all keep one venv between them.
 #
 # Python Playwright is not something a training laptop has lying around, and installing it
 # into the system interpreter is not ours to do. One throwaway venv, provisioned once and
@@ -15,10 +16,12 @@ if [ ! -x "$VENV/bin/python" ]; then
   mkdir -p "$(dirname "$VENV")"
   python3 -m venv "$VENV"
   "$VENV/bin/python" -m pip install --quiet --upgrade pip >&2
-  "$VENV/bin/python" -m pip install --quiet playwright >&2
+  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow >&2
 fi
-if ! "$VENV/bin/python" -c "import playwright" >/dev/null 2>&1; then
-  "$VENV/bin/python" -m pip install --quiet playwright >&2
+# numpy and Pillow are for ds-audit.py, which measures pixel churn on its screenshots and
+# runs on this interpreter too (21 Oct 2026: a venv made for the tour had neither).
+if ! "$VENV/bin/python" -c "import playwright, numpy, PIL" >/dev/null 2>&1; then
+  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow >&2
 fi
 # `install` is idempotent and returns in about a second when the browser is already in the
 # shared ms-playwright cache, so it is cheaper to always run it than to guess whether the
