@@ -26,11 +26,16 @@
      "by": "model"
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
      "why": "books with a chosen vet and checks the owner page reads that vet",
      "line": "And the visit on the owner's page reads the chosen vet",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "visit (name)",
+      "vet (name)",
+      "attend (name)"
+     ]
     }
    ],
    "by": "model",
@@ -46,7 +51,7 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
      "why": "checks the chosen vet is read on the owner page and on the all-visits screen",
      "line": "And the visit on the owner's page reads the chosen vet",
@@ -95,18 +100,31 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
      "why": "chooses a vet in the form, submits, and checks the visit reads that vet",
      "line": "And the visit on the owner's page reads the chosen vet",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "book (name)",
+      "visit (name)",
+      "choos (assert)",
+      "vet (name)"
+     ]
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:20",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
      "why": "submits without choosing and checks the form reads 'No vet' and the visit reads 'No vet'",
      "line": "And the visit on the owner's page reads \"No vet\"",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "book (name)",
+      "visit (name)",
+      "≈choose (assert)",
+      "vet (name)",
+      "≈none (name)"
+     ]
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
@@ -175,11 +193,16 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:20",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
      "why": "leaves the vet field at 'No vet', submits successfully, and asserts the visit reads 'No vet'",
      "line": "And the visit on the owner's page reads \"No vet\"",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "vet (name)",
+      "≈none (name)",
+      "book (name)"
+     ]
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
@@ -221,7 +244,7 @@
    "by": "model",
    "rejected": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "why": "only the chosen-vet path; does not exercise omitting the vet"
     },
     {
@@ -333,11 +356,17 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
      "why": "asserts the chosen vet is read on the owner page and the all-visits screen",
      "line": "And the visit on the owner's page reads the chosen vet",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "visit (name)",
+      "≈show (assert)",
+      "detail (assert)",
+      "vet (name)"
+     ]
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
@@ -373,10 +402,16 @@
      "by": "model"
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:20",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "exercised",
      "why": "asserts 'No vet' is displayed on both screens",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "visit (name)",
+      "≈show (name)",
+      "detail (assert)",
+      "vet (name)"
+     ]
     }
    ],
    "by": "model"
@@ -386,11 +421,17 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:9",
+     "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
      "why": "checks the vet on the owner's page and on the all-visits screen",
      "line": "Then the visit on the all visits screen reads the chosen vet",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "owner (name)",
+      "page (name)",
+      "visit (name)",
+      "screen (assert)"
+     ]
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
@@ -419,10 +460,16 @@
      "by": "model"
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:20",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "exercised",
      "why": "steps assert 'No vet' on both the owner page and the all-visits screen",
-     "by": "model"
+     "by": "model",
+     "evidence": [
+      "owner (assert)",
+      "page (assert)",
+      "visit (name)",
+      "screen (assert)"
+     ]
     }
    ],
    "by": "model",
@@ -463,7 +510,7 @@
      "by": "model"
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:20",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
      "why": "the owner page and all-visits screen read 'No vet' for the booked visit",
      "line": "Then the visit on the all visits screen reads \"No vet\"",
@@ -517,7 +564,7 @@
   }
  ],
  "stale": {
-  "why": "13 candidate test(s) the model was never shown: visit-vet.feature:11, visits.spec.ts:55, visit-vet.feature:22, visits.feature:11 …",
+  "why": "7 candidate test(s) the model was never shown: visits.feature:11, visit-edit.component.spec.ts:110, visit-edit.component.spec.ts:114, visit-edit.component.spec.ts:133 …",
   "command": "rerun-model.py"
  }
 }
