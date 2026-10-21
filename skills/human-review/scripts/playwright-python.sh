@@ -16,12 +16,13 @@ if [ ! -x "$VENV/bin/python" ]; then
   mkdir -p "$(dirname "$VENV")"
   python3 -m venv "$VENV"
   "$VENV/bin/python" -m pip install --quiet --upgrade pip >&2
-  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow >&2
+  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow pygments >&2
 fi
-# numpy and Pillow are for ds-audit.py, which measures pixel churn on its screenshots and
+# numpy, Pillow and Pygments are for ds-audit.py, which measures pixel churn on its screenshots,
+# highlights the code it quotes, and
 # runs on this interpreter too (21 Oct 2026: a venv made for the tour had neither).
-if ! "$VENV/bin/python" -c "import playwright, numpy, PIL" >/dev/null 2>&1; then
-  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow >&2
+if ! "$VENV/bin/python" -c "import playwright, numpy, PIL, pygments" >/dev/null 2>&1; then
+  "$VENV/bin/python" -m pip install --quiet playwright numpy pillow pygments >&2
 fi
 # `install` is idempotent and returns in about a second when the browser is already in the
 # shared ms-playwright cache, so it is cheaper to always run it than to guess whether the
