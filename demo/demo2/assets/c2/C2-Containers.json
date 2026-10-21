@@ -52,16 +52,11 @@
         "from": "Backend",
         "to": "DB",
         "status": "same",
-        "protocol": "SQL + HTTP",
-        "operations": 12,
+        "protocol": "SQL",
+        "operations": 11,
         "operationsDelta": 0,
-        "calls": 262,
+        "calls": 260,
         "detail": [
-          {
-            "name": "",
-            "path": "DELETE FROM Visit",
-            "calls": 2
-          },
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
             "path": "",
@@ -390,16 +385,11 @@
         "from": "Backend",
         "to": "DB",
         "status": "same",
-        "protocol": "SQL + HTTP",
-        "operations": 12,
+        "protocol": "SQL",
+        "operations": 11,
         "operationsDelta": 0,
-        "calls": 262,
+        "calls": 260,
         "detail": [
-          {
-            "name": "",
-            "path": "DELETE FROM Visit",
-            "calls": 2
-          },
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
             "path": "",
@@ -546,5 +536,5 @@
       "onlyOld": []
     }
   },
-  "base": "c790590b10e89e90a7bf228bad0137d09eedef97"
+  "base": "664c5b3b453fb758230de01e407064c45d07a844"
 }

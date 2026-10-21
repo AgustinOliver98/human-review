@@ -388,20 +388,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 40.6
+   "seconds": 312.4
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 23.2
+   "seconds": 132.9
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 24.2
+   "seconds": 123.4
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 4.6
+   "seconds": 7.6
   }
  ],
- "at": "2026-10-21T07:14:45+00:00"
+ "at": "2026-10-21T17:44:57+00:00"
 }

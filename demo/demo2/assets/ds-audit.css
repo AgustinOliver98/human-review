@@ -26,6 +26,27 @@
 .dsa-mark.bad b { background: var(--dsa-bad); }
 .dsa-mark.new b { background: var(--dsa-new); }
 .dsa-mark.hot { outline: 3px solid var(--dsa-hot); outline-offset: 3px; }
+/* The wanted tag on a gap's chip: its right end, in the verdict-ok hue, so the red half
+   says what is there and the green half what should be (`badge_html`). */
+.dsa-mark b i.dsa-want { font-style: normal; display: inline-block; background: var(--dsa-ok);
+  margin: 0 -.35rem 0 .15rem; padding: 0 .35rem; border-radius: 0 .2rem .2rem 0; }
+/* The hover bubble's found/should-be pair (`mark_tip_html`). tip.js draws the bubble the
+   same near-black in both schemes, so these hues are fixed for that ground and do not
+   follow the page's --dsa-* tokens, which flip with the scheme. */
+.tip .dsa-vs { display: grid; grid-template-columns: max-content auto; gap: .35rem .6rem;
+  align-items: center; }
+.tip .dsa-vsk { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.tip .dsa-vsk.bad { color: #ff8f8f; }
+.tip .dsa-vsk.good { color: #7fe0a7; }
+.tip .dsa-vs code { font: 600 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: .05rem .4rem; border-radius: .25rem; white-space: nowrap; }
+.tip .dsa-vs code.bad { color: #ffc2c2; background: rgba(255, 92, 92, .2);
+  box-shadow: inset 0 0 0 1px rgba(255, 107, 107, .6); text-decoration: line-through;
+  text-decoration-color: #ff8f8f; }
+.tip .dsa-vs code.good { color: #b4f5cf; background: rgba(70, 192, 122, .22);
+  box-shadow: inset 0 0 0 1px rgba(70, 192, 122, .65); }
+.tip .dsa-vsnone { font-size: 13px; font-style: italic; opacity: .8; }
+.tip .dsa-vsor { font-size: 12px; opacity: .7; margin: 0 .2rem; }
 .dsa-legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin: .5rem 0 .3rem;
   font-size: .82rem; align-items: center; }
 .dsa-legend i { width: .85rem; height: .85rem; border-radius: .2rem; display: inline-block;

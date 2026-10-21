@@ -3,33 +3,34 @@
  "sentences": [
   {
    "id": "s0dda55",
-   "coverage": "covered",
+   "coverage": "partial",
    "tests": [
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100",
      "strength": "asserted",
-     "why": "compares the mat-sort-header columns of the rendered grid with all four columns",
+     "why": "compares the mat-sort-header columns of the grid to date, description, pet, owner",
      "line": "expect(sortable).toEqual(['date', 'description', 'pet', 'owner']);"
     },
     {
-     "id": "petclinic-test/src/visits.spec.ts:44",
+     "id": "petclinic-test/src/visits.spec.ts:47",
      "strength": "asserted",
-     "why": "sorts by the Pet header and compares the grid rows with the API's pet,asc page",
+     "why": "clicks the Pet header and compares the grid rows to the API's pet,asc page",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);"
     }
    ],
    "review": [
     {
-     "id": "petclinic-test/src/visits.spec.ts:44",
+     "id": "petclinic-test/src/visits.spec.ts:47",
      "verdict": "confirm",
-     "why": "clicks the Pet header and compares the rendered rows with the API's sorted page"
+     "why": "clicks a real column header and checks the resulting row order and URL"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100",
      "verdict": "confirm",
-     "why": "asserts every grid column carries a sort header"
+     "why": "asserts every column header of the grid is a sort header"
     }
-   ]
+   ],
+   "gap": "Only the Pet column is shown actually ordering the rows end to end; the other columns are only shown to be sortable headers."
   },
   {
    "id": "s6c13a7",
@@ -38,53 +39,47 @@
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108",
      "strength": "asserted",
-     "why": "compares the page sizes the grid offers with [5, 10, 20]",
+     "why": "compares the page sizes the grid offers to exactly [5, 10, 20]",
      "line": "expect(component.pageSizes).toEqual([5, 10, 20]);"
     },
     {
-     "id": "petclinic-test/src/visits.spec.ts:55",
+     "id": "petclinic-test/src/visits.spec.ts:58",
      "strength": "asserted",
-     "why": "picks 5 rows per page, goes to the next page, and compares the rows with the API's second page of 5",
+     "why": "picks size 5, goes to the next page and compares the rows to the API's page 1 of size 5",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:121",
      "strength": "asserted",
-     "why": "choosing size 20 navigates to size=20 and back to the first page",
+     "why": "choosing page size 20 navigates with size 20 and back to the first page",
      "line": "expect(navigatedTo()).toEqual({size: 20});"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:73",
-     "strength": "asserted",
-     "why": "the default page has size 10 and totalPages 2 for 12 visits",
-     "line": "assertThat(page.size()).isEqualTo(10);"
     }
    ],
    "review": [
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108",
      "verdict": "confirm",
-     "why": "asserts the offered page sizes are exactly 5, 10 and 20"
+     "why": "asserts the offered page sizes are exactly 5, 10, 20"
     },
     {
-     "id": "petclinic-test/src/visits.spec.ts:55",
+     "id": "petclinic-test/src/visits.spec.ts:58",
      "verdict": "confirm",
-     "why": "drives the page-size selector to 5 and the next-page button, then checks the rows"
+     "why": "drives the paginator with size 5 and paging, comparing the rendered rows to the API"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:225",
      "verdict": "reject",
-     "why": "size=20 is only the load for a query-count check; no page size or row count is asserted"
+     "why": "only counts SQL statements for size=20; asserts nothing about rows per page or the grid"
     }
    ]
   }
  ],
  "offered": [
-  "petclinic-test/src/visits.spec.ts:44",
+  "petclinic-test/src/visits.spec.ts:47",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100",
-  "petclinic-test/src/visits.spec.ts:7",
+  "petclinic-test/src/visits.spec.ts:10",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108",
-  "petclinic-test/src/visits.spec.ts:55",
+  "petclinic-test/src/visits.spec.ts:58",
   "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:225",
   "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:105",
   "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:117",
@@ -92,7 +87,23 @@
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:112",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:121",
   "petclinic-frontend/src/app/visits/visit.service.spec.ts:42",
-  "petclinic-test/src/visits.spec.ts:34",
+  "petclinic-test/src/visits.spec.ts:37",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:75"
- ]
+ ],
+ "offeredDigest": {
+  "petclinic-test/src/visits.spec.ts:47": "da99c4800f38685a",
+  "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100": "953db1a0b2181338",
+  "petclinic-test/src/visits.spec.ts:10": "1bb534b590a1cf72",
+  "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108": "1a48be8a56e43827",
+  "petclinic-test/src/visits.spec.ts:58": "1594baaffb2e1e01",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:225": "8141ecd0423eee78",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:105": "b06941d08c49420f",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:117": "1fe89b175276c542",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:73": "161ee61af6925be5",
+  "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:112": "2e85c6d3ece862c7",
+  "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:121": "0e8b9b28a671f1b4",
+  "petclinic-frontend/src/app/visits/visit.service.spec.ts:42": "f6c67b1c8ec08233",
+  "petclinic-test/src/visits.spec.ts:37": "bdedfc828c922a13",
+  "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:75": "c1c5402e11c8a20c"
+ }
 }

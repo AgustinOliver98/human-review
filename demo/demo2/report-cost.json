@@ -1,7 +1,7 @@
 {
  "schema": "report-cost/1",
- "started": "2026-10-10T20:37:30+00:00",
- "recordedAt": "2026-10-10T20:59:46+00:00",
+ "started": "2026-10-21T17:29:18+00:00",
+ "recordedAt": "2026-10-21T17:58:52+00:00",
  "harness": "claude-code",
  "guide": {
   "key": "guide",
@@ -10,8 +10,8 @@
   "reason": null,
   "source": "recorded",
   "window": [
-   "2026-10-10T20:37:30+00:00",
-   "2026-10-10T20:59:46+00:00"
+   "2026-10-21T17:29:18+00:00",
+   "2026-10-21T17:58:51+00:00"
   ],
   "harnesses": [
    "claude-code"
@@ -19,22 +19,23 @@
   "entries": [
    {
     "harness": "claude-code",
-    "session": "498ee103-9160-4f7a-be05-c641ebd16920",
+    "session": "bfa7ec15-26e4-43ba-9fa0-39b93cb93cda",
     "what": "the /human-review run",
     "window": [
-     "2026-10-10T20:37:12+00:00",
-     "2026-10-10T20:59:44+00:00"
+     "2026-10-21T17:28:18+00:00",
+     "2026-10-21T17:58:49+00:00"
     ],
-    "tokens": 8661663,
+    "tokens": 3309758,
     "models": {
-     "Opus 5.5": 8371928,
-     "Sonnet 5.5": 289735
+     "Opus 5.5": 3119611,
+     "Sonnet 5.5": 190147
     },
-    "usd": 2.5835,
+    "usd": 1.8071,
     "aic": null,
-    "calls": 36,
-    "modelSeconds": 154.8,
+    "calls": 38,
+    "modelSeconds": 175.3,
     "subagentModels": [
+     "Opus 5.5",
      "Sonnet 5.5"
     ],
     "subagents": 1
@@ -44,31 +45,38 @@
     "session": "claude -p (.model-runs.json)",
     "what": "requirements\u2194tests mapping (rerun-model.py)",
     "window": [
-     "2026-10-10T20:59:07+00:00",
-     "2026-10-10T20:59:26+00:00"
+     "2026-10-21T17:58:21+00:00",
+     "2026-10-21T17:58:43+00:00"
     ],
-    "tokens": 29084,
+    "tokens": 30637,
     "models": {
-     "Sonnet 5.5": 29084
+     "Sonnet 5.5": 30637
     },
-    "usd": 0.125,
+    "usd": 0.1304,
     "aic": null,
     "calls": 1,
-    "modelSeconds": 18.3,
+    "modelSeconds": 21.7,
     "program": "rerun-model.py"
    }
   ],
-  "tokens": 8690747,
-  "usd": 2.7085,
+  "tokens": 3340395,
+  "usd": 1.9375,
   "aic": null,
-  "modelSeconds": 173.1
+  "modelSeconds": 197.0
  },
  "wallclock": {
-  "started": "2026-10-10T20:37:30+00:00",
-  "ended": "2026-10-10T20:59:46+00:00",
-  "seconds": 1336,
-  "modelSeconds": 173.1,
+  "started": "2026-10-21T17:29:18+00:00",
+  "ended": "2026-10-21T17:58:51+00:00",
+  "seconds": 1774,
+  "modelSeconds": 197.0,
   "steps": [
+   {
+    "label": "sequence diagrams from traces",
+    "tabs": [
+     "sequence"
+    ],
+    "seconds": 1048
+   },
    {
     "label": "review-points.md and the two commits",
     "tabs": [
@@ -77,11 +85,11 @@
     "seconds": 4
    },
    {
-    "label": "test change manifest",
+    "label": "C4 views drawn by Structurizr",
     "tabs": [
-     "requirements"
+     "packages"
     ],
-    "seconds": 4
+    "seconds": 95
    },
    {
     "label": "diagram deltas",
@@ -89,245 +97,113 @@
      "data",
      "packages"
     ],
-    "seconds": 41
+    "seconds": 1282
    },
    {
-    "label": "C4 views drawn by Structurizr",
-    "tabs": [
-     "packages"
-    ],
-    "seconds": 41
-   },
-   {
-    "label": "what landed after the review commit",
-    "tabs": [
-     "review"
-    ],
-    "seconds": 1
-   },
-   {
-    "label": "entry-point complexity",
-    "tabs": [
-     "complexity"
-    ],
-    "seconds": 23
-   },
-   {
-    "label": "REST contract diff",
-    "tabs": [
-     "api"
-    ],
-    "seconds": 5
-   },
-   {
-    "label": "pb33f report",
-    "tabs": [
-     "api"
-    ],
-    "seconds": 1
-   },
-   {
-    "label": "structural logging scan",
-    "tabs": [
-     "logging"
-    ],
-    "seconds": 3
-   },
-   {
-    "label": "codeowners check",
-    "tabs": [
-     "owners"
-    ],
-    "seconds": 1
-   },
-   {
-    "label": "assemble content.json and build the page",
-    "tabs": [
-     "guide"
-    ],
-    "seconds": 1222
-   },
-   {
-    "label": "container view projected from the sequences",
-    "tabs": [
-     "packages"
-    ],
-    "seconds": 41
-   },
-   {
-    "label": "sequence diagrams from traces",
-    "tabs": [
-     "sequence"
-    ],
-    "seconds": 548
-   },
-   {
-    "label": "Playwright trace recordings",
+    "label": "test change manifest",
     "tabs": [
      "requirements"
     ],
-    "seconds": 235
+    "seconds": 3
    },
    {
     "label": "feature recording",
     "tabs": [
      "behaviour"
     ],
-    "seconds": 415
+    "seconds": 718
    },
    {
-    "label": "per-test coverage of the change",
+    "label": "what landed after the review commit",
     "tabs": [
-     "requirements"
+     "review"
     ],
-    "seconds": 208
+    "seconds": 2
+   },
+   {
+    "label": "entry-point complexity",
+    "tabs": [
+     "complexity"
+    ],
+    "seconds": 95
+   },
+   {
+    "label": "REST contract diff",
+    "tabs": [
+     "api"
+    ],
+    "seconds": 23
+   },
+   {
+    "label": "pb33f report",
+    "tabs": [
+     "api"
+    ],
+    "seconds": 2
+   },
+   {
+    "label": "structural logging scan",
+    "tabs": [
+     "logging"
+    ],
+    "seconds": 11
+   },
+   {
+    "label": "codeowners check",
+    "tabs": [
+     "owners"
+    ],
+    "seconds": 2
    },
    {
     "label": "design-system audit",
     "tabs": [
      "dsaudit"
     ],
-    "seconds": 5
+    "seconds": 400
+   },
+   {
+    "label": "container view projected from the sequences",
+    "tabs": [
+     "packages"
+    ],
+    "seconds": 229
+   },
+   {
+    "label": "Playwright trace recordings",
+    "tabs": [
+     "requirements"
+    ],
+    "seconds": 225
+   },
+   {
+    "label": "per-test coverage of the change",
+    "tabs": [
+     "requirements"
+    ],
+    "seconds": 248
    },
    {
     "label": "Code City capture",
     "tabs": [
      "city"
     ],
-    "seconds": 45
+    "seconds": 48
+   },
+   {
+    "label": "assemble content.json and build the page",
+    "tabs": [
+     "guide"
+    ],
+    "seconds": 0
    }
   ],
-  "stepSeconds": 2843
+  "stepSeconds": 4435
  },
  "refreshes": [
   {
-   "at": "2026-10-10T21:02:10+00:00",
-   "seconds": 115.5,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-10T21:09:45+00:00",
-   "seconds": 131.4,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-14T05:46:00+00:00",
-   "seconds": 41.3,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-14T10:15:29+00:00",
-   "seconds": 49.9,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-14T10:30:42+00:00",
-   "seconds": 39.3,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-19T21:08:31+00:00",
-   "seconds": 254.1,
-   "steps": "cheap"
-  },
-  {
-   "at": "2026-10-19T23:39:08+00:00",
-   "seconds": 169.7,
-   "steps": "cheap"
-  },
-  {
-   "at": "2026-10-20T00:13:47+00:00",
-   "seconds": 46.7,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T04:20:32+00:00",
-   "seconds": 44.6,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T04:29:55+00:00",
-   "seconds": 257.7,
-   "steps": "cheap"
-  },
-  {
-   "at": "2026-10-20T04:37:28+00:00",
-   "seconds": 150.1,
-   "steps": "dsaudit"
-  },
-  {
-   "at": "2026-10-20T04:45:52+00:00",
-   "seconds": 230.6,
-   "steps": "sequence"
-  },
-  {
-   "at": "2026-10-20T04:49:54+00:00",
-   "seconds": 46.7,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T04:56:32+00:00",
-   "seconds": 44.5,
-   "steps": "api"
-  },
-  {
-   "at": "2026-10-20T05:03:35+00:00",
-   "seconds": 44.7,
-   "steps": "api"
-  },
-  {
-   "at": "2026-10-20T05:05:55+00:00",
-   "seconds": 49.7,
-   "steps": "api"
-  },
-  {
-   "at": "2026-10-20T05:09:54+00:00",
-   "seconds": 65.4,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T05:15:47+00:00",
-   "seconds": 38.6,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T06:32:33+00:00",
-   "seconds": 44.3,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T06:38:36+00:00",
-   "seconds": 46.9,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T06:51:37+00:00",
-   "seconds": 60.3,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T06:56:30+00:00",
-   "seconds": 50.8,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T07:00:24+00:00",
-   "seconds": 53.9,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T08:24:03+00:00",
-   "seconds": 77.5,
-   "steps": "static"
-  },
-  {
-   "at": "2026-10-20T08:42:30+00:00",
-   "seconds": 51.0,
-   "steps": "none"
-  },
-  {
-   "at": "2026-10-20T11:49:38+00:00",
-   "seconds": 51.3,
+   "at": "2026-10-21T18:02:08+00:00",
+   "seconds": 171.7,
    "steps": "none"
   }
  ]

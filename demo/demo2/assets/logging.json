@@ -235,7 +235,7 @@
       {
         "file": "petclinic-backend/src/test/java/victor/training/petclinic/genseq/SequenceTraceExtension.java",
         "abs_file": "/Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend/src/test/java/victor/training/petclinic/genseq/SequenceTraceExtension.java",
-        "line": 216,
+        "line": 221,
         "column": 13,
         "kind": "System.err",
         "raw_line": "            System.err.println(\"\u26a0\ufe0f  genseq: could not record the trace window (\" + e.getMessage() + \")\");",
@@ -244,7 +244,7 @@
       {
         "file": "petclinic-backend/src/test/java/victor/training/petclinic/genseq/SequenceTraceExtension.java",
         "abs_file": "/Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend/src/test/java/victor/training/petclinic/genseq/SequenceTraceExtension.java",
-        "line": 237,
+        "line": 242,
         "column": 13,
         "kind": "System.err",
         "raw_line": "            System.err.println(\"\u26a0\ufe0f  genseq: could not clear the previous run's windows (\" + e.getMessage() + \")\");",
@@ -1155,12 +1155,12 @@
           "text": "public final String ADMIN = \"ROLE_ADMIN\";"
         }
       ],
-      "petclinic-backend/src/test/java/victor/training/petclinic/functional/DatabaseHooks.java": [
+      "petclinic-backend/src/test/java/victor/training/petclinic/StartingDatabaseTest.java": [
         {
-          "line": 9,
+          "line": 23,
           "name": "jdbc",
           "type": "JdbcTemplate",
-          "text": "@Autowired\n    private JdbcTemplate jdbc;"
+          "text": "@Autowired\n    JdbcTemplate jdbc;"
         }
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/functional/HttpContext.java": [
@@ -1257,43 +1257,43 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/genseq/SequenceTraceExtension.java": [
         {
-          "line": 51,
+          "line": 56,
           "name": "TEST_NAME",
           "type": "AttributeKey<String>",
           "text": "private static final AttributeKey<String> TEST_NAME = AttributeKey.stringKey(\"test.name\");"
         },
         {
-          "line": 53,
+          "line": 58,
           "name": "WINDOWS_DIR",
           "type": "String",
           "text": "private static final String WINDOWS_DIR = \"petclinic-test/test-results/trace-windows\";"
         },
         {
-          "line": 60,
+          "line": 65,
           "name": "PRE_PAD_MS",
           "type": "long",
           "text": "private static final long PRE_PAD_MS = 1_000;"
         },
         {
-          "line": 62,
+          "line": 67,
           "name": "POST_PAD_MS",
           "type": "long",
           "text": "private static final long POST_PAD_MS = 5_000;"
         },
         {
-          "line": 64,
+          "line": 69,
           "name": "NAMESPACE",
           "type": "ExtensionContext.Namespace",
           "text": "private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace\n            .create(SequenceTraceExtension.class);"
         },
         {
-          "line": 74,
+          "line": 79,
           "name": "swept",
           "type": "AtomicBoolean",
           "text": "private static final AtomicBoolean swept = new AtomicBoolean();"
         },
         {
-          "line": 82,
+          "line": 87,
           "name": "SELECT_ENV",
           "type": "String",
           "text": "static final String SELECT_ENV = \"GENSEQ_SELECT\";"
@@ -1801,13 +1801,13 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/mcp/McpStreamableIdentityTest.java": [
         {
-          "line": 38,
+          "line": 40,
           "name": "port",
           "type": "int",
           "text": "@LocalServerPort\n    int port;"
         },
         {
-          "line": 41,
+          "line": 43,
           "name": "apiKey",
           "type": "String",
           "text": "@Value(\"${petclinic.mcp.api-key}\")\n    String apiKey;"
@@ -1875,13 +1875,13 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/perf/OwnerSearchThroughLatencyProxyTest.java": [
         {
-          "line": 32,
+          "line": 35,
           "name": "PROXY_PORT",
           "type": "int",
           "text": "private static final int PROXY_PORT = 15432;"
         },
         {
-          "line": 48,
+          "line": 51,
           "name": "mockMvc",
           "type": "MockMvc",
           "text": "@Autowired\n    MockMvc mockMvc;"
@@ -1889,19 +1889,19 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/rest/AddVisitApiTest.java": [
         {
-          "line": 59,
+          "line": 60,
           "name": "VISIT_DATE",
           "type": "String",
           "text": "private static final String VISIT_DATE = \"2026-05-12\";"
         },
         {
-          "line": 61,
+          "line": 62,
           "name": "mockMvc",
           "type": "MockMvc",
           "text": "@Autowired\n    MockMvc mockMvc;"
         },
         {
-          "line": 64,
+          "line": 65,
           "name": "mapper",
           "type": "ObjectMapper",
           "text": "private final ObjectMapper mapper = new ObjectMapper();"
@@ -2291,13 +2291,13 @@
       ],
       "petclinic-backend/src/test/java/victor/training/petclinic/security/BasicAuthenticationConfigTest.java": [
         {
-          "line": 22,
+          "line": 23,
           "name": "mockMvc",
           "type": "MockMvc",
           "text": "@Autowired\n    MockMvc mockMvc;"
         },
         {
-          "line": 25,
+          "line": 26,
           "name": "passwordEncoder",
           "type": "PasswordEncoder",
           "text": "@Autowired\n    PasswordEncoder passwordEncoder;"

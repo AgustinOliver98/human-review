@@ -2,14 +2,16 @@
  "base": "664c5b3b453fb758230de01e407064c45d07a844",
  "head": "HEAD",
  "points_file": "review-points.md",
- "commits": 5,
+ "commits": 7,
  "implementation": "6305ee43b4e27cebdad0ffd75cf66b74be3bfcf9",
  "review": "4321c5bc3d67629c04c6eb2555c96b4d917d5efd",
  "session": "498ee103-9160-4f7a-be05-c641ebd16920",
  "fallback": false,
  "after": [
   "170c2cdb98139d95a9d8b9e33a1df7b063b17ec8",
-  "90e8b7ef7f0f4718700107a15485d0c00af1b04a"
+  "90e8b7ef7f0f4718700107a15485d0c00af1b04a",
+  "9823b0c64ffa53d9666e87c9bbe7ef1159a72c98",
+  "12dc99e2f93d11e5fd3c9b2d301053ca90e217b7"
  ],
  "after_detail": [
   {
@@ -22,6 +24,18 @@
    "sha": "90e8b7ef7f0f4718700107a15485d0c00af1b04a",
    "when": "2026-10-20T06:24:31+02:00",
    "subject": "review-points: base moved past main's c790590b (merged)",
+   "auto_fix": false
+  },
+  {
+   "sha": "9823b0c64ffa53d9666e87c9bbe7ef1159a72c98",
+   "when": "2026-10-21T09:53:33+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into visits-paginated",
+   "auto_fix": false
+  },
+  {
+   "sha": "12dc99e2f93d11e5fd3c9b2d301053ca90e217b7",
+   "when": "2026-10-21T09:56:49+03:00",
+   "subject": "review-points: base moved past main's 664c5b3b (merged)",
    "auto_fix": false
   }
  ],

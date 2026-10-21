@@ -1,0 +1,69 @@
+[run-steps] base 664c5b3b453f: the base the review audited (review-points.md), inside origin/main
+    $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
+  > basestack: started at +0 s (log: .human-review/logs/basestack.log)
+  > sequence: started at +0 s (log: .human-review/logs/sequence.log)
+  > tests: started at +0 s (log: .human-review/logs/tests.log)
+  > reviewpoints: started at +0 s (log: .human-review/logs/reviewpoints.log)
+  > diagrams: started at +0 s (log: .human-review/logs/diagrams.log)
+  > c4: started at +0 s (log: .human-review/logs/c4.log)
+[review-commits] WARNING: 2 commits carry a Review-Points trailer (e1d37517, 4321c5bc); taking the last one as the review commit. The fixes are read from the implementation to it, so every one of them counts as a fix commit — one round recorded in 2 commits, or several rounds; record-review's finish now amends its own unpushed commit instead.
+  < tests: ran in 2.7 s, at +3 s
+  > video: started at +3 s (log: .human-review/logs/video.log)
+  < reviewpoints: ran in 3.8 s, at +4 s
+  > aftermath: started at +4 s (log: .human-review/logs/aftermath.log)
+  < basestack: ran in 5.8 s, at +6 s
+  > complexity: started at +6 s (log: .human-review/logs/complexity.log)
+  < aftermath: ran in 2.2 s, at +6 s
+  > api: started at +6 s (log: .human-review/logs/api.log)
+  < api: ran in 24.7 s, at +31 s
+  > specchanges: started at +31 s (log: .human-review/logs/specchanges.log)
+  < specchanges: ran in 3.1 s, at +34 s
+  > logging: started at +34 s (log: .human-review/logs/logging.log)
+  < logging: ran in 11.9 s, at +46 s
+  > owners: started at +46 s (log: .human-review/logs/owners.log)
+  < owners: ran in 2.2 s, at +48 s
+  < c4: ran in 94.9 s, at +95 s
+  < complexity: ran in 96.4 s, at +102 s
+  < video: ran in 718.7 s, at +722 s
+  > dsaudit: started at +722 s (log: .human-review/logs/dsaudit.log)
+  < sequence: ran in 1048.4 s, at +1048 s
+  > c2: started at +1048 s (log: .human-review/logs/c2.log)
+  < dsaudit: ran in 399.5 s, at +1121 s
+  > traces: started at +1121 s (log: .human-review/logs/traces.log)
+  < c2: ran in 229.8 s, at +1278 s
+  < diagrams: ran in 1281.6 s, at +1282 s
+  < traces: ran in 225.4 s, at +1347 s
+  > testcov: started at +1347 s (log: .human-review/logs/testcov.log)
+  < testcov: ran in 247.4 s, at +1594 s
+  > city: started at +1594 s (log: .human-review/logs/city.log)
+  < city: ran in 47.8 s, at +1642 s
+
+[run-steps] 18 step(s) in 1642 s wall clock, 6 at a time; each step's output is in .human-review/logs/
+
+  step         status   why / what to say
+  basestack    ran      
+               note     started the merge-base stack (664c5b3b) early, for the design-system audit
+  reviewpoints ran      
+  aftermath    ran      
+               note     4 commit(s) landed after the review commit and 62 of the files they touched are not generated — the Review tab opens with a red band naming them. Say in the guide what they were; everything else on this page describes the branch as the agent left it
+  diagrams     ran      
+  sequence     ran      
+               note     also traced 6 test(s) this branch wrote or edited, untagged: visits.spec.ts: shows the ten latest visits on initial load; VisitListTest.java: defaultPage_isTheTenLatestVisits; visits.spec.ts: clicking a column header sorts by it and keeps the sort in the URL; VisitListTest.java: aVisitCarriesItsPetAndOwner; visits.spec.ts: a page of 5 visits, then the next one; visits.spec.ts: Visits Page — 14 more over the cap of 6
+               note     the traced suites ran against http://localhost:49417, started by this run from the commit under review — not whatever was already listening
+  c2           ran      
+  c4           ran      
+  video        ran      
+               note     filmed against http://localhost:49242, started by this run from the commit under review — not whatever was already listening on :4200
+  complexity   ran      
+  api          ran      
+  specchanges  ran      
+  logging      ran      
+  dsaudit      ran      
+               note     the design-system audit compared http://localhost:50380 (this branch) against http://localhost:58547 (664c5b3b, the merge-base) — both started by this run, not whatever happened to be listening
+  owners       ran      
+  tests        ran      
+  traces       ran      
+  testcov      ran      
+  city         ran      
+               note     codecity lit: 4 changed · coloured by outgoing coupling (put this measured number under the image; never type one)
+exit=0

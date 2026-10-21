@@ -1,0 +1,8 @@
+[refresh] $ python3 ds-audit.py --rerender-if-stale .human-review
+[ds-audit] fragment already drawn by this ds-audit.py
+[refresh] $ python3 build-review-html.py .human-review/content.json --out .human-review/review.html --no-model
+[review] Tests matrix: 2 sentences × 53 tests — 0 links by script (unconfirmed), 5 by model, 1 rejected, 0 sentences not paired yet
+[review] tabs kept as context (struck through, no delta): Data, Structure
+[review] wrote /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/review.html
+[refresh] $ python3 serve-review.py .human-review
+http://127.0.0.1:7655/review.html
