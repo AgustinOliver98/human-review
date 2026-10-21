@@ -18,9 +18,9 @@ if [ ! -x "$VENV/bin/python" ]; then
   "$VENV/bin/python" -m pip install --quiet --upgrade pip >&2
   "$VENV/bin/python" -m pip install --quiet playwright numpy pillow pygments >&2
 fi
-# numpy, Pillow and Pygments are for ds-audit.py, which measures pixel churn on its screenshots,
-# highlights the code it quotes, and
-# runs on this interpreter too (21 Oct 2026: a venv made for the tour had neither).
+# numpy, Pillow and Pygments are for ds-audit.py, which runs on this interpreter too: it
+# measures pixel churn on its screenshots and highlights the code it quotes (21 Oct 2026: a
+# venv made for the tour had none of the three).
 if ! "$VENV/bin/python" -c "import playwright, numpy, PIL, pygments" >/dev/null 2>&1; then
   "$VENV/bin/python" -m pip install --quiet playwright numpy pillow pygments >&2
 fi
