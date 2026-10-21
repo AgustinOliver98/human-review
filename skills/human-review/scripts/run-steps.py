@@ -1985,8 +1985,12 @@ def _dsaudit(ctx: Ctx):
     flags = " ".join(
         f'--unlisted "{u["component"]}={u["route"]}' + (f'={u["via"]}' if u.get("via") else "") + '"'
         for u in unlisted)
+    # The audit shoots with Playwright, which the `python3` on PATH may not have (Homebrew's
+    # 3.14 shadowed the 3.12 that did on 5 Oct, and the run's agent spent $0.29 finding out).
+    python = _playwright_python(ctx)
+    audit = f"{shlex.quote(python[0])} {HERE}/ds-audit.py" if python else f"{HERE}/ds-audit.py"
     with _dsaudit_origins(ctx, c, mb) as (base_new, base_old):
-        sh(f"{HERE}/ds-audit.py --base-new {base_new} --base-old {base_old} "
+        sh(f"{audit} --base-new {base_new} --base-old {base_old} "
            f'--label-new "{branch}" --label-old {c.get("label-old", "main")} {screens} {sources} '
            f"{flags} --assets {ART} --asset-prefix assets --json {ART}/ds-audit.json "
            f"-o {ART}/ds-audit.html", ctx)
