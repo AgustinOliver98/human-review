@@ -97,8 +97,7 @@ def test_each_pair_wears_the_tests_tab_dot_for_the_fixture_its_test_starts_from(
                      r' role="img"[^>]*data-tip="DB Fixture: green"[^>]*data-fixture="green"'
                      r'[^>]*style="--fx:#2fa84f"></span><a class="srcref seqfile"', green), green
     own = rows["Adding its own owner"]
-    assert 'class="fx-dot fx-free"' in own, "on the seed, leaning on none of its rows: a ring"
-    assert "DB Fixture: Default · doesn’t rely on its rows" in own
+    assert "fx-dot" not in own, "declares no fixture: starts on an empty database, no dot"
 
 
 def test_the_row_names_the_test_in_words_without_its_class():
@@ -121,9 +120,7 @@ def test_the_row_names_the_test_in_words_without_its_class():
 
 def test_a_test_the_verdicts_do_not_name_gets_no_dot(tmp_path, monkeypatch):
     review = _repo(tmp_path)
-    for name in ("fixtures_by_test", "fixtures_emptied"):
-        monkeypatch.setattr(f"hrbuild.tabs.sequence.{name}", lambda root: {})
-    monkeypatch.setattr("hrbuild.tabs.sequence.fixtures_free", lambda root: [])
+    monkeypatch.setattr("hrbuild.tabs.sequence.fixtures_by_test", lambda root: {})
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
     assert "fx-dot" not in out
 
@@ -150,8 +147,6 @@ def test_a_jvm_verdict_keyed_on_the_annotation_still_reaches_the_method_the_diag
     (review / "assets").mkdir(parents=True)
     monkeypatch.setattr("hrbuild.tabs.sequence.fixtures_by_test",
                         lambda root: {f"{rel}:2": "seed"})
-    monkeypatch.setattr("hrbuild.tabs.sequence.fixtures_free", lambda root: [])
-    monkeypatch.setattr("hrbuild.tabs.sequence.fixtures_emptied", lambda root: {})
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
     rows = re.findall(r"<summary data-tip=.*?</summary>", out, re.S)
     adds = next(r for r in rows if "adds" in r)
@@ -214,19 +209,20 @@ def test_one_diagram_of_several_scenarios_on_one_start_still_gets_its_dot(tmp_pa
     they are one dot, not none."""
     feat = "e2e/src/two.feature"
     (tmp_path / "e2e/src").mkdir(parents=True)
-    (tmp_path / feat).write_text("Feature: f\n\n  Scenario: one\n    When x\n\n"
+    (tmp_path / feat).write_text("@fixture:default\nFeature: f\n\n  Scenario: one\n    When x\n\n"
                                  "  Scenario: two\n    When y\n")
     (tmp_path / "e2e/src/two.feature.genseq.puml").write_text(
         "@startuml\nparticipant A\nparticipant B\n"
-        f"== [[src://{feat}:3{{t}} one]] ==\nA -> B: x\n"
-        f"== [[src://{feat}:6{{t}} two]] ==\nA -> B: y\n@enduml\n")
+        f"== [[src://{feat}:4{{t}} one]] ==\nA -> B: x\n"
+        f"== [[src://{feat}:7{{t}} two]] ==\nA -> B: y\n@enduml\n")
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     _git(tmp_path, "add", "-A")
     _git(tmp_path, "commit", "-qm", "c")
     review = tmp_path / ".human-review"
     (review / "assets").mkdir(parents=True)
     out = build.render_testpairs(TESTPAIRS, {}, [], tmp_path, review)[0]
-    assert out.count('class="fx-dot fx-free"') == 1, out[:2000]
+    assert out.count('class="fx-dot"') == 1, out[:2000]
+    assert 'data-tip="DB Fixture: Default"' in out
 
 
 # ── the panel's SQL and JSON are syntax-coloured ─────────────────────────────────────

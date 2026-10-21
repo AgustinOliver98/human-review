@@ -11,7 +11,7 @@ from pathlib import Path
 
 from ..shared.diagrams import _context_svg, _source_link, render_diagrams, select_rows
 from ..shared.layout import _squash
-from ..shared.fixtures import fixture_colors, fixtures_by_test, fixtures_emptied, fixtures_free
+from ..shared.fixtures import fixture_colors, fixtures_by_test
 from ..shared.genseq import (GENSEQ_HANDLE, GENSEQ_OVERLAY, genseq_by_test, genseq_details,
                              genseq_file, pair_anchor, test_of_genseq)
 from ..shared.snippets import SNIPPET_BASE, snippet_html
@@ -1092,9 +1092,9 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
                           "pair": pair_anchor(puml_rel), "title": title})
 
     # The DB fixture each test starts from: the Tests tab's dot, from the same verdicts
-    # (`shared/fixtures.py`), with its words — filled for a fixture or the seed it leans on,
-    # a ring for the seed it does not rely on, dashed for tables a hook empties. Read once,
-    # on the first pair. An id is `<test>:<line>`; the diagram's handle names the line it was
+    # (`shared/fixtures.py`), with its words — the fixture the test declares, or the seed its
+    # Flyway config loads; none when it starts on an empty database. Read once, on the
+    # first pair. An id is `<test>:<line>`; the diagram's handle names the line it was
     # drawn from, which for a JUnit test may sit below the annotation the verdict is keyed
     # on, so a key only annotations or blank lines away still counts. Nothing is guessed
     # past that: a test the verdicts do not name gets no dot.
@@ -1105,17 +1105,10 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
             colours = fixture_colors(root)
             fx["colour"] = lambda n: (colours["seed"] if n == "seed"
                                       else colours["colors"].get(n, colours["seed"]))
-            marks: dict[str, dict[int, tuple[str, str]]] = {}
-            for key in fixtures_free(root):
-                f, _, ln = key.rpartition(":")
-                marks.setdefault(f, {})[int(ln)] = ("free", "seed")
+            marks: dict[str, dict[int, str]] = {}
             for key, name in fixtures_by_test(root).items():
                 f, _, ln = key.rpartition(":")
-                marks.setdefault(f, {})[int(ln)] = ("", name)
-            fx["empty"] = fixtures_emptied(root)
-            for key in fx["empty"]:
-                f, _, ln = key.rpartition(":")
-                marks.setdefault(f, {})[int(ln)] = ("empty", "seed")
+                marks.setdefault(f, {})[int(ln)] = name
             fx["marks"] = marks
         known = fx["marks"].get(test_rel) or {}
         if not known:
@@ -1139,19 +1132,11 @@ def render_testpairs(block, dspec, manifest_rows, root: Path, out_dir: Path,
         hits = [mark_at(ln) for ln, _ in scenarios] or [(None, None)]
         if len({got for got, _ in hits}) != 1:
             return ""                   # two scenarios, two starts: not one dot's to say
-        got, at = hits[0]
-        if got is None:
-            return ""
-        kind, name = got
-        if kind == "free":
-            tip = "DB Fixture: Default · doesn’t rely on its rows"
-        elif kind == "empty":
-            e = fx["empty"].get(f"{test_rel}:{at}") or {}
-            tip = (f"Starts empty (truncated): {e.get('hook') or 'a hook'} empties "
-                   f"{', '.join(e.get('tables') or [])} before each scenario")
-        else:
-            tip = "DB Fixture: " + ("Default" if name == "seed" else name)
-        return (f'<span class="fx-dot{" fx-" + kind if kind else ""}" role="img"'
+        name = hits[0][0]
+        if name is None:
+            return ""                   # starts on an empty database: no dot
+        tip = "DB Fixture: " + ("Default" if name == "seed" else name)
+        return (f'<span class="fx-dot" role="img"'
                 f' aria-label="{html.escape(tip, quote=True)}"'
                 f' data-tip="{html.escape(tip, quote=True)}"'
                 f' data-fixture="{html.escape(name, quote=True)}"'

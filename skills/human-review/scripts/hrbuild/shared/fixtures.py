@@ -1,9 +1,10 @@
 """Which DB fixture each E2E or Spring test starts from, and the colour each fixture wears.
 
-A fixture is a named set of demo rows the review environment restores *on top of* the
-seed: a ``<name>.sql`` in a folder called ``fixtures`` (petclinic keeps them in
-``petclinic-backend/src/main/resources/db/fixtures``, next to the seed they build on,
-and its reset sidecar draws one Demo-tab button per file). The colours are the
+A fixture is a named dataset the review environment can reset its database to — a dataset
+of its own, written on an empty database, never a delta on the seed: a ``<name>.sql`` in a
+folder called ``fixtures`` (petclinic keeps them in
+``petclinic-backend/src/main/resources/db/fixtures``, next to the seed, and its reset
+sidecar draws one Demo-tab button per file). The seed itself is the fixture called Default. The colours are the
 project's to choose, in a ``fixture-colors.json`` beside those files::
 
     {"minimal": "#2fa84f"}
@@ -15,32 +16,28 @@ along harmlessly. The map is optional: a fixture it does not name takes a free c
 colour on every build and on every page, whatever else the folder holds. The seed is
 always ``FIXTURE_SEED`` grey.
 
-Per test the answer is read off the test's own code, never guessed from its name:
+Per test the answer is read off the test's own code, never guessed from its name — and
+the answer is only ever what the test DECLARES (Victor, 21 Oct 2026: "If a test does not use
+a certain DB fixture, it should start from an empty slate"). A test that declares nothing
+starts on an empty database and gets no dot; one that declares a fixture wears its dot:
 
-1. an explicit fixture — a ``@fixture:<name>`` tag (Cucumber, or Playwright's
-   ``{tag: ...}``), or a call that loads one: ``__reset/<name>``,
-   ``loadFixture('<name>')``, ``resetTo('<name>')``, ``fixture('<name>')``;
-2. otherwise the seed, when the code the test runs leans on seeded rows by name —
-   ``seed``/``seeded``/``SEEDED_…``/``R__seed`` outside comments (petclinic's
-   owner-search Background asserts "the DB seeded by Flyway");
-3. otherwise still the seed — an E2E test runs against the review environment, and
-   nothing resets it between tests, so Default is what is in the database — but one whose
-   code does not lean on any seeded row: it makes its own. Those are listed apart
-   (``free`` in the registry) and wear a hollow ring instead of the filled dot, so a row
-   without a filled dot never reads as "not on Default" (Victor, 9 Oct 2026).
-
-A Cucumber suite whose JVM glue truncates tables before every scenario (a ``@Before``
-hook running ``TRUNCATE``, petclinic's ``functional/DatabaseHooks.java``) starts each of
-its scenarios with those tables empty; they are listed apart too (``empty``), with the
-tables, unless a scenario names a fixture of its own.
-
-A JVM test on a Spring context (``@SpringBootTest``, ``@DataJpaTest``, Zonky's
-``@AutoConfigureEmbeddedDatabase``…) starts from what Flyway loads at boot: the seed when
-``spring.flyway.locations`` — application.properties, the test resources' copy shadowing
-it, each ``@ActiveProfiles`` file, the annotation's own ``properties`` — names a seed
-location, and then the same filled dot / hollow ring rule as above, read off the method and
-its class. ``@Sql(".../fixtures/<name>.sql")`` (the method's, else the class's) names the
-fixture. A test with no Spring context touches no database and is not listed.
+1. an E2E test: a ``@fixture:<name>`` tag (Cucumber, on the scenario or its Feature; or
+   Playwright's ``{tag: ...}``), a ``test.use({dbFixture: '<name>'})`` in scope (the file's,
+   or the innermost ``test.describe`` around the test), or a call that loads one —
+   ``__reset/<name>``, ``loadFixture('<name>')``, ``resetTo('<name>')``, ``fixture('<name>')``.
+   ``default``/``seed`` name the seed;
+2. a JVM test on a Spring context (``@SpringBootTest``, ``@DataJpaTest``, Zonky's
+   ``@AutoConfigureEmbeddedDatabase``…): ``@Sql`` of a ``fixtures/<name>.sql`` or of the
+   seed (the method's, else the class's), directly or through a meta-annotation declared in
+   the module's tests (petclinic's ``@DefaultFixture``); otherwise what Flyway loads at
+   boot — the seed when ``spring.flyway.locations`` (application.properties, the test
+   resources' copy shadowing it, ``config/application.*`` on top, each ``@ActiveProfiles``
+   file, the annotation's own ``properties``) names a seed location, nothing when it does
+   not. That is configuration, read, not assumed. A test with no Spring context touches no
+   database and is not listed;
+3. a JVM Cucumber scenario (a ``.feature`` in a module whose Flyway config is read as in 2):
+   its tag, else the seed when Flyway loads one and no ``@Before`` hook truncates tables
+   before each scenario (petclinic's old ``functional/DatabaseHooks.java``), else nothing.
 
 Two fixtures named by one test is the one case left unsaid: not ours to pick.
 
@@ -64,7 +61,6 @@ FIXTURE_COLORS_FILE = "fixture-colors.json"
 
 _FX_NAME = re.compile(r"[a-z0-9][a-z0-9-]*")
 _FX_COLOUR = re.compile(r"#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,20}|(?:rgb|hsl)a?\([0-9\s.,%]+\)")
-_FX_SEEDWORD = re.compile(r"(?<![A-Za-z])(?:R__)?seed(?:ed|s)?(?![A-Za-z])", re.I)
 _FX_SPEC = re.compile(r"\.(?:spec|test|e2e)\.[cm]?[jt]sx?$")
 
 
@@ -164,6 +160,8 @@ def _fx_explicit(text: str, known: set[str]) -> set[str]:
     for m in re.finditer(r"\b(?:loadFixture|resetTo|useFixture|fixture)\(\s*['\"`]"
                          r"([a-z0-9][a-z0-9-]*)['\"`]", text):
         found.add(m.group(1))
+    for m in re.finditer(r"\bdbFixture\s*:\s*['\"`]([a-z0-9][a-z0-9-]*)['\"`]", text):
+        found.add(m.group(1))
     out = set()
     for f in found:
         if f in ("seed", "default"):
@@ -174,14 +172,14 @@ def _fx_explicit(text: str, known: set[str]) -> set[str]:
 
 
 def _fx_verdict(tags: str, code: str, known: set[str]) -> str | None:
-    """A fixture's name, ``"seed"`` when the code leans on seeded rows, ``""`` when it
-    names nothing and leans on nothing (on the seed all the same), None when unsure."""
+    """The fixture the test declares — its name, or ``"seed"`` — ``""`` when it declares
+    none (it starts empty), None when it names two."""
     hits = _fx_explicit(tags + "\n" + code, known)
     if len(hits) == 1:
         return hits.pop()
     if len(hits) > 1:
         return None                          # two fixtures named: not ours to pick
-    if re.search(r"(?<![\w-])@seed(?![\w-])", tags) or _FX_SEEDWORD.search(code):
+    if re.search(r"(?<![\w-])@seed(?![\w-])", tags):
         return "seed"
     return ""
 
@@ -270,7 +268,9 @@ def _fx_feature_tests(rel: str, src: str, defs, known: set[str]) -> dict[str, st
                 if rx.match(step):
                     code.append(body)
                     break
-        v = _fx_verdict(feature_tags + " " + tags, "\n".join(code), known)
+        own = _fx_explicit(tags, known)           # the scenario's own tag beats its Feature's
+        v = own.pop() if len(own) == 1 else _fx_verdict(feature_tags + " " + tags,
+                                                         "\n".join(code), known)
         if v is not None:
             out[f"{rel}:{no}"] = v
     return out
@@ -320,10 +320,30 @@ def _fx_local_imports(root: Path, rel: str, code: str) -> str:
     return "\n".join(texts)
 
 
+_FX_DESCRIBE = re.compile(r"\btest\.describe(?:\.(?:serial|parallel|only|skip|fixme))?\(\s*['\"`]")
+_FX_USE = re.compile(r"\btest\.use\(")
+
+
+def _fx_blank(code: str, a: int, b: int) -> str:
+    """`code` with [a, b) spaced out, newlines kept: offsets and line numbers stay put."""
+    return code[:a] + re.sub(r"[^\n]", " ", code[a:b]) + code[b:]
+
+
 def _fx_spec_tests(root: Path, rel: str, src: str, known: set[str]) -> dict[str, str]:
     if "@playwright/test" not in src and "trace-fixture" not in src:
         return {}
     code = _fx_strip_comments(src)
+    # `test.use({...})` is scoped: the file's when at top level, else the innermost
+    # `test.describe` around it, and an inner one wins. So each one is lifted out of the text
+    # every test shares and handed only to the tests in its scope.
+    describes = [(m.start(), _fx_block_end(code, m.start())) for m in _FX_DESCRIBE.finditer(code)]
+    uses = []                                     # (scope start, scope end, text)
+    for m in _FX_USE.finditer(code):
+        end = _fx_block_end(code, m.start())
+        scope = min((d for d in describes if d[0] < m.start() < d[1]),
+                    key=lambda d: d[1] - d[0], default=(0, len(code)))
+        uses.append((scope[0], scope[1], code[m.start():end]))
+        code = _fx_blank(code, m.start(), end)
     # The comment-stripped text keeps every newline, so offsets map back to source lines
     # through the original — count them in `src` by matching the same test openers there.
     src_lines = [src[:m.start()].count("\n") + 1 + (m.group(0)[:1] == "\n")
@@ -340,7 +360,9 @@ def _fx_spec_tests(root: Path, rel: str, src: str, known: set[str]) -> dict[str,
     for (a, b), line in zip(spans, src_lines):
         body = code[a:b]
         tags = " ".join(re.findall(r"@[\w:=-]+", body))
-        v = _fx_verdict(tags, body + "\n" + shared_text, known)
+        use = min((u for u in uses if u[0] <= a < u[1] and _fx_explicit(u[2], known)),
+                  key=lambda u: u[1] - u[0], default=None)
+        v = _fx_verdict(tags + "\n" + (use[2] if use else ""), body + "\n" + shared_text, known)
         if v is not None:
             out[f"{rel}:{line}"] = v
     return out
@@ -348,13 +370,14 @@ def _fx_spec_tests(root: Path, rel: str, src: str, known: set[str]) -> dict[str,
 
 # --- JVM (JUnit on Spring) -----------------------------------------------------------------
 #
-# Petclinic's API tests are `@SpringBootTest` + Zonky's embedded Postgres, `@Transactional`:
-# Flyway builds the database at boot from `spring.flyway.locations`, which application.
-# properties points at `db/migration,db/seed`, and each test's writes roll back. So a test
-# starts from the seed — read off the configuration, not assumed — unless it loads a fixture
-# itself with `@Sql(".../fixtures/<name>.sql")`. Then, as for E2E, the seed is a filled dot
-# when its code leans on seeded rows by name, a hollow ring when it makes its own. A test that
-# boots no Spring context touches no database and gets nothing.
+# Petclinic's API tests are `@SpringBootTest` + Zonky's embedded Postgres: Flyway builds the
+# database at boot from `spring.flyway.locations`, which the tests' config/application.properties
+# points at the schema and the reference rows only, and Zonky hands each test method a fresh
+# copy. So a test starts empty — read off the configuration, not assumed — unless it loads a
+# dataset itself: `@Sql(".../fixtures/<name>.sql")`, `@Sql` of the seed, or `@DefaultFixture`,
+# the module's own annotation carrying that `@Sql`. On a configuration that does load the seed,
+# every test starts on it, and says so with the seed's dot. A test that boots no Spring context
+# touches no database and gets nothing.
 
 _FX_JVM_TEST = re.compile(r"@(?:Test|ParameterizedTest|RepeatedTest|TestFactory|TestTemplate)\b")
 #: A Spring test context, and so a datasource Flyway migrates. `@WebMvcTest` and friends
@@ -394,21 +417,24 @@ def _fx_inline_props(header: str) -> dict[str, str]:
 
 def _fx_module_props(root: Path, module: str, profiles: list[str]) -> dict[str, str]:
     """What the test's context reads: `src/test/resources/application.*` shadows the main
-    one on the classpath (the test classes come first), then each active profile's file."""
+    one on the classpath (the test classes come first), `config/application.*` is read on
+    top of whichever won (Spring Boot's `classpath:/config/`, also first match), then each
+    active profile's file."""
     props: dict[str, str] = {}
-    for res in ("src/test/resources", "src/main/resources"):
-        got = None
-        for name in _FX_PROP_FILES:
-            p = root / module / res / name
-            if p.is_file():
-                try:
-                    got = _fx_props(p.read_text(encoding="utf-8"), p.suffix != ".properties")
-                except (OSError, UnicodeDecodeError):
-                    got = {}
+    for sub in ("", "config/"):
+        for res in ("src/test/resources", "src/main/resources"):
+            got = None
+            for name in _FX_PROP_FILES:
+                p = root / module / res / (sub + name)
+                if p.is_file():
+                    try:
+                        got = _fx_props(p.read_text(encoding="utf-8"), p.suffix != ".properties")
+                    except (OSError, UnicodeDecodeError):
+                        got = {}
+                    break
+            if got is not None:
+                props.update(got)
                 break
-        if got is not None:
-            props.update(got)
-            break
     for prof in profiles:
         for res in ("src/main/resources", "src/test/resources"):
             for ext in (".properties", ".yml", ".yaml"):
@@ -462,23 +488,65 @@ def _fx_brace_end(code: str, start: int) -> int:
     return len(code)
 
 
-def _fx_sql_names(text: str, known: set[str]) -> set[str] | None:
+def _fx_sql_script(path: str, known: set[str]) -> str | None:
+    """The fixture an `@Sql` script is: a project fixture's name, ``"seed"`` for the seed's
+    own file (`db/seed/R__seed.sql`), None for any other script — not ours to name."""
+    p = Path(path.split(":", 1)[-1])
+    if p.parent.name == "fixtures" and p.stem in known:
+        return p.stem
+    if re.search(r"(?<![a-z])seed", p.name, re.I) or p.parent.name == "seed":
+        return "seed"
+    return None
+
+
+def _fx_sql_names(text: str, known: set[str],
+                  metas: dict[str, set[str] | None] | None = None) -> set[str] | None:
     """The fixtures `@Sql` loads before the test: a set of names, empty when there is no
     `@Sql`, None when it runs a script that is not one of the project's fixtures (not ours
-    to name). Cleanup scripts (`AFTER_TEST_…`) say nothing about the start."""
+    to name). Cleanup scripts (`AFTER_TEST_…`) say nothing about the start. An annotation
+    in `metas` (one the module declares with `@Sql` on it) counts as the `@Sql` it carries."""
     names: set[str] = set()
     for m in re.finditer(r"@Sql\b(?!Config|Group)", text):
         end = _fx_block_end(text, m.end()) if text[m.end():].lstrip().startswith("(") else m.end()
         ann = text[m.end():end]
         if "AFTER_TEST" in ann:
             continue
-        for s in re.findall(r"[\"']([^\"']+\.sql)[\"']", ann):
-            p = Path(s.split(":", 1)[-1])
-            if p.parent.name == "fixtures" and p.stem in known:
-                names.add(p.stem)
-            else:
+        for sc in re.findall(r"[\"']([^\"']+\.sql)[\"']", ann):
+            got = _fx_sql_script(sc, known)
+            if got is None:
                 return None
+            names.add(got)
+    for m in re.finditer(r"@(\w+)\b", text):
+        if metas and m.group(1) in metas:
+            got = metas[m.group(1)]
+            if got is None:
+                return None
+            names |= got
     return names
+
+
+def _fx_meta_annotations(root: Path, module: str, files: list[str],
+                         known: set[str]) -> dict[str, set[str] | None]:
+    """``{name: fixtures}`` for every annotation type the module's tests declare with an
+    `@Sql` on it — petclinic's ``@DefaultFixture``, `@Sql` of the seed."""
+    out: dict[str, set[str] | None] = {}
+    for f in files:
+        if not f.startswith(module + "/src/") or "/src/main/" in f or not f.endswith((".java", ".kt")):
+            continue
+        try:
+            src = (root / f).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if "@interface" not in src and "annotation class" not in src:
+            continue
+        code = _fx_strip_comments(src)
+        m = re.search(r"(?:@interface|annotation\s+class)\s+(\w+)", code)
+        if not m:
+            continue
+        got = _fx_sql_names(code[:m.start()], known)
+        if got is None or got:
+            out[m.group(1)] = got
+    return out
 
 
 def _fx_annotations_above(lines: list[str], idx: int) -> int:
@@ -528,7 +596,8 @@ def _fx_jvm_tests(root: Path, rel: str, src: str, files: list[str],
     props = _fx_module_props(root, module, profiles)
     props.update(_fx_inline_props(header))
     on_seed = _fx_on_seed(root, module, files, props)
-    class_sql = _fx_sql_names(header, known)
+    metas = _fx_meta_annotations(root, module, files, known)
+    class_sql = _fx_sql_names(header, known, metas)
 
     lines, src_lines = code.splitlines(), src.splitlines()
     offsets, at = [], 0
@@ -568,7 +637,7 @@ def _fx_jvm_tests(root: Path, rel: str, src: str, files: list[str],
                      if rx.search(t) and not t.strip().startswith(("//", "*", "@"))), None)
         if line is None:
             continue
-        own = _fx_sql_names(code[a:d], known)
+        own = _fx_sql_names(code[a:d], known, metas)
         # A method's own @Sql overrides the class's (Spring's default merge mode).
         sql = own if own is None or own else class_sql
         if sql is None:
@@ -577,10 +646,22 @@ def _fx_jvm_tests(root: Path, rel: str, src: str, files: list[str],
             out[f"{rel}:{line}"] = next(iter(sql))
         elif sql:
             out[f"{rel}:{line}"] = None              # two fixtures: not ours to pick
-        elif on_seed:
+        else:
+            # Nothing loaded by the test itself: a fixture its code names, else what
+            # Flyway boots the context with — the seed, or an empty database.
             v = _fx_verdict("", code[d:b] + "\n" + shared_text, known)
-            out[f"{rel}:{line}"] = v
+            out[f"{rel}:{line}"] = "seed" if v == "" and on_seed else v
     return out
+
+
+def _fx_jvm_module(root: Path, rel: str) -> str | None:
+    """The JVM module a `.feature` belongs to — the path before `/src/`, when it builds with
+    Maven or Gradle — or None for an E2E feature."""
+    if "/src/" not in rel:
+        return None
+    module = rel.split("/src/")[0]
+    return module if any((root / module / b).is_file()
+                         for b in ("pom.xml", "build.gradle", "build.gradle.kts")) else None
 
 
 def _fx_scan(root: Path, files: list[str], known: set[str]) -> dict[str, str]:
@@ -589,11 +670,20 @@ def _fx_scan(root: Path, files: list[str], known: set[str]) -> dict[str, str]:
     out: dict[str, str] = {}
     features = [f for f in files if f.endswith(".feature") and "node_modules" not in f]
     defs = _fx_step_defs(root, files) if features else []
+    emptied = fixtures_emptied(root, files) if features else {}
+    on_seed: dict[str, bool] = {}
     for f in features:
         try:
-            out.update(_fx_feature_tests(f, (root / f).read_text(encoding="utf-8"), defs, known))
+            got = _fx_feature_tests(f, (root / f).read_text(encoding="utf-8"), defs, known)
         except (OSError, UnicodeDecodeError):
-            pass
+            continue
+        # A JVM Cucumber scenario that declares nothing starts on what its Spring context's
+        # Flyway loads, unless a hook empties the tables before it.
+        module = _fx_jvm_module(root, f)
+        if module and module not in on_seed:
+            on_seed[module] = _fx_on_seed(root, module, files, _fx_module_props(root, module, []))
+        for k, v in got.items():
+            out[k] = "seed" if v == "" and module and on_seed[module] and k not in emptied else v
     for f in files:
         if _FX_SPEC.search(f) and "node_modules" not in f:
             try:
@@ -612,22 +702,12 @@ def _fx_scan(root: Path, files: list[str], known: set[str]) -> dict[str, str]:
 
 def fixtures_by_test(root: Path, files: list[str] | None = None) -> dict[str, str]:
     """``{"<repo-relative file>:<line>": fixture}`` — ``"seed"`` or a fixture's name —
-    for every E2E or Spring test whose starting data its code names or leans on. Absent = it leans
-    on nothing (see `fixtures_free`) or the answer is not ours to give."""
+    for every E2E or Spring test that starts on a dataset. Absent = it starts on an empty
+    database (it declares none), or the answer is not ours to give."""
     root = Path(root)
     files = _fx_ls(root) if files is None else files
     known = set(fixture_colors(root, files)["colors"])
     return {k: v for k, v in _fx_scan(root, files, known).items() if v}
-
-
-def fixtures_free(root: Path, files: list[str] | None = None) -> list[str]:
-    """The E2E and Spring tests that run on the seed without leaning on any of its rows."""
-    root = Path(root)
-    files = _fx_ls(root) if files is None else files
-    known = set(fixture_colors(root, files)["colors"])
-    empty = fixtures_emptied(root, files)
-    return sorted(k for k, v in _fx_scan(root, files, known).items()
-                  if v == "" and k not in empty)
 
 
 _FX_HOOK_TRUNCATE = re.compile(r"TRUNCATE\s+(?:TABLE\s+)?([\w.\s,\"]+?)(?:\s+(?:RESTART|CONTINUE|"
@@ -684,22 +764,20 @@ def fixtures_emptied(root: Path, files: list[str] | None = None) -> dict[str, di
 
 
 def fixture_registry(root: Path) -> dict:
+    """The colours, and ``tests``: every test that starts on a dataset, by id. A test that
+    starts empty is not in it, and its row gets no dot."""
     root = Path(root)
     files = _fx_ls(root)
     reg = fixture_colors(root, files)
-    scan = _fx_scan(root, files, set(reg["colors"]))
-    empty = fixtures_emptied(root, files)
-    reg["tests"] = {k: v for k, v in scan.items() if v and k not in empty}
-    reg["free"] = sorted(k for k, v in scan.items() if v == "" and k not in empty)
-    reg["empty"] = empty
+    reg["tests"] = {k: v for k, v in _fx_scan(root, files, set(reg["colors"])).items() if v}
     return reg
 
 
 def render_fixture_registry(root: Path) -> str:
     """The ``hr-fixtures`` JSON block FIXTURES_JS reads, or "" when the project has no
-    fixtures and no test leans on the seed — then neither tab draws a dot."""
+    fixtures and no test starts on the seed — then neither tab draws a dot."""
     reg = fixture_registry(root)
-    if not reg["colors"] and not reg["tests"] and not reg["free"] and not reg["empty"]:
+    if not reg["colors"] and not reg["tests"]:
         return ""
     return ('<script type="application/json" id="hr-fixtures">'
             + json.dumps(reg).replace("</", "<\\/") + "</script>")

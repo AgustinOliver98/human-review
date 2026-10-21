@@ -84,7 +84,8 @@ from hrbuild.shared.fixtures import (
     _FX_HOOK_TRUNCATE,
     _FX_KW,
     _FX_NAME,
-    _FX_SEEDWORD,
+    _FX_DESCRIBE,
+    _FX_USE,
     _FX_SPEC,
     _FX_STEPDEF,
     _FX_TEST,
@@ -111,6 +112,10 @@ from hrbuild.shared.fixtures import (
     _fx_on_seed,
     _fx_props,
     _fx_sql_names,
+    _fx_blank,
+    _fx_sql_script,
+    _fx_meta_annotations,
+    _fx_jvm_module,
     demo_fixtures,
     fixture_colors,
     fixture_dirs,
@@ -118,7 +123,6 @@ from hrbuild.shared.fixtures import (
     fixture_registry,
     fixtures_by_test,
     fixtures_emptied,
-    fixtures_free,
     render_fixture_registry
 )
 from hrbuild.shared.commands import (

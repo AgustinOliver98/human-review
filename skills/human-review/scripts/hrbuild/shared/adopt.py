@@ -338,7 +338,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Name colour = kind: E2E and API weigh most, they prove the feature, not one method.',
             'Click a sentence: a line to each test covering it; <b>▲ ▼</b> = more scrolled away.',
             '<b>− ✏️ +</b> before a total: deleted, edited, new; hover <b>−</b>: the deleted ones, in the IDE.',
-            'Dot: the DB data a test starts on; grey = Default, hollow = uses none of its rows.',
+            'Dot: the DB fixture a test declares it starts on; grey = Default; none = empty DB.',
         ],
     },
     'sequence': {
@@ -349,7 +349,7 @@ EXPLAIN: dict[str, dict[str, object]] = {
             'Diff: green/red = a call this PR added/removed; its tx box and activation bar tinted.',
             'Click <b>⊕</b> for the SQL or JSON; <b>values</b> fills in each <b>?</b>.',
             'An IDE logo on a call opens that method in the IDE whose logo is green, top right.',
-            'The dot before the file name is the DB fixture the test starts from: grey = Default.',
+            'Dot before the file name: the DB fixture the test starts on; grey = Default; none = empty.',
         ],
         "code": (
             'GET /api/owners\n'

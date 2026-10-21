@@ -2589,12 +2589,15 @@ def downstream(names: set[str]) -> set[str]:
 #: the database first, and only because they hold `stack` can no writer — the traced
 #: suites — land between that reset and their last screenshot. `city` held it too while it
 #: ran the Playwright suite; since that moved to `traces` it reads files and runs beside
-#: anything.
+#: anything. `traces` and `sequence` each run the browser suites in the same folder, on two
+#: different stacks, and Playwright empties its output folder when a run starts: the second
+#: to start deleted the first one's traces and videos mid-test (21 Oct 2026, test-pr: two
+#: specs red on ENOENT, both green run alone) — so they hold `e2e` in turn.
 USES = {
-    "traces":   {"stack"},             # its browser suites write to that stack's database
+    "traces":   {"stack", "e2e"},      # its browser suites write to that stack's database
     "video":    {"stack"},
     "dsaudit":  {"stack"},
-    "sequence": {"maven", "devports"},
+    "sequence": {"maven", "devports", "e2e"},
     "testcov":  {"maven"},
 }
 

@@ -79,8 +79,7 @@
       root.querySelectorAll('details.testpair > summary .fx-dot').forEach(function (dot) {
         dot.setAttribute('role', 'button');
         dot.setAttribute('tabindex', '0');
-        var tip = dot.getAttribute('data-tip') + (dot.classList.contains('fx-empty')
-          ? ' · click to view the rest' : ' · click to view the data');
+        var tip = dot.getAttribute('data-tip') + ' · click to view the data';
         dot.setAttribute('data-tip', tip);
         dot.setAttribute('aria-label', tip);
       });
