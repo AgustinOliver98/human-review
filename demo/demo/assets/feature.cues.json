@@ -1,136 +1,160 @@
 [
  {
-  "t": 4.313,
-  "text": "Every pet\u2019s visit list now carries a Vet column.",
+  "t": 4.032,
+  "text": "The owner's page now has a Vet column on every visit.",
   "box": {
-   "x": 403,
-   "y": 372,
-   "width": 817,
-   "height": 68
+   "x": 963,
+   "y": 358,
+   "width": 80,
+   "height": 31
   },
   "audio": "feature.narration/cue00.wav",
-  "speech": 2.632108843537415,
+  "speech": 2.8314285714285714,
   "words": [
    {
-    "w": "Every",
-    "t": 0.055
+    "w": "The",
+    "t": 0.01
    },
    {
-    "w": "pet\u2019s",
-    "t": 0.264
+    "w": "owner's",
+    "t": 0.161
    },
    {
-    "w": "visit",
-    "t": 0.577
-   },
-   {
-    "w": "list",
-    "t": 0.902
+    "w": "page",
+    "t": 0.521
    },
    {
     "w": "now",
-    "t": 1.181
+    "t": 0.846
    },
    {
-    "w": "carries",
-    "t": 1.413
+    "w": "has",
+    "t": 1.09
    },
    {
     "w": "a",
-    "t": 1.843
+    "t": 1.299
    },
    {
     "w": "Vet",
-    "t": 1.877
+    "t": 1.334
    },
    {
-    "w": "column.",
-    "t": 2.133
+    "w": "column",
+    "t": 1.566
+   },
+   {
+    "w": "on",
+    "t": 1.961
+   },
+   {
+    "w": "every",
+    "t": 2.112
+   },
+   {
+    "w": "visit.",
+    "t": 2.355
    }
   ],
   "alts": {
    "trump": {
     "audio": "feature.narration/fish/trump/cue00.wav",
-    "speech": 4.226,
+    "speech": 5.016,
     "words": [
      {
-      "w": "Every",
-      "t": 0
+      "w": "The",
+      "t": 0.02
      },
      {
-      "w": "pet\u2019s",
-      "t": 0.453
+      "w": "owner's",
+      "t": 0.354
      },
      {
-      "w": "visit",
-      "t": 0.831
-     },
-     {
-      "w": "list",
-      "t": 1.285
+      "w": "page",
+      "t": 0.939
      },
      {
       "w": "now",
-      "t": 1.663
+      "t": 1.356
      },
      {
-      "w": "carries",
-      "t": 1.965
+      "w": "has",
+      "t": 1.69
      },
      {
       "w": "a",
-      "t": 2.57
+      "t": 2.024
      },
      {
       "w": "Vet",
-      "t": 2.721
+      "t": 2.191
      },
      {
-      "w": "column.",
-      "t": 3.023
+      "w": "column",
+      "t": 2.525
+     },
+     {
+      "w": "on",
+      "t": 3.11
+     },
+     {
+      "w": "every",
+      "t": 3.36
+     },
+     {
+      "w": "visit.",
+      "t": 3.861
      }
     ],
     "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
    },
    "discovery": {
     "audio": "feature.narration/fish/discovery/cue00.wav",
-    "speech": 3.947,
+    "speech": 4.365,
     "words": [
      {
-      "w": "Every",
-      "t": 0.02
+      "w": "The",
+      "t": 0.06
      },
      {
-      "w": "pet\u2019s",
-      "t": 0.445
+      "w": "owner's",
+      "t": 0.352
      },
      {
-      "w": "visit",
-      "t": 0.798
-     },
-     {
-      "w": "list",
-      "t": 1.223
+      "w": "page",
+      "t": 0.863
      },
      {
       "w": "now",
-      "t": 1.577
+      "t": 1.228
      },
      {
-      "w": "carries",
-      "t": 1.86
+      "w": "has",
+      "t": 1.52
      },
      {
       "w": "a",
-      "t": 2.426
+      "t": 1.812
      },
      {
       "w": "Vet",
-      "t": 2.568
+      "t": 1.958
      },
      {
-      "w": "column.",
-      "t": 2.851
+      "w": "column",
+      "t": 2.249
+     },
+     {
+      "w": "on",
+      "t": 2.76
+     },
+     {
+      "w": "every",
+      "t": 2.979
+     },
+     {
+      "w": "visit.",
+      "t": 3.417
      }
     ],
     "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
@@ -138,197 +162,125 @@
   }
  },
  {
-  "t": 9.271,
-  "text": "The booking form asks who will attend \u2014 and lets you say nobody yet.",
+  "t": 7.281,
+  "text": "A visit shows the vet who attended it.",
   "box": {
-   "x": 248,
-   "y": 358,
-   "width": 987,
-   "height": 34
+   "x": 963,
+   "y": 389,
+   "width": 80,
+   "height": 73
   },
   "audio": "feature.narration/cue01.wav",
-  "speech": 3.7388662131519275,
+  "speech": 1.8658503401360544,
   "words": [
    {
-    "w": "The",
-    "t": 0
+    "w": "A",
+    "t": 0.008
    },
    {
-    "w": "booking",
-    "t": 0.093
+    "w": "visit",
+    "t": 0.09
    },
    {
-    "w": "form",
-    "t": 0.453
+    "w": "shows",
+    "t": 0.415
    },
    {
-    "w": "asks",
-    "t": 0.778
+    "w": "the",
+    "t": 0.763
+   },
+   {
+    "w": "vet",
+    "t": 0.856
    },
    {
     "w": "who",
-    "t": 1.138
+    "t": 1.053
    },
    {
-    "w": "will",
-    "t": 1.278
+    "w": "attended",
+    "t": 1.204
    },
    {
-    "w": "attend",
-    "t": 1.463
-   },
-   {
-    "w": "\u2014",
-    "t": 2.183
-   },
-   {
-    "w": "and",
-    "t": 2.225
-   },
-   {
-    "w": "lets",
-    "t": 2.322
-   },
-   {
-    "w": "you",
-    "t": 2.601
-   },
-   {
-    "w": "say",
-    "t": 2.682
-   },
-   {
-    "w": "nobody",
-    "t": 2.915
-   },
-   {
-    "w": "yet.",
-    "t": 3.333
+    "w": "it.",
+    "t": 1.645
    }
   ],
   "alts": {
    "trump": {
     "audio": "feature.narration/fish/trump/cue01.wav",
-    "speech": 4.876,
+    "speech": 2.926,
     "words": [
      {
-      "w": "The",
-      "t": 0.03
+      "w": "A",
+      "t": 0.02
      },
      {
-      "w": "booking",
-      "t": 0.273
+      "w": "visit",
+      "t": 0.141
      },
      {
-      "w": "form",
-      "t": 0.76
+      "w": "shows",
+      "t": 0.506
      },
      {
-      "w": "asks",
-      "t": 1.064
+      "w": "the",
+      "t": 0.87
+     },
+     {
+      "w": "vet",
+      "t": 1.113
      },
      {
       "w": "who",
-      "t": 1.368
+      "t": 1.355
      },
      {
-      "w": "will",
-      "t": 1.611
+      "w": "attended",
+      "t": 1.598
      },
      {
-      "w": "attend",
-      "t": 1.915
-     },
-     {
-      "w": "\u2014",
-      "t": 2.34
-     },
-     {
-      "w": "and",
-      "t": 2.584
-     },
-     {
-      "w": "lets",
-      "t": 2.827
-     },
-     {
-      "w": "you",
-      "t": 3.131
-     },
-     {
-      "w": "say",
-      "t": 3.374
-     },
-     {
-      "w": "nobody",
-      "t": 3.617
-     },
-     {
-      "w": "yet.",
-      "t": 4.043
+      "w": "it.",
+      "t": 2.144
      }
     ],
     "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
    },
    "discovery": {
     "audio": "feature.narration/fish/discovery/cue01.wav",
-    "speech": 5.619,
+    "speech": 2.879,
     "words": [
      {
-      "w": "The",
-      "t": 0.01
+      "w": "A",
+      "t": 0.05
      },
      {
-      "w": "booking",
-      "t": 0.299
+      "w": "visit",
+      "t": 0.171
      },
      {
-      "w": "form",
-      "t": 0.877
+      "w": "shows",
+      "t": 0.536
      },
      {
-      "w": "asks",
-      "t": 1.239
+      "w": "the",
+      "t": 0.9
+     },
+     {
+      "w": "vet",
+      "t": 1.143
      },
      {
       "w": "who",
-      "t": 1.6
+      "t": 1.385
      },
      {
-      "w": "will",
-      "t": 1.889
+      "w": "attended",
+      "t": 1.628
      },
      {
-      "w": "attend",
-      "t": 2.25
-     },
-     {
-      "w": "\u2014",
-      "t": 2.756
-     },
-     {
-      "w": "and",
-      "t": 3.045
-     },
-     {
-      "w": "lets",
-      "t": 3.334
-     },
-     {
-      "w": "you",
-      "t": 3.696
-     },
-     {
-      "w": "say",
-      "t": 3.985
-     },
-     {
-      "w": "nobody",
-      "t": 4.274
-     },
-     {
-      "w": "yet.",
-      "t": 4.78
+      "w": "it.",
+      "t": 2.174
      }
     ],
     "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
@@ -336,425 +288,149 @@
   }
  },
  {
-  "t": 14.33,
-  "text": "We book this one with Rafael Ortega.",
+  "t": 9.504,
+  "text": "A visit with no vet reads No vet, never blank.",
   "box": {
-   "x": 248,
-   "y": 358,
-   "width": 987,
-   "height": 34
+   "x": 963,
+   "y": 534,
+   "width": 80,
+   "height": 72
   },
   "audio": "feature.narration/cue02.wav",
-  "speech": 2.068934240362812,
+  "speech": 2.8527437641723354,
   "words": [
    {
-    "w": "We",
-    "t": 0.002
+    "w": "A",
+    "t": 0.008
    },
    {
-    "w": "book",
-    "t": 0.118
-   },
-   {
-    "w": "this",
-    "t": 0.362
-   },
-   {
-    "w": "one",
-    "t": 0.583
+    "w": "visit",
+    "t": 0.078
    },
    {
     "w": "with",
-    "t": 0.78
+    "t": 0.415
    },
    {
-    "w": "Rafael",
-    "t": 0.954
+    "w": "no",
+    "t": 0.624
    },
    {
-    "w": "Ortega.",
-    "t": 1.454
+    "w": "vet",
+    "t": 0.809
+   },
+   {
+    "w": "reads",
+    "t": 1.03
+   },
+   {
+    "w": "No",
+    "t": 1.32
+   },
+   {
+    "w": "vet,",
+    "t": 1.506
+   },
+   {
+    "w": "never",
+    "t": 2.063
+   },
+   {
+    "w": "blank.",
+    "t": 2.33
    }
   ],
   "alts": {
    "trump": {
     "audio": "feature.narration/fish/trump/cue02.wav",
-    "speech": 3.111,
+    "speech": 4.412,
     "words": [
      {
-      "w": "We",
-      "t": 0.01
+      "w": "A",
+      "t": 0.03
      },
      {
-      "w": "book",
-      "t": 0.211
-     },
-     {
-      "w": "this",
-      "t": 0.547
-     },
-     {
-      "w": "one",
-      "t": 0.882
+      "w": "visit",
+      "t": 0.183
      },
      {
       "w": "with",
-      "t": 1.15
+      "t": 0.643
      },
      {
-      "w": "Rafael",
-      "t": 1.486
+      "w": "no",
+      "t": 1.026
      },
      {
-      "w": "Ortega.",
-      "t": 1.955
+      "w": "vet",
+      "t": 1.256
+     },
+     {
+      "w": "reads",
+      "t": 1.562
+     },
+     {
+      "w": "No",
+      "t": 2.022
+     },
+     {
+      "w": "vet,",
+      "t": 2.252
+     },
+     {
+      "w": "never",
+      "t": 2.788
+     },
+     {
+      "w": "blank.",
+      "t": 3.247
      }
     ],
     "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
    },
    "discovery": {
     "audio": "feature.narration/fish/discovery/cue02.wav",
-    "speech": 3.251,
+    "speech": 5.294,
     "words": [
      {
-      "w": "We",
-      "t": 0.03
-     },
-     {
-      "w": "book",
-      "t": 0.255
-     },
-     {
-      "w": "this",
-      "t": 0.631
-     },
-     {
-      "w": "one",
-      "t": 1.007
-     },
-     {
-      "w": "with",
-      "t": 1.307
-     },
-     {
-      "w": "Rafael",
-      "t": 1.683
-     },
-     {
-      "w": "Ortega.",
-      "t": 2.209
-     }
-    ],
-    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
-   }
-  }
- },
- {
-  "t": 17.755,
-  "text": "Back on the owner, the new visit names the vet that will attend it.",
-  "box": {
-   "x": 385,
-   "y": 389,
-   "width": 835,
-   "height": 37
-  },
-  "audio": "feature.narration/cue03.wav",
-  "speech": 3.359546485260771,
-  "words": [
-   {
-    "w": "Back",
-    "t": 0.004
-   },
-   {
-    "w": "on",
-    "t": 0.236
-   },
-   {
-    "w": "the",
-    "t": 0.399
-   },
-   {
-    "w": "owner,",
-    "t": 0.527
-   },
-   {
-    "w": "the",
-    "t": 1.154
-   },
-   {
-    "w": "new",
-    "t": 1.223
-   },
-   {
-    "w": "visit",
-    "t": 1.456
-   },
-   {
-    "w": "names",
-    "t": 1.757
-   },
-   {
-    "w": "the",
-    "t": 2.106
-   },
-   {
-    "w": "vet",
-    "t": 2.187
-   },
-   {
-    "w": "that",
-    "t": 2.431
-   },
-   {
-    "w": "will",
-    "t": 2.617
-   },
-   {
-    "w": "attend",
-    "t": 2.779
-   },
-   {
-    "w": "it.",
-    "t": 3.116
-   }
-  ],
-  "alts": {
-   "trump": {
-    "audio": "feature.narration/fish/trump/cue03.wav",
-    "speech": 5.341,
-    "words": [
-     {
-      "w": "Back",
-      "t": 0.11
-     },
-     {
-      "w": "on",
-      "t": 0.44
-     },
-     {
-      "w": "the",
-      "t": 0.639
-     },
-     {
-      "w": "owner,",
-      "t": 0.903
-     },
-     {
-      "w": "the",
-      "t": 1.498
-     },
-     {
-      "w": "new",
-      "t": 1.762
-     },
-     {
-      "w": "visit",
-      "t": 2.026
-     },
-     {
-      "w": "names",
-      "t": 2.423
-     },
-     {
-      "w": "the",
-      "t": 2.819
-     },
-     {
-      "w": "vet",
-      "t": 3.084
-     },
-     {
-      "w": "that",
-      "t": 3.348
-     },
-     {
-      "w": "will",
-      "t": 3.678
-     },
-     {
-      "w": "attend",
-      "t": 4.009
-     },
-     {
-      "w": "it.",
-      "t": 4.471
-     }
-    ],
-    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
-   },
-   "discovery": {
-    "audio": "feature.narration/fish/discovery/cue03.wav",
-    "speech": 5.341,
-    "words": [
-     {
-      "w": "Back",
-      "t": 0.02
-     },
-     {
-      "w": "on",
-      "t": 0.369
-     },
-     {
-      "w": "the",
-      "t": 0.579
-     },
-     {
-      "w": "owner,",
-      "t": 0.858
-     },
-     {
-      "w": "the",
-      "t": 1.487
-     },
-     {
-      "w": "new",
-      "t": 1.767
-     },
-     {
-      "w": "visit",
-      "t": 2.046
-     },
-     {
-      "w": "names",
-      "t": 2.465
-     },
-     {
-      "w": "the",
-      "t": 2.884
-     },
-     {
-      "w": "vet",
-      "t": 3.164
-     },
-     {
-      "w": "that",
-      "t": 3.443
-     },
-     {
-      "w": "will",
-      "t": 3.793
-     },
-     {
-      "w": "attend",
-      "t": 4.142
-     },
-     {
-      "w": "it.",
-      "t": 4.631
-     }
-    ],
-    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
-   }
-  }
- },
- {
-  "t": 22.479,
-  "text": "The all-visits page carries the same column.",
-  "box": {
-   "x": 825,
-   "y": 148,
-   "width": 111,
-   "height": 37
-  },
-  "audio": "feature.narration/cue04.wav",
-  "speech": 2.37859410430839,
-  "words": [
-   {
-    "w": "The",
-    "t": 0.01
-   },
-   {
-    "w": "all-visits",
-    "t": 0.149
-   },
-   {
-    "w": "page",
-    "t": 0.695
-   },
-   {
-    "w": "carries",
-    "t": 1.043
-   },
-   {
-    "w": "the",
-    "t": 1.438
-   },
-   {
-    "w": "same",
-    "t": 1.543
-   },
-   {
-    "w": "column.",
-    "t": 1.868
-   }
-  ],
-  "alts": {
-   "trump": {
-    "audio": "feature.narration/fish/trump/cue04.wav",
-    "speech": 3.111,
-    "words": [
-     {
-      "w": "The",
-      "t": 0
-     },
-     {
-      "w": "all-visits",
-      "t": 0.233
-     },
-     {
-      "w": "page",
-      "t": 0.814
-     },
-     {
-      "w": "carries",
-      "t": 1.104
-     },
-     {
-      "w": "the",
-      "t": 1.569
-     },
-     {
-      "w": "same",
-      "t": 1.802
-     },
-     {
-      "w": "column.",
-      "t": 2.092
-     }
-    ],
-    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
-   },
-   "discovery": {
-    "audio": "feature.narration/fish/discovery/cue04.wav",
-    "speech": 3.622,
-    "words": [
-     {
-      "w": "The",
+      "w": "A",
       "t": 0.01
      },
      {
-      "w": "all-visits",
-      "t": 0.298
+      "w": "visit",
+      "t": 0.203
      },
      {
-      "w": "page",
-      "t": 1.016
+      "w": "with",
+      "t": 0.781
      },
      {
-      "w": "carries",
-      "t": 1.376
+      "w": "no",
+      "t": 1.263
      },
      {
-      "w": "the",
-      "t": 1.951
+      "w": "vet",
+      "t": 1.553
      },
      {
-      "w": "same",
-      "t": 2.238
+      "w": "reads",
+      "t": 1.938
      },
      {
-      "w": "column.",
-      "t": 2.598
+      "w": "No",
+      "t": 2.517
+     },
+     {
+      "w": "vet,",
+      "t": 2.806
+     },
+     {
+      "w": "never",
+      "t": 3.481
+     },
+     {
+      "w": "blank.",
+      "t": 4.059
      }
     ],
     "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
@@ -762,185 +438,173 @@
   }
  },
  {
-  "t": 26.212,
-  "text": "And on the edit form, picking \u201cNo vet\u201d is what unassigns a vet.",
+  "t": 14.649,
+  "text": "Booking a visit has a new optional Vet field, empty by default.",
   "box": {
    "x": 248,
    "y": 358,
    "width": 987,
    "height": 34
   },
-  "audio": "feature.narration/cue05.wav",
-  "speech": 3.3968253968253967,
+  "audio": "feature.narration/cue03.wav",
+  "speech": 3.5917006802721088,
   "words": [
    {
-    "w": "And",
-    "t": 0.007
-   },
-   {
-    "w": "on",
-    "t": 0.158
-   },
-   {
-    "w": "the",
-    "t": 0.309
-   },
-   {
-    "w": "edit",
-    "t": 0.46
-   },
-   {
-    "w": "form,",
-    "t": 0.703
-   },
-   {
-    "w": "picking",
-    "t": 1.388
-   },
-   {
-    "w": "\u201cNo",
-    "t": 1.748
-   },
-   {
-    "w": "vet\u201d",
-    "t": 1.922
-   },
-   {
-    "w": "is",
-    "t": 2.131
-   },
-   {
-    "w": "what",
-    "t": 2.259
-   },
-   {
-    "w": "unassigns",
-    "t": 2.445
+    "w": "Booking",
+    "t": 0.004
    },
    {
     "w": "a",
-    "t": 2.979
+    "t": 0.318
    },
    {
-    "w": "vet.",
-    "t": 3.025
+    "w": "visit",
+    "t": 0.364
+   },
+   {
+    "w": "has",
+    "t": 0.689
+   },
+   {
+    "w": "a",
+    "t": 0.887
+   },
+   {
+    "w": "new",
+    "t": 0.945
+   },
+   {
+    "w": "optional",
+    "t": 1.142
+   },
+   {
+    "w": "Vet",
+    "t": 1.606
+   },
+   {
+    "w": "field,",
+    "t": 1.815
+   },
+   {
+    "w": "empty",
+    "t": 2.466
+   },
+   {
+    "w": "by",
+    "t": 2.791
+   },
+   {
+    "w": "default.",
+    "t": 2.976
    }
   ],
   "alts": {
    "trump": {
-    "audio": "feature.narration/fish/trump/cue05.wav",
-    "speech": 5.48,
+    "audio": "feature.narration/fish/trump/cue03.wav",
+    "speech": 5.062,
     "words": [
      {
-      "w": "And",
-      "t": 0.03
-     },
-     {
-      "w": "on",
-      "t": 0.331
-     },
-     {
-      "w": "the",
-      "t": 0.556
-     },
-     {
-      "w": "edit",
-      "t": 0.857
-     },
-     {
-      "w": "form,",
-      "t": 1.232
-     },
-     {
-      "w": "picking",
-      "t": 1.834
-     },
-     {
-      "w": "\u201cNo",
-      "t": 2.435
-     },
-     {
-      "w": "vet\u201d",
-      "t": 2.66
-     },
-     {
-      "w": "is",
-      "t": 2.961
-     },
-     {
-      "w": "what",
-      "t": 3.186
-     },
-     {
-      "w": "unassigns",
-      "t": 3.562
+      "w": "Booking",
+      "t": 0.02
      },
      {
       "w": "a",
-      "t": 4.313
+      "t": 0.558
      },
      {
-      "w": "vet.",
-      "t": 4.464
+      "w": "visit",
+      "t": 0.693
+     },
+     {
+      "w": "has",
+      "t": 1.097
+     },
+     {
+      "w": "a",
+      "t": 1.366
+     },
+     {
+      "w": "new",
+      "t": 1.5
+     },
+     {
+      "w": "optional",
+      "t": 1.769
+     },
+     {
+      "w": "Vet",
+      "t": 2.375
+     },
+     {
+      "w": "field,",
+      "t": 2.644
+     },
+     {
+      "w": "empty",
+      "t": 3.25
+     },
+     {
+      "w": "by",
+      "t": 3.653
+     },
+     {
+      "w": "default.",
+      "t": 3.855
      }
     ],
     "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
    },
    "discovery": {
-    "audio": "feature.narration/fish/discovery/cue05.wav",
-    "speech": 5.526,
+    "audio": "feature.narration/fish/discovery/cue03.wav",
+    "speech": 5.248,
     "words": [
      {
-      "w": "And",
-      "t": 0.01
-     },
-     {
-      "w": "on",
-      "t": 0.325
-     },
-     {
-      "w": "the",
-      "t": 0.562
-     },
-     {
-      "w": "edit",
-      "t": 0.877
-     },
-     {
-      "w": "form,",
-      "t": 1.271
-     },
-     {
-      "w": "picking",
-      "t": 1.902
-     },
-     {
-      "w": "\u201cNo",
-      "t": 2.532
-     },
-     {
-      "w": "vet\u201d",
-      "t": 2.769
-     },
-     {
-      "w": "is",
-      "t": 3.084
-     },
-     {
-      "w": "what",
-      "t": 3.321
-     },
-     {
-      "w": "unassigns",
-      "t": 3.715
+      "w": "Booking",
+      "t": 0.05
      },
      {
       "w": "a",
-      "t": 4.503
+      "t": 0.621
      },
      {
-      "w": "vet.",
-      "t": 4.661
+      "w": "visit",
+      "t": 0.764
+     },
+     {
+      "w": "has",
+      "t": 1.193
+     },
+     {
+      "w": "a",
+      "t": 1.479
+     },
+     {
+      "w": "new",
+      "t": 1.621
+     },
+     {
+      "w": "optional",
+      "t": 1.907
+     },
+     {
+      "w": "Vet",
+      "t": 2.55
+     },
+     {
+      "w": "field,",
+      "t": 2.836
+     },
+     {
+      "w": "empty",
+      "t": 3.479
+     },
+     {
+      "w": "by",
+      "t": 3.907
+     },
+     {
+      "w": "default.",
+      "t": 4.121
      }
     ],
     "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
@@ -948,44 +612,244 @@
   }
  },
  {
-  "t": 30.958,
-  "text": "This screen changed on this branch too.",
+  "t": 19.053,
+  "text": "Here a vet is chosen.",
   "box": {
-   "x": 60,
-   "y": 114,
-   "width": 1160,
-   "height": 24
+   "x": 248,
+   "y": 358,
+   "width": 987,
+   "height": 34
   },
-  "audio": "feature.narration/cue06.wav",
-  "speech": 2.0185034013605443,
+  "audio": "feature.narration/cue04.wav",
+  "speech": 1.1336961451247165,
   "words": [
    {
-    "w": "This",
-    "t": 0.01
+    "w": "Here",
+    "t": 0.008
    },
    {
-    "w": "screen",
-    "t": 0.184
+    "w": "a",
+    "t": 0.205
    },
    {
-    "w": "changed",
-    "t": 0.521
+    "w": "vet",
+    "t": 0.263
    },
    {
-    "w": "on",
-    "t": 0.939
+    "w": "is",
+    "t": 0.46
    },
    {
-    "w": "this",
-    "t": 1.101
+    "w": "chosen.",
+    "t": 0.6
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue04.wav",
+    "speech": 1.811,
+    "words": [
+     {
+      "w": "Here",
+      "t": 0
+     },
+     {
+      "w": "a",
+      "t": 0.298
+     },
+     {
+      "w": "vet",
+      "t": 0.417
+     },
+     {
+      "w": "is",
+      "t": 0.656
+     },
+     {
+      "w": "chosen.",
+      "t": 0.835
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue04.wav",
+    "speech": 2.183,
+    "words": [
+     {
+      "w": "Here",
+      "t": 0.01
+     },
+     {
+      "w": "a",
+      "t": 0.393
+     },
+     {
+      "w": "vet",
+      "t": 0.546
+     },
+     {
+      "w": "is",
+      "t": 0.852
+     },
+     {
+      "w": "chosen.",
+      "t": 1.082
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 21.031,
+  "text": "The new visit lists the chosen vet.",
+  "box": {
+   "x": 959,
+   "y": 389,
+   "width": 85,
+   "height": 73
+  },
+  "audio": "feature.narration/cue05.wav",
+  "speech": 1.8464399092970523,
+  "words": [
+   {
+    "w": "The",
+    "t": 0
    },
    {
-    "w": "branch",
-    "t": 1.264
+    "w": "new",
+    "t": 0.082
    },
    {
-    "w": "too.",
-    "t": 1.647
+    "w": "visit",
+    "t": 0.279
+   },
+   {
+    "w": "lists",
+    "t": 0.616
+   },
+   {
+    "w": "the",
+    "t": 0.918
+   },
+   {
+    "w": "chosen",
+    "t": 1.034
+   },
+   {
+    "w": "vet.",
+    "t": 1.475
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue05.wav",
+    "speech": 2.74,
+    "words": [
+     {
+      "w": "The",
+      "t": 0.01
+     },
+     {
+      "w": "new",
+      "t": 0.244
+     },
+     {
+      "w": "visit",
+      "t": 0.478
+     },
+     {
+      "w": "lists",
+      "t": 0.829
+     },
+     {
+      "w": "the",
+      "t": 1.18
+     },
+     {
+      "w": "chosen",
+      "t": 1.414
+     },
+     {
+      "w": "vet.",
+      "t": 1.824
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue05.wav",
+    "speech": 3.297,
+    "words": [
+     {
+      "w": "The",
+      "t": 0.11
+     },
+     {
+      "w": "new",
+      "t": 0.412
+     },
+     {
+      "w": "visit",
+      "t": 0.714
+     },
+     {
+      "w": "lists",
+      "t": 1.167
+     },
+     {
+      "w": "the",
+      "t": 1.62
+     },
+     {
+      "w": "chosen",
+      "t": 1.922
+     },
+     {
+      "w": "vet.",
+      "t": 2.45
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 24.628,
+  "text": "Leaving the vet empty is allowed.",
+  "box": {
+   "x": 248,
+   "y": 358,
+   "width": 987,
+   "height": 34
+  },
+  "audio": "feature.narration/cue06.wav",
+  "speech": 1.5949206349206348,
+  "words": [
+   {
+    "w": "Leaving",
+    "t": 0.004
+   },
+   {
+    "w": "the",
+    "t": 0.376
+   },
+   {
+    "w": "vet",
+    "t": 0.446
+   },
+   {
+    "w": "empty",
+    "t": 0.678
+   },
+   {
+    "w": "is",
+    "t": 1.026
+   },
+   {
+    "w": "allowed.",
+    "t": 1.165
    }
   ],
   "alts": {
@@ -994,67 +858,767 @@
     "speech": 3.111,
     "words": [
      {
-      "w": "This",
+      "w": "Leaving",
       "t": 0.02
      },
      {
-      "w": "screen",
-      "t": 0.337
+      "w": "the",
+      "t": 0.603
      },
      {
-      "w": "changed",
-      "t": 0.781
+      "w": "vet",
+      "t": 0.895
      },
      {
-      "w": "on",
-      "t": 1.288
+      "w": "empty",
+      "t": 1.186
      },
      {
-      "w": "this",
-      "t": 1.478
+      "w": "is",
+      "t": 1.624
      },
      {
-      "w": "branch",
-      "t": 1.795
-     },
-     {
-      "w": "too.",
-      "t": 2.239
+      "w": "allowed.",
+      "t": 1.842
      }
     ],
     "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
    },
    "discovery": {
     "audio": "feature.narration/fish/discovery/cue06.wav",
-    "speech": 3.111,
+    "speech": 2.926,
     "words": [
      {
-      "w": "This",
-      "t": 0.03
+      "w": "Leaving",
+      "t": 0.2
+     },
+     {
+      "w": "the",
+      "t": 0.731
+     },
+     {
+      "w": "vet",
+      "t": 0.996
+     },
+     {
+      "w": "empty",
+      "t": 1.261
+     },
+     {
+      "w": "is",
+      "t": 1.659
+     },
+     {
+      "w": "allowed.",
+      "t": 1.858
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 27.083,
+  "text": "It is saved and reads No vet.",
+  "box": {
+   "x": 959,
+   "y": 462,
+   "width": 85,
+   "height": 72
+  },
+  "audio": "feature.narration/cue07.wav",
+  "speech": 1.5410884353741496,
+  "words": [
+   {
+    "w": "It",
+    "t": 0.009
+   },
+   {
+    "w": "is",
+    "t": 0.125
+   },
+   {
+    "w": "saved",
+    "t": 0.252
+   },
+   {
+    "w": "and",
+    "t": 0.554
+   },
+   {
+    "w": "reads",
+    "t": 0.694
+   },
+   {
+    "w": "No",
+    "t": 0.984
+   },
+   {
+    "w": "vet.",
+    "t": 1.17
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue07.wav",
+    "speech": 2.554,
+    "words": [
+     {
+      "w": "It",
+      "t": 0.02
+     },
+     {
+      "w": "is",
+      "t": 0.219
+     },
+     {
+      "w": "saved",
+      "t": 0.419
+     },
+     {
+      "w": "and",
+      "t": 0.818
+     },
+     {
+      "w": "reads",
+      "t": 1.084
+     },
+     {
+      "w": "No",
+      "t": 1.482
+     },
+     {
+      "w": "vet.",
+      "t": 1.682
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue07.wav",
+    "speech": 3.529,
+    "words": [
+     {
+      "w": "It",
+      "t": 0.01
+     },
+     {
+      "w": "is",
+      "t": 0.305
+     },
+     {
+      "w": "saved",
+      "t": 0.599
+     },
+     {
+      "w": "and",
+      "t": 1.189
+     },
+     {
+      "w": "reads",
+      "t": 1.582
+     },
+     {
+      "w": "No",
+      "t": 2.171
+     },
+     {
+      "w": "vet.",
+      "t": 2.466
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 29.454,
+  "text": "Editing a visit can change the vet.",
+  "box": {
+   "x": 248,
+   "y": 358,
+   "width": 987,
+   "height": 34
+  },
+  "audio": "feature.narration/cue08.wav",
+  "speech": 1.784580498866213,
+  "words": [
+   {
+    "w": "Editing",
+    "t": 0.008
+   },
+   {
+    "w": "a",
+    "t": 0.357
+   },
+   {
+    "w": "visit",
+    "t": 0.415
+   },
+   {
+    "w": "can",
+    "t": 0.763
+   },
+   {
+    "w": "change",
+    "t": 0.96
+   },
+   {
+    "w": "the",
+    "t": 1.332
+   },
+   {
+    "w": "vet.",
+    "t": 1.413
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue08.wav",
+    "speech": 3.065,
+    "words": [
+     {
+      "w": "Editing",
+      "t": 0.01
+     },
+     {
+      "w": "a",
+      "t": 0.574
+     },
+     {
+      "w": "visit",
+      "t": 0.715
+     },
+     {
+      "w": "can",
+      "t": 1.138
+     },
+     {
+      "w": "change",
+      "t": 1.42
+     },
+     {
+      "w": "the",
+      "t": 1.914
+     },
+     {
+      "w": "vet.",
+      "t": 2.196
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue08.wav",
+    "speech": 2.74,
+    "words": [
+     {
+      "w": "Editing",
+      "t": 0
+     },
+     {
+      "w": "a",
+      "t": 0.508
+     },
+     {
+      "w": "visit",
+      "t": 0.635
+     },
+     {
+      "w": "can",
+      "t": 1.016
+     },
+     {
+      "w": "change",
+      "t": 1.27
+     },
+     {
+      "w": "the",
+      "t": 1.715
+     },
+     {
+      "w": "vet.",
+      "t": 1.969
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 33.468,
+  "text": "Or remove it: choosing none clears it.",
+  "box": {
+   "x": 248,
+   "y": 358,
+   "width": 987,
+   "height": 34
+  },
+  "audio": "feature.narration/cue09.wav",
+  "speech": 2.1178684807256234,
+  "words": [
+   {
+    "w": "Or",
+    "t": 0.005
+   },
+   {
+    "w": "remove",
+    "t": 0.109
+   },
+   {
+    "w": "it:",
+    "t": 0.481
+   },
+   {
+    "w": "choosing",
+    "t": 0.887
+   },
+   {
+    "w": "none",
+    "t": 1.305
+   },
+   {
+    "w": "clears",
+    "t": 1.514
+   },
+   {
+    "w": "it.",
+    "t": 1.886
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue09.wav",
+    "speech": 3.437,
+    "words": [
+     {
+      "w": "Or",
+      "t": 0.02
+     },
+     {
+      "w": "remove",
+      "t": 0.225
+     },
+     {
+      "w": "it:",
+      "t": 0.704
+     },
+     {
+      "w": "choosing",
+      "t": 1.115
+     },
+     {
+      "w": "none",
+      "t": 1.731
+     },
+     {
+      "w": "clears",
+      "t": 2.073
+     },
+     {
+      "w": "it.",
+      "t": 2.552
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue09.wav",
+    "speech": 3.669,
+    "words": [
+     {
+      "w": "Or",
+      "t": 0.01
+     },
+     {
+      "w": "remove",
+      "t": 0.243
+     },
+     {
+      "w": "it:",
+      "t": 0.788
+     },
+     {
+      "w": "choosing",
+      "t": 1.254
+     },
+     {
+      "w": "none",
+      "t": 1.954
+     },
+     {
+      "w": "clears",
+      "t": 2.343
+     },
+     {
+      "w": "it.",
+      "t": 2.888
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 36.426,
+  "text": "Cleared, and it persisted as No vet.",
+  "box": {
+   "x": 963,
+   "y": 462,
+   "width": 80,
+   "height": 72
+  },
+  "audio": "feature.narration/cue10.wav",
+  "speech": 2.2076643990929705,
+  "words": [
+   {
+    "w": "Cleared,",
+    "t": 0.002
+   },
+   {
+    "w": "and",
+    "t": 0.675
+   },
+   {
+    "w": "it",
+    "t": 0.826
+   },
+   {
+    "w": "persisted",
+    "t": 0.942
+   },
+   {
+    "w": "as",
+    "t": 1.511
+   },
+   {
+    "w": "No",
+    "t": 1.65
+   },
+   {
+    "w": "vet.",
+    "t": 1.848
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue10.wav",
+    "speech": 3.483,
+    "words": [
+     {
+      "w": "Cleared,",
+      "t": 0
+     },
+     {
+      "w": "and",
+      "t": 0.826
+     },
+     {
+      "w": "it",
+      "t": 1.127
+     },
+     {
+      "w": "persisted",
+      "t": 1.352
+     },
+     {
+      "w": "as",
+      "t": 2.103
+     },
+     {
+      "w": "No",
+      "t": 2.329
+     },
+     {
+      "w": "vet.",
+      "t": 2.554
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue10.wav",
+    "speech": 3.715,
+    "words": [
+     {
+      "w": "Cleared,",
+      "t": 0.02
+     },
+     {
+      "w": "and",
+      "t": 0.923
+     },
+     {
+      "w": "it",
+      "t": 1.251
+     },
+     {
+      "w": "persisted",
+      "t": 1.498
+     },
+     {
+      "w": "as",
+      "t": 2.319
+     },
+     {
+      "w": "No",
+      "t": 2.565
+     },
+     {
+      "w": "vet.",
+      "t": 2.811
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 39.515,
+  "text": "The all-visits screen carries the same Vet column.",
+  "box": {
+   "x": 825,
+   "y": 148,
+   "width": 111,
+   "height": 37
+  },
+  "audio": "feature.narration/cue11.wav",
+  "speech": 2.5759637188208617,
+  "words": [
+   {
+    "w": "The",
+    "t": 0.01
+   },
+   {
+    "w": "all-visits",
+    "t": 0.138
+   },
+   {
+    "w": "screen",
+    "t": 0.707
+   },
+   {
+    "w": "carries",
+    "t": 1.02
+   },
+   {
+    "w": "the",
+    "t": 1.415
+   },
+   {
+    "w": "same",
+    "t": 1.519
+   },
+   {
+    "w": "Vet",
+    "t": 1.833
+   },
+   {
+    "w": "column.",
+    "t": 2.065
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue11.wav",
+    "speech": 3.437,
+    "words": [
+     {
+      "w": "The",
+      "t": 0.01
+     },
+     {
+      "w": "all-visits",
+      "t": 0.243
      },
      {
       "w": "screen",
-      "t": 0.357
+      "t": 0.824
      },
      {
-      "w": "changed",
-      "t": 0.815
+      "w": "carries",
+      "t": 1.231
      },
      {
-      "w": "on",
-      "t": 1.339
+      "w": "the",
+      "t": 1.696
      },
      {
-      "w": "this",
-      "t": 1.535
+      "w": "same",
+      "t": 1.929
      },
      {
-      "w": "branch",
-      "t": 1.863
+      "w": "Vet",
+      "t": 2.22
+     },
+     {
+      "w": "column.",
+      "t": 2.452
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue11.wav",
+    "speech": 3.622,
+    "words": [
+     {
+      "w": "The",
+      "t": 0.01
+     },
+     {
+      "w": "all-visits",
+      "t": 0.264
+     },
+     {
+      "w": "screen",
+      "t": 0.899
+     },
+     {
+      "w": "carries",
+      "t": 1.344
+     },
+     {
+      "w": "the",
+      "t": 1.852
+     },
+     {
+      "w": "same",
+      "t": 2.106
+     },
+     {
+      "w": "Vet",
+      "t": 2.424
+     },
+     {
+      "w": "column.",
+      "t": 2.678
+     }
+    ],
+    "voice": "fish:5860c08729ef4623a05addbf5fa543ec"
+   }
+  }
+ },
+ {
+  "t": 42.446,
+  "text": "Vet names and No vet appear here too.",
+  "box": {
+   "x": 825,
+   "y": 300,
+   "width": 111,
+   "height": 57
+  },
+  "audio": "feature.narration/cue12.wav",
+  "speech": 2.0476190476190474,
+  "words": [
+   {
+    "w": "Vet",
+    "t": 0.004
+   },
+   {
+    "w": "names",
+    "t": 0.225
+   },
+   {
+    "w": "and",
+    "t": 0.55
+   },
+   {
+    "w": "No",
+    "t": 0.678
+   },
+   {
+    "w": "vet",
+    "t": 0.863
+   },
+   {
+    "w": "appear",
+    "t": 1.084
+   },
+   {
+    "w": "here",
+    "t": 1.397
+   },
+   {
+    "w": "too.",
+    "t": 1.641
+   }
+  ],
+  "alts": {
+   "trump": {
+    "audio": "feature.narration/fish/trump/cue12.wav",
+    "speech": 3.576,
+    "words": [
+     {
+      "w": "Vet",
+      "t": 0.11
+     },
+     {
+      "w": "names",
+      "t": 0.408
+     },
+     {
+      "w": "and",
+      "t": 0.855
+     },
+     {
+      "w": "No",
+      "t": 1.153
+     },
+     {
+      "w": "vet",
+      "t": 1.377
+     },
+     {
+      "w": "appear",
+      "t": 1.675
+     },
+     {
+      "w": "here",
+      "t": 2.197
      },
      {
       "w": "too.",
-      "t": 2.321
+      "t": 2.569
+     }
+    ],
+    "voice": "fish:e58b0d7efca34eb38d5c4985e378abcb"
+   },
+   "discovery": {
+    "audio": "feature.narration/fish/discovery/cue12.wav",
+    "speech": 3.669,
+    "words": [
+     {
+      "w": "Vet",
+      "t": 0.01
+     },
+     {
+      "w": "names",
+      "t": 0.342
+     },
+     {
+      "w": "and",
+      "t": 0.841
+     },
+     {
+      "w": "No",
+      "t": 1.173
+     },
+     {
+      "w": "vet",
+      "t": 1.423
+     },
+     {
+      "w": "appear",
+      "t": 1.755
+     },
+     {
+      "w": "here",
+      "t": 2.337
+     },
+     {
+      "w": "too.",
+      "t": 2.752
      }
     ],
     "voice": "fish:5860c08729ef4623a05addbf5fa543ec"

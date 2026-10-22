@@ -1,0 +1,70 @@
+[run-steps] base 664c5b3b453f: the base the review audited (review-points.md), inside origin/main
+    $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
+  > basestack: started at +0 s (log: .human-review/logs/basestack.log)
+  > sequence: started at +0 s (log: .human-review/logs/sequence.log)
+  > tests: started at +0 s (log: .human-review/logs/tests.log)
+  > reviewpoints: started at +0 s (log: .human-review/logs/reviewpoints.log)
+  > c4: started at +0 s (log: .human-review/logs/c4.log)
+  > diagrams: started at +0 s (log: .human-review/logs/diagrams.log)
+  < tests: ran in 0.7 s, at +1 s
+  > video: started at +1 s (log: .human-review/logs/video.log)
+[review-commits] WARNING: 2 commits carry a Review-Points trailer (ce56d912, be762955); taking the last one as the review commit. The fixes are read from the implementation to it, so every one of them counts as a fix commit — one round recorded in 2 commits, or several rounds; record-review's finish now amends its own unpushed commit instead.
+  < reviewpoints: ran in 1.1 s, at +1 s
+  > aftermath: started at +1 s (log: .human-review/logs/aftermath.log)
+  < basestack: ran in 1.4 s, at +1 s
+  > complexity: started at +1 s (log: .human-review/logs/complexity.log)
+  < aftermath: ran in 1.7 s, at +3 s
+  > api: started at +3 s (log: .human-review/logs/api.log)
+  < api: ran in 1.7 s, at +5 s
+  > specchanges: started at +5 s (log: .human-review/logs/specchanges.log)
+  < specchanges: ran in 0.6 s, at +5 s
+  > logging: started at +5 s (log: .human-review/logs/logging.log)
+  < logging: ran in 0.7 s, at +6 s
+  > owners: started at +6 s (log: .human-review/logs/owners.log)
+  < owners: ran in 0.3 s, at +6 s
+  < complexity: ran in 5.6 s, at +7 s
+  < c4: ran in 9.2 s, at +9 s
+  < diagrams: ran in 22.5 s, at +23 s
+  < video: ran in 136.0 s, at +137 s
+  > dsaudit: started at +137 s (log: .human-review/logs/dsaudit.log)
+  < dsaudit: ran in 33.6 s, at +170 s
+  < sequence: ran in 207.6 s, at +208 s
+  > traces: started at +208 s (log: .human-review/logs/traces.log)
+  > c2: started at +208 s (log: .human-review/logs/c2.log)
+  < c2: ran in 4.6 s, at +212 s
+  < traces: ran in 42.1 s, at +250 s
+  > testcov: started at +250 s (log: .human-review/logs/testcov.log)
+  < testcov: ran in 47.8 s, at +298 s
+  > city: started at +298 s (log: .human-review/logs/city.log)
+  < city: ran in 15.3 s, at +313 s
+
+[run-steps] 18 step(s) in 313 s wall clock, 6 at a time; each step's output is in .human-review/logs/
+
+  step         status   why / what to say
+  basestack    ran      
+               note     started the merge-base stack (664c5b3b) early, for the design-system audit
+  reviewpoints ran      
+  aftermath    ran      
+               note     40 commit(s) landed after the review commit and 93 of the files they touched are not generated — the Review tab opens with a red band naming them. Say in the guide what they were; everything else on this page describes the branch as the agent left it
+  diagrams     ran      
+  sequence     ran      
+               note     also traced 4 test(s) this branch wrote or edited, untagged: visit-vet.feature: Book a visit attended by a vet, and see the vet on the owner page and on all visits; VisitTest.java: create_withVet; visit-vet.feature: Book a visit with nobody yet as its vet, and see it read "No vet" everywhere; VisitTest.java: create_withoutVet — 10 more over the cap of 6
+               note     the traced suites ran against http://localhost:54167, started by this run from the commit under review — not whatever was already listening
+               note     the traced suite was RED (cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq (exit 1); cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false (exit 1)); the diagrams below are of that run, and the guide has to say so
+  c2           ran      
+  c4           ran      
+  video        ran      
+               note     filmed against http://localhost:52825, started by this run from the commit under review — not whatever was already listening on :4200
+               note     EXIT 3 — filmed, and the feature did NOT hold. Embed it and lead the review with what it shows; this is the most valuable film this pipeline can make (1 screen(s) missed)
+  complexity   ran      
+  api          ran      
+  specchanges  ran      
+  logging      ran      
+  dsaudit      ran      
+  owners       ran      
+  tests        ran      
+  traces       ran      
+  testcov      ran      
+  city         ran      
+               note     codecity lit: 10 changed · coloured by outgoing coupling (put this measured number under the image; never type one)
+exit=0

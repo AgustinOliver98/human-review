@@ -1,9 +1,9 @@
   * traces -> requirements
     $ cd petclinic-test && PW_TRACE=on COVERAGE_DIR=../.human-review/coverage ./test-on-own-stack.sh npm test
 ↻ petclinic-6d5eb02f is already up
-http://localhost:49329
-📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:49173)
-🧪 npm test → app http://127.0.0.1:49329, backend http://127.0.0.1:49172 (petclinic-6d5eb02f)
+http://localhost:52825
+📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:52811)
+🧪 npm test → app http://127.0.0.1:52825, backend http://127.0.0.1:52810 (petclinic-6d5eb02f)
 
 > qa@1.0.0 test
 > playwright test
@@ -11,52 +11,53 @@ http://localhost:49329
 
 Running 16 tests using 1 worker
 
-  ✓   1 [chromium] › src/add-owner.spec.ts:47:5 › adds an owner from the New Owner form and finds them by last name (1.4s)
-  ✓   2 [chromium] › src/add-owner.spec.ts:59:5 › edits an owner from their own page and the change sticks (1.2s)
-  ✓   3 [chromium] › src/add-visit.spec.ts:34:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (10.1s)
+  ✓   1 [chromium] › src/add-owner.spec.ts:47:5 › adds an owner from the New Owner form and finds them by last name (1.0s)
+  ✓   2 [chromium] › src/add-owner.spec.ts:59:5 › edits an owner from their own page and the change sticks (1.0s)
+  ✓   3 [chromium] › src/add-visit.spec.ts:34:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (10.5s)
   -   4 [chromium] › src/chatbot.spec.ts:20:7 › PetClinic Assistant (chatbot) › shows the signed-in owner from the JWT as read-only text (no editable name field)
   -   5 [chromium] › src/chatbot.spec.ts:31:7 › PetClinic Assistant (chatbot) › answers a triage question without a server error
-  ✓   6 [chromium] › src/db-fixture.spec.ts:22:7 › a test that declares no DB fixture › starts on an empty database, the reference pet types still there (127ms)
-  ✓   7 [chromium] › src/db-fixture.spec.ts:32:7 › a test that declares no DB fixture › never sees what the test before it wrote (69ms)
-  ✓   8 [chromium] › src/db-fixture.spec.ts:40:7 › a test that declares the Default fixture › starts on the seed: owner 1 is Kevin McCallister (134ms)
-  ✓   9 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /__reset is not a route this application serves (22ms)
-  ✓  10 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/__reset is not a route this application serves (9ms)
-  ✓  11 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /reset is not a route this application serves (12ms)
-  ✓  12 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/reset is not a route this application serves (8ms)
-  ✓  13 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /actuator/reset is not a route this application serves (11ms)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/shows_all_visits_on_initial_load_2026-10-21T07-08-17-194Z.png
-  ✓  14 [chromium] › src/visits.spec.ts:30:7 › Visits Page › shows all visits on initial load (1.5s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-21T07-08-18-067Z.png
-  ✓  15 [chromium] › src/visits.spec.ts:47:7 › Visits Page › rows are sorted descending by date (820ms)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-21T07-08-18-861Z.png
-  ✓  16 [chromium] › src/visits.spec.ts:55:7 › Visits Page › owner link navigates to owner detail (754ms)
+  ✓   6 [chromium] › src/db-fixture.spec.ts:22:7 › a test that declares no DB fixture › starts on an empty database, the reference pet types still there (56ms)
+  ✓   7 [chromium] › src/db-fixture.spec.ts:32:7 › a test that declares no DB fixture › never sees what the test before it wrote (41ms)
+  ✓   8 [chromium] › src/db-fixture.spec.ts:40:7 › a test that declares the Default fixture › starts on the seed: owner 1 is Kevin McCallister (57ms)
+  ✓   9 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /__reset is not a route this application serves (8ms)
+  ✓  10 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/__reset is not a route this application serves (4ms)
+  ✓  11 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /reset is not a route this application serves (4ms)
+  ✓  12 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /api/reset is not a route this application serves (4ms)
+  ✓  13 [chromium] › src/no-reset-endpoint.spec.ts:24:9 › the backend offers no way to wipe its data › POST /actuator/reset is not a route this application serves (4ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/shows_all_visits_on_initial_load_2026-10-22T06-32-16-216Z.png
+  ✓  14 [chromium] › src/visits.spec.ts:30:7 › Visits Page › shows all visits on initial load (976ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-22T06-32-16-958Z.png
+  ✓  15 [chromium] › src/visits.spec.ts:47:7 › Visits Page › rows are sorted descending by date (627ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-22T06-32-17-558Z.png
+  ✓  16 [chromium] › src/visits.spec.ts:55:7 › Visits Page › owner link navigates to owner detail (543ms)
 🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
 🔭 Tempo behind http://localhost:3300
+⏳ Waiting 2.1s for the last trace window to close…
 ⚠️  "Add a visit to an existing pet from the owner detail page": fetch failed — skipped
 📊 Generated 0 diagram(s)
 
   2 skipped
-  14 passed (19.3s)
+  14 passed (18.0s)
     $ git rev-parse HEAD
     $ git rev-parse --short HEAD
     $ cd petclinic-test && PW_TRACE=on COVERAGE_DIR=../.human-review/coverage ./test-on-own-stack.sh npm run test:cucumber
 ↻ petclinic-6d5eb02f is already up
-http://localhost:49329
-📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:49173)
-🧪 npm run test:cucumber → app http://127.0.0.1:49329, backend http://127.0.0.1:49172 (petclinic-6d5eb02f)
+http://localhost:52825
+📏 per-test coverage → /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage (JaCoCo agent on 127.0.0.1:52811)
+🧪 npm run test:cucumber → app http://127.0.0.1:52825, backend http://127.0.0.1:52810 (petclinic-6d5eb02f)
 
 > qa@1.0.0 test:cucumber
 > SKIP_SERVER_START=1 cucumber-js
 
 ..................................................................🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
 🔭 Tempo behind http://localhost:3300
-⏳ Waiting 2.5s for the last trace window to close…
+⏳ Waiting 3.4s for the last trace window to close…
 ⚠️  "Searching with an empty last name lists every owner": fetch failed — skipped
 📊 Generated 0 diagram(s)
 
 
 9 scenarios (9 passed)
 48 steps (48 passed)
-0m31.663s (executing steps: 0m28.983s)
+0m18.722s (executing steps: 0m15.211s)
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/playwright-traces.py --report "petclinic-test/test-results/playwright-report" --out .human-review/assets --json .human-review/assets/traces.json --limit 16 --project-dir "petclinic-test" --cucumber "petclinic-test/test-results/cucumber-traces"
-[traces] 16 trace(s), 3.8 MB -> .human-review/assets/traces; 4 more not carried
+[traces] 16 trace(s), 3.3 MB -> .human-review/assets/traces; 4 more not carried

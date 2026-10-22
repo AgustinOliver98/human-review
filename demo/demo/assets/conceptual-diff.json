@@ -73,22 +73,22 @@
   "tested_against": "Java Domain Model",
   "rerun": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",
-    "command": "/Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base e51068416d74ff456cc90d281f4d0aa9995285ac --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
+    "command": "/Users/victorrentea/workspace/human-review/skills/human-review/scripts/drawio-diff.py --base 664c5b3b453fb758230de01e407064c45d07a844 --diagram petclinic-backend/docs/ConceptualModel.drawio.png --concepts petclinic-backend/docs/generated/DomainModel.puml --out-dir .human-review/assets --name conceptual --redraw 'python3 petclinic-backend/docs/scripts/conceptual-model-patch.py' --tested-against 'Java Domain Model'"
   },
   "redraw": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",
-    "command": "git checkout e51068416d74ff456cc90d281f4d0aa9995285ac -- petclinic-backend/docs/ConceptualModel.drawio.png && python3 petclinic-backend/docs/scripts/conceptual-model-patch.py",
+    "command": "git checkout 664c5b3b453fb758230de01e407064c45d07a844 -- petclinic-backend/docs/ConceptualModel.drawio.png && python3 petclinic-backend/docs/scripts/conceptual-model-patch.py",
     "diagram": "petclinic-backend/docs/ConceptualModel.drawio.png",
-    "base": "e51068416d74ff456cc90d281f4d0aa9995285ac"
+    "base": "664c5b3b453fb758230de01e407064c45d07a844"
   },
   "revert": {
     "cwd": "/Users/victorrentea/workspace/petclinic-pr-visit-has-vet",
-    "command": "git stash push -m 'human-review: hand edits to petclinic-backend/docs/ConceptualModel.drawio.png' -- petclinic-backend/docs/ConceptualModel.drawio.png && git checkout ca6b33ed3c2b821ef944d68ffab08468c852852f -- petclinic-backend/docs/ConceptualModel.drawio.png",
+    "command": "git stash push -m 'human-review: hand edits to petclinic-backend/docs/ConceptualModel.drawio.png' -- petclinic-backend/docs/ConceptualModel.drawio.png && git checkout 6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33 -- petclinic-backend/docs/ConceptualModel.drawio.png",
     "diagram": "petclinic-backend/docs/ConceptualModel.drawio.png",
-    "sha": "ca6b33ed3c2b821ef944d68ffab08468c852852f",
-    "short": "ca6b33ed",
-    "date": "2026-10-05",
-    "subject": "Conceptual model: Visit\u2013Vet drawn by the patch script as a straight line, to be laid out by hand",
+    "sha": "6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33",
+    "short": "6d5eb02f",
+    "date": "2026-10-21",
+    "subject": "Put ConceptualModel.drawio.png back: ce0e3ce4 swept it up by mistake",
     "machine_drawn": true
   }
 }

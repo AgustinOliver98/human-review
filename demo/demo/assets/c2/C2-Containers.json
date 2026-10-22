@@ -52,9 +52,9 @@
         "to": "DB",
         "status": "same",
         "protocol": "SQL",
-        "operations": 14,
+        "operations": 10,
         "operationsDelta": 0,
-        "calls": 238,
+        "calls": 228,
         "detail": [
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
@@ -87,29 +87,9 @@
             "calls": 1
           },
           {
-            "name": "insert for victor.training.petclinic.domain.Owner",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.Pet",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.PetType",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.Vet",
-            "path": "",
-            "calls": 2
-          },
-          {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 8
+            "calls": 6
           },
           {
             "name": "select owners",
@@ -405,9 +385,9 @@
         "to": "DB",
         "status": "same",
         "protocol": "SQL",
-        "operations": 14,
+        "operations": 10,
         "operationsDelta": 1,
-        "calls": 238,
+        "calls": 228,
         "detail": [
           {
             "name": "OwnerRepository.findByLastNameStartingWith",
@@ -440,29 +420,9 @@
             "calls": 1
           },
           {
-            "name": "insert for victor.training.petclinic.domain.Owner",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.Pet",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.PetType",
-            "path": "",
-            "calls": 2
-          },
-          {
-            "name": "insert for victor.training.petclinic.domain.Vet",
-            "path": "",
-            "calls": 2
-          },
-          {
             "name": "insert for victor.training.petclinic.domain.Visit",
             "path": "",
-            "calls": 8
+            "calls": 6
           },
           {
             "name": "select owners",
@@ -574,5 +534,5 @@
       "onlyOld": []
     }
   },
-  "base": "e51068416d74ff456cc90d281f4d0aa9995285ac"
+  "base": "664c5b3b453fb758230de01e407064c45d07a844"
 }

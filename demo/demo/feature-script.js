@@ -1,169 +1,104 @@
-// What this branch added, filmed: a visit now records the vet that attended it.
-//
-// The film's rule is "never leave a changed screen unshown", and the only way to keep that rule
-// true next time is to stop writing the list of screens down. `changed-screens.js` derives it
-// from the diff every run; everything below is driven by whatever it returns.
-//
-// Two consequences worth knowing before editing this file:
-//
-//   * A screen with no handler here is still filmed, by `passThrough` — a generic beat that
-//     navigates, spotlights the heading and says the screen changed. So the branch that adds a
-//     fifth screen gets it in the film without anyone remembering to come back here. Handlers
-//     are how a screen gets a BETTER beat, never how it gets one at all.
-//   * `ORDER` is narrative only. Screens named in it are filmed in that order; anything the
-//     derivation found that is not named is appended, never dropped.
-//
-// Only one screen earns a workflow: the booking form, which is where the feature actually
-// happens. Everything else gets a beat and a caption, because a screen that gained a column
-// has nothing to demonstrate — passing through it IS the evidence.
-//
-// One thing changed against the previous implementation of this ticket, and it is the reason
-// this file is not the old one: the vet field is no longer a bare `<select id="vetId">`. It is
-// the design system's `<app-combo inputId="vet">`, which renders a `<select id="vet">` whose
-// option VALUES are array indices and whose empty option is the `No vet` placeholder. So
-// the picker is found by `#vet` and driven by label, never by value — a value here is a
-// position in a list, and a film that clicked position 1 would be filming the seed order.
-
-const {changedScreens} = require("./changed-screens.js");
-
-// Narrative order: enter where a reviewer enters, book, then tour what else moved.
-const ORDER = ["owners/:id", "pets/:id/visits/add", "visits", "visits/:id/edit"];
-
-module.exports = async ({page, say, pause, get, app, apiUrl}) => {
-  const {screens, unreachable, unrouted} = changedScreens();
-
-  // A pet that already HAS visits, so the column the branch added has something in it. Picking
-  // the first owner with a pet is how you film an empty table against a freshly seeded database.
-  const owners = await (await get(`${apiUrl}/api/owners`)).json();
-  const owner = owners.find((o) => (o.pets || []).some((p) => (p.visits || []).length));
-  if (!owner) throw new Error("no owner with a visited pet in the database");
-  const pet = owner.pets.find((p) => (p.visits || []).length);
-
-  // Route parameters resolve from the collection segment in front of them — `pets/:id` is a pet,
-  // `visits/:id` a visit — rather than from a table of route strings, which would be the same
-  // hand-maintained list one level down.
-  let bookedVisitId = null;
-  const bag = {owners: () => owner.id, pets: () => pet.id, visits: () => bookedVisitId};
-  const fill = (route) => {
-    const segs = route.split("/");
-    return segs.map((seg, i) => {
-      if (!seg.startsWith(":")) return seg;
-      const source = bag[segs[i - 1]];
-      const value = source && source();
-      if (value == null) throw new Error(`cannot fill ${seg} of ${route}`);
-      return value;
-    }).join("/");
-  };
-
-  const heading = () => page.locator("h2").first();
-  const visited = [];
+// Film of "Link Visit with Vet" (#37): owner page, book with/without vet, edit/clear, all visits.
+module.exports = async ({page, say, pause, app}) => {
   const missed = [];
-
-  // The fallback. It is deliberately dull and deliberately honest: it names the screen and shows
-  // it, which is all "pass through" was ever supposed to mean.
-  const passThrough = async (screen) => {
-    await page.goto(`${app}/${fill(screen.route)}`);
-    await heading().waitFor();
-    await say(`This screen changed on this branch too.`, heading());
-    await pause(1800);
+  const visited = [];
+  const screen = async (name, fn) => {
+    try { await fn(); visited.push(name); }
+    catch (e) { missed.push(`${name} (${e.message.split("\n")[0]})`); }
+  };
+  const stamp = Date.now();
+  const withVet = `Dental follow-up ${stamp}`;
+  const noVet = `Quick look ${stamp}`;
+  const firstPet = () => page.locator("app-pet-list").first();
+  const row = (d) => firstPet().locator("app-visit-list tr").filter({hasText: d});
+  const book = async (description, vetLabel) => {
+    await firstPet().locator('button:has-text("Add Visit")').click();
+    await page.locator('h2:has-text("New Visit")').waitFor();
+    await page.locator('input[name="date"]').fill("2026-06-01");
+    await page.locator("input#description").fill(description);
+    if (vetLabel) await page.locator("select#vet").selectOption({label: vetLabel});
+    return page.locator("select#vet");
+  };
+  const submitAdd = async () => {
+    await page.locator('button[type="submit"]:has-text("Add Visit")').click();
+    await page.locator('h2:has-text("Owner Information")').waitFor();
   };
 
-  const handlers = {
-    "owners/:id": async (screen) => {
-      await page.goto(`${app}/${fill(screen.route)}`);
-      const visitList = page.locator("app-pet-list app-visit-list").first();
-      await visitList.waitFor();
-      await say("Every pet’s visit list now carries a Vet column.", visitList);
-      await pause(2200);
-    },
+  await screen("/owners/3 (visits with and without a vet)", async () => {
+    await page.goto(`${app}/owners/3`);
+    await page.locator('h2:has-text("Owner Information")').waitFor();
+    const header = page.locator("app-visit-list th").filter({hasText: /^Vet$/}).first();
+    await header.waitFor();
+    await say("The owner's page now has a Vet column on every visit.", header);
+    const named = page.locator("td.visit-vet").filter({hasNotText: "No vet"}).first();
+    await named.waitFor();
+    await say("A visit shows the vet who attended it.", named);
+    const none = page.locator("td.visit-vet").filter({hasText: "No vet"}).first();
+    await none.waitFor();
+    await say("A visit with no vet reads No vet, never blank.", none);
+    await pause(1000);
+  });
 
-    "pets/:id/visits/add": async (screen) => {
-      await page.goto(`${app}/${fill(screen.route)}`);
-      await page.locator('h2:has-text("New Visit")').waitFor({state: "visible"});
-      await page.locator('input[name="date"]').fill("2026-05-12");
-      const description = `Human review demo ${Date.now()}`;
-      await page.locator("input#description").fill(description);
+  await screen("/owners/3 -> New Visit (choose a vet)", async () => {
+    const vet = await book(withVet, null);
+    await vet.waitFor();
+    await say("Booking a visit has a new optional Vet field, empty by default.", vet);
+    const first = await vet.locator('option:not([value=""])').first().textContent();
+    await vet.selectOption({label: first.trim()});
+    await say("Here a vet is chosen.", vet);
+    await submitAdd();
+    const cell = row(withVet).locator("td.visit-vet");
+    await cell.waitFor();
+    await say("The new visit lists the chosen vet.", cell);
+  });
 
-      // `#vet` is the select the design-system combo renders from `inputId`, not the `vetId`
-      // the form control is called. Both spellings are in this template; only one is in the DOM.
-      const vetSelect = page.locator("select#vet");
-      await vetSelect.waitFor();
-      await say("The booking form asks who will attend — and lets you say nobody yet.", vetSelect);
-      await pause(2200);
+  await screen("/owners/3 -> New Visit (no vet)", async () => {
+    const vet = await book(noVet, null);
+    await vet.waitFor();
+    await say("Leaving the vet empty is allowed.", vet);
+    await submitAdd();
+    const cell = row(noVet).locator("td.visit-vet");
+    await cell.filter({hasText: "No vet"}).waitFor();
+    await say("It is saved and reads No vet.", cell);
+  });
 
-      // By label, never by value: the combo's option values are indices into `vetOptions`, so
-      // a value here would pin the film to the order the seed happened to load the roster in.
-      const firstVet = vetSelect.locator('option:not([value=""])').first();
-      const vetName = (await firstVet.textContent() || "").trim();
-      if (!vetName) throw new Error("the vet picker offers nothing but the placeholder");
-      await vetSelect.selectOption({label: vetName});
-      await say(`We book this one with ${vetName}.`, vetSelect);
-      await pause(1800);
+  await screen("Edit Visit (change then clear the vet)", async () => {
+    await row(withVet).locator('button:has-text("Edit Visit")').click();
+    await page.locator('h2:has-text("Edit Visit")').waitFor();
+    const vet = page.locator("select#vet");
+    await vet.waitFor();
+    await say("Editing a visit can change the vet.", vet);
+    const options = await vet.locator("option").allTextContents();
+    const other = options.map(o => o.trim()).filter(o => o && o !== "-- none --").pop();
+    await vet.selectOption({label: other});
+    await page.locator('button:has-text("Update Visit")').click();
+    await page.locator('h2:has-text("Owner Information")').waitFor();
+    await row(withVet).locator("td.visit-vet").filter({hasText: other}).waitFor();
 
-      await page.locator('button[type="submit"]:has-text("Add Visit")').click();
-      await page.waitForURL(new RegExp(`/owners/${owner.id}$`));
+    await row(withVet).locator('button:has-text("Edit Visit")').click();
+    await page.locator('h2:has-text("Edit Visit")').waitFor();
+    await vet.selectOption({label: "-- none --"});
+    await say("Or remove it: choosing none clears it.", vet);
+    await page.locator('button:has-text("Update Visit")').click();
+    await page.locator('h2:has-text("Owner Information")').waitFor();
+    const cell = row(withVet).locator("td.visit-vet");
+    await cell.filter({hasText: "No vet"}).waitFor();
+    await say("Cleared, and it persisted as No vet.", cell);
+  });
 
-      const row = page.locator("app-pet-list").first()
-        .locator("app-visit-list tr").filter({hasText: description});
-      await row.waitFor();
-      const shown = (await row.locator(".visit-vet").textContent() || "").trim();
-      await say("Back on the owner, the new visit names the vet that will attend it.", row);
-      await pause(2200);
+  await screen("/visits (all visits)", async () => {
+    await page.goto(`${app}/visits`);
+    const header = page.locator("#visitsTable th").filter({hasText: /^Vet$/});
+    await header.waitFor();
+    await say("The all-visits screen carries the same Vet column.", header);
+    const named = page.locator("#visitsTable td.visit-vet").filter({hasNotText: "No vet"}).first();
+    await named.waitFor();
+    await say("Vet names and No vet appear here too.", named);
+    await pause(1000);
+  });
 
-      // The visit just booked is the one the edit screen should open: it is the only row on the
-      // branch guaranteed to have a vet on it.
-      const all = await (await get(`${apiUrl}/api/visits`)).json();
-      const mine = all.find((v) => v.description === description);
-      if (mine) bookedVisitId = mine.id;
-      return {ok: shown === vetName, vetName, shown};
-    },
-
-    "visits": async (screen) => {
-      await page.goto(`${app}/${fill(screen.route)}`);
-      // The column, not the table. Spotlighting the whole grid is a box round the entire frame,
-      // which points at nothing — and what changed here is one header and the cells under it.
-      const vetColumn = page.locator("#visitsTable th").filter({hasText: /^Vet$/});
-      await vetColumn.waitFor();
-      await say("The all-visits page carries the same column.", vetColumn);
-      await pause(1900);
-    },
-
-    "visits/:id/edit": async (screen) => {
-      await page.goto(`${app}/${fill(screen.route)}`);
-      // The same design-system combo as the booking form; its empty option is the "No vet" placeholder.
-      const vetSelect = page.locator("select#vet");
-      await vetSelect.waitFor();
-      await say("And on the edit form, picking “No vet” is what unassigns a vet.", vetSelect);
-      await pause(2100);
-    },
+  return {
+    ok: missed.length === 0,
+    note: `${visited.length}/5 screens filmed` + (missed.length ? ` | FAILED to reach: ${missed.join("; ")}` : ""),
   };
-
-  const ordered = [
-    ...ORDER.map((r) => screens.find((s) => s.route === r)).filter(Boolean),
-    ...screens.filter((s) => !ORDER.includes(s.route)),
-  ];
-
-  let outcome = {ok: true};
-  for (const screen of ordered) {
-    const handler = handlers[screen.route] || passThrough;
-    try {
-      const result = await handler(screen);
-      visited.push(screen.route);
-      if (result && result.ok === false) {
-        outcome = {ok: false, shown: result.shown, vetName: result.vetName};
-      }
-    } catch (e) {
-      // A screen that could not be reached is said out loud rather than quietly dropped: a gap
-      // in the film's coverage is exactly the thing a reviewer cannot see for themselves.
-      missed.push(`${screen.route} (${e.message.split("\n")[0]})`);
-    }
-  }
-
-  const notes = [`${visited.length}/${ordered.length} changed screens filmed`];
-  for (const u of unreachable) notes.push(`not filmable: /${u.route} — ${u.reason}`);
-  for (const u of unrouted) notes.push(`not filmable: ${u.why}`);
-  if (missed.length) notes.push(`FAILED to reach: ${missed.join("; ")}`);
-  if (!outcome.ok) notes.push(`⚠ the list shows "${outcome.shown}" instead of ${outcome.vetName}`);
-
-  return {ok: outcome.ok && missed.length === 0, note: notes.join(" | ")};
 };

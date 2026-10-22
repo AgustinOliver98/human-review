@@ -1,24 +1,352 @@
   * video -> behaviour
     $ git rev-parse HEAD
     $ git rev-parse --short HEAD
-    $ ./start-docker.sh url petclinic-be762955
-    reusing the stack already up at http://localhost:54891
+    $ ./start-docker.sh url petclinic-6d5eb02f
+    $ ./start-docker.sh up --ref 6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33 --ttl 1800
+🐳 building petclinic-6d5eb02f from 6d5eb02f  (this takes a few minutes the first time)
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.93kB done
+#1 DONE 0.0s
+
+#2 [frontend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.67kB done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.22kB done
+#3 DONE 0.0s
+
+#4 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
+#4 DONE 0.0s
+
+#5 [frontend internal] load metadata for docker.io/library/node:18-bookworm-slim
+#5 DONE 0.0s
+
+#6 [reset internal] load build definition from Dockerfile
+#6 transferring dockerfile: 1.67kB done
+#6 DONE 0.0s
+
+#7 [notification internal] load build definition from Dockerfile
+#7 transferring dockerfile: 1.22kB done
+#7 DONE 0.0s
+
+#8 [notification internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#8 DONE 0.0s
+
+#9 [notification internal] load metadata for docker.io/library/eclipse-temurin:21-jre
+#9 DONE 0.0s
+
+#10 [reset internal] load metadata for docker.io/library/alpine:3.20
+#10 DONE 0.0s
+
+#11 [frontend internal] load .dockerignore
+#11 transferring context: 67B done
+#11 DONE 0.0s
+
+#12 [reset context reference] load .dockerignore
+#12 transferring reference: 2B done
+#12 DONE 0.0s
+
+#13 [notification context commons] load .dockerignore
+#13 transferring commons: 2B done
+#13 DONE 0.0s
+
+#14 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
+#14 DONE 0.0s
+
+#15 [frontend runtime 1/4] FROM docker.io/library/nginx:1.27-alpine
+#15 DONE 0.0s
+
+#16 [reset context fixtures] load .dockerignore
+#16 transferring fixtures: 2B done
+#16 DONE 0.0s
+
+#17 [backend internal] load .dockerignore
+#17 transferring context: 230B done
+#17 DONE 0.0s
+
+#18 [notification internal] load .dockerignore
+#18 transferring context: 60B done
+#18 DONE 0.0s
+
+#19 [reset internal] load .dockerignore
+#19 transferring context: 2B done
+#19 DONE 0.0s
+
+#20 [notification stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre
+#20 DONE 0.0s
+
+#21 [notification build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
+#21 DONE 0.0s
+
+#22 [reset stage-0 1/6] FROM docker.io/library/alpine:3.20
+#22 DONE 0.0s
+
+#23 [backend context commons] load from client
+#23 transferring commons: 4.01kB done
+#23 DONE 0.0s
+
+#24 [notification internal] load build context
+#24 transferring context: 9.47kB done
+#24 DONE 0.0s
+
+#25 [notification context commons] load from client
+#25 transferring commons: 12.96kB 0.0s done
+#25 DONE 0.1s
+
+#26 [reset internal] load build context
+#26 transferring context: 7.05kB done
+#26 DONE 0.0s
+
+#27 [reset context fixtures] load from client
+#27 transferring fixtures: 2.80kB done
+#27 DONE 0.0s
+
+#28 [reset context reference] load from client
+#28 transferring reference: 2.64kB done
+#28 DONE 0.1s
+
+#29 [backend internal] load build context
+#29 transferring context: 483.44kB 0.0s done
+#29 DONE 0.1s
+
+#30 [frontend internal] load build context
+#30 transferring context: 2.90MB 0.1s done
+#30 DONE 0.1s
+
+#31 [notification build 7/8] COPY src ./src
+#31 CACHED
+
+#32 [notification build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
+#32 CACHED
+
+#33 [notification build 6/8] COPY pom.xml .
+#33 CACHED
+
+#34 [notification stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
+#34 CACHED
+
+#35 [notification] exporting to image
+#35 exporting layers done
+#35 writing image sha256:ea45bedf54a3cf6e8e5892962f0f3dd37801b9d5e872212d75430cd3af870a9b done
+#35 naming to docker.io/library/petclinic-env-notification:6d5eb02f done
+#35 DONE 0.0s
+
+#36 [reset stage-0 5/6] COPY --from=reference R__reference.sql /reference.sql
+#36 CACHED
+
+#37 [reset stage-0 3/6] COPY reset-server.py /reset-server.py
+#37 CACHED
+
+#38 [reset stage-0 4/6] COPY --from=fixtures . /fixtures/
+#38 CACHED
+
+#39 [reset stage-0 2/6] RUN apk add --no-cache postgresql16-client python3
+#39 CACHED
+
+#40 [backend build 7/8] COPY src ./src
+#40 CACHED
+
+#41 [backend stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#41 CACHED
+
+#42 [backend build 3/8] COPY --from=commons src /commons/src
+#42 CACHED
+
+#43 [backend stage-1 3/4] WORKDIR /app
+#43 CACHED
+
+#44 [backend build 2/8] COPY --from=commons pom.xml /commons/pom.xml
+#44 CACHED
+
+#45 [backend build 4/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B -f /commons/pom.xml install
+#45 CACHED
+
+#46 [backend build 5/8] WORKDIR /app
+#46 CACHED
+
+#47 [backend build 6/8] COPY pom.xml .
+#47 CACHED
+
+#48 [backend build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
+#48 CACHED
+
+#49 [backend stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
+#49 CACHED
+
+#50 [reset stage-0 6/6] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
+#50 CACHED
+
+#51 [frontend build 7/7] RUN npx ng build --configuration docker
+#51 CACHED
+
+#52 [frontend runtime 2/4] COPY --from=build /app/dist/ /usr/share/nginx/html/
+#52 CACHED
+
+#53 [frontend build 4/7] COPY package.json package-lock.json ./
+#53 CACHED
+
+#54 [frontend build 6/7] COPY . .
+#54 CACHED
+
+#55 [frontend build 3/7] WORKDIR /app
+#55 CACHED
+
+#56 [frontend runtime 3/4] COPY nginx.conf /etc/nginx/conf.d/default.conf
+#56 CACHED
+
+#57 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
+#57 CACHED
+
+#58 [frontend build 5/7] RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
+#58 CACHED
+
+#59 [frontend runtime 4/4] COPY proxy-backend.conf /etc/nginx/proxy-backend.conf
+#59 CACHED
+
+#60 [notification] resolving provenance for metadata file
+#60 DONE 0.0s
+
+#61 [backend] exporting to image
+#61 exporting layers done
+#61 writing image sha256:12d0c94bd83d6f8239d88ab254a9926eddec2aa9653fae1093817eb33d88ae6d 0.0s done
+#61 naming to docker.io/library/petclinic-env-backend:6d5eb02f done
+#61 DONE 0.0s
+
+#62 [frontend] exporting to image
+#62 exporting layers done
+#62 writing image sha256:09d3c4fc12a927ca5802c6fbe120e78c34c67aa6f3dfa74bb2241378557cb303 0.0s done
+#62 naming to docker.io/library/petclinic-env-frontend:6d5eb02f done
+#62 DONE 0.0s
+
+#63 [reset] exporting to image
+#63 exporting layers done
+#63 writing image sha256:a9d099996f095e630b0bc8fdedfcb59fa79e2b551d0ee6e509539fb05f535847 0.0s done
+#63 naming to docker.io/library/petclinic-env-reset:6d5eb02f done
+#63 DONE 0.0s
+
+#64 [backend] resolving provenance for metadata file
+#64 DONE 0.0s
+
+#65 [frontend] resolving provenance for metadata file
+#65 DONE 0.0s
+
+#66 [reset] resolving provenance for metadata file
+#66 DONE 0.0s
+
+✅ petclinic-6d5eb02f ready — reaps itself after 30 idle minutes
+   http://localhost:53202
+   (copied to the clipboard)
+ Image petclinic-env-backend:6d5eb02f Building 
+ Image petclinic-env-notification:6d5eb02f Building 
+ Image petclinic-env-frontend:6d5eb02f Building 
+ Image petclinic-env-reset:6d5eb02f Building 
+ Image petclinic-env-reset:6d5eb02f Built 
+ Image petclinic-env-frontend:6d5eb02f Built 
+ Image petclinic-env-notification:6d5eb02f Built 
+ Image petclinic-env-backend:6d5eb02f Built 
+ Network petclinic-6d5eb02f_default Creating 
+ Network petclinic-6d5eb02f_default Created 
+ Volume petclinic-6d5eb02f_pgdata Creating 
+ Volume petclinic-6d5eb02f_pgdata Created 
+ Volume petclinic-6d5eb02f_activity Creating 
+ Volume petclinic-6d5eb02f_activity Created 
+ Volume petclinic-6d5eb02f_seed Creating 
+ Volume petclinic-6d5eb02f_seed Created 
+ Container petclinic-6d5eb02f-notification-1 Creating 
+ Container petclinic-6d5eb02f-reaper-1 Creating 
+ Container petclinic-6d5eb02f-db-1 Creating 
+ Container petclinic-6d5eb02f-db-1 Created 
+ Container petclinic-6d5eb02f-reaper-1 Created 
+ Container petclinic-6d5eb02f-notification-1 Created 
+ Container petclinic-6d5eb02f-backend-1 Creating 
+ Container petclinic-6d5eb02f-backend-1 Created 
+ Container petclinic-6d5eb02f-reset-1 Creating 
+ Container petclinic-6d5eb02f-frontend-1 Creating 
+ Container petclinic-6d5eb02f-frontend-1 Created 
+ Container petclinic-6d5eb02f-reset-1 Created 
+ Container petclinic-6d5eb02f-notification-1 Starting 
+ Container petclinic-6d5eb02f-reaper-1 Starting 
+ Container petclinic-6d5eb02f-db-1 Starting 
+ Container petclinic-6d5eb02f-notification-1 Started 
+ Container petclinic-6d5eb02f-db-1 Started 
+ Container petclinic-6d5eb02f-db-1 Waiting 
+ Container petclinic-6d5eb02f-notification-1 Waiting 
+ Container petclinic-6d5eb02f-reaper-1 Started 
+ Container petclinic-6d5eb02f-notification-1 Healthy 
+ Container petclinic-6d5eb02f-db-1 Healthy 
+ Container petclinic-6d5eb02f-backend-1 Starting 
+ Container petclinic-6d5eb02f-backend-1 Started 
+ Container petclinic-6d5eb02f-backend-1 Waiting 
+ Container petclinic-6d5eb02f-backend-1 Waiting 
+ Container petclinic-6d5eb02f-backend-1 Healthy 
+ Container petclinic-6d5eb02f-frontend-1 Starting 
+ Container petclinic-6d5eb02f-backend-1 Healthy 
+ Container petclinic-6d5eb02f-reset-1 Starting 
+ Container petclinic-6d5eb02f-frontend-1 Started 
+ Container petclinic-6d5eb02f-reset-1 Started 
+ Container petclinic-6d5eb02f-reset-1 Waiting 
+ Container petclinic-6d5eb02f-reaper-1 Waiting 
+ Container petclinic-6d5eb02f-db-1 Waiting 
+ Container petclinic-6d5eb02f-backend-1 Waiting 
+ Container petclinic-6d5eb02f-notification-1 Waiting 
+ Container petclinic-6d5eb02f-frontend-1 Waiting 
+ Container petclinic-6d5eb02f-backend-1 Healthy 
+ Container petclinic-6d5eb02f-notification-1 Healthy 
+ Container petclinic-6d5eb02f-reaper-1 Healthy 
+ Container petclinic-6d5eb02f-db-1 Healthy 
+ Container petclinic-6d5eb02f-reset-1 Healthy 
+ Container petclinic-6d5eb02f-frontend-1 Healthy 
     seed: reset (/__reset)
-    $ BASE_URL=http://localhost:54891 API_URL=http://localhost:54891 HUMAN_REVIEW_APP_COMMIT=be762955d5f477feeca0f7db55e32fa1c2fb8db5 HUMAN_REVIEW_APP_STARTED=1 /Users/victorrentea/workspace/human-review/skills/human-review/scripts/record-feature-video.sh .human-review/assets/feature.webm
-[video] the app cannot say which commit it is; this run started it itself, from be762955d5f477feeca0f7db55e32fa1c2fb8db5
-[video] title card: "Demo" / "Link Visit with Vet", 3.41s
-[video] feature-script.js: 5/5 changed screens filmed | not filmable: /pets — PetListComponent is driven by @Input(pet), which no URL can supply — it is only ever a child of another screen, 7 cues (7 with a box) -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.raw.webm
+    $ BASE_URL=http://localhost:53202 API_URL=http://localhost:53202 HUMAN_REVIEW_APP_COMMIT=6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33 HUMAN_REVIEW_APP_STARTED=1 /Users/victorrentea/workspace/human-review/skills/human-review/scripts/record-feature-video.sh .human-review/assets/feature.webm
+    $ ./start-docker.sh down petclinic-6d5eb02f
+ Container petclinic-6d5eb02f-frontend-1 Stopping 
+ Container petclinic-6d5eb02f-reaper-1 Stopping 
+ Container petclinic-6d5eb02f-reset-1 Stopping 
+ Container petclinic-6d5eb02f-frontend-1 Stopped 
+ Container petclinic-6d5eb02f-frontend-1 Removing 
+ Container petclinic-6d5eb02f-frontend-1 Removed 
+ Container petclinic-6d5eb02f-reaper-1 Stopped 
+ Container petclinic-6d5eb02f-reaper-1 Removing 
+ Container petclinic-6d5eb02f-reaper-1 Removed 
+ Container petclinic-6d5eb02f-reset-1 Stopped 
+ Container petclinic-6d5eb02f-reset-1 Removing 
+ Container petclinic-6d5eb02f-reset-1 Removed 
+ Container petclinic-6d5eb02f-backend-1 Stopping 
+ Container petclinic-6d5eb02f-backend-1 Stopped 
+ Container petclinic-6d5eb02f-backend-1 Removing 
+ Container petclinic-6d5eb02f-backend-1 Removed 
+ Container petclinic-6d5eb02f-notification-1 Stopping 
+ Container petclinic-6d5eb02f-db-1 Stopping 
+ Container petclinic-6d5eb02f-notification-1 Stopped 
+ Container petclinic-6d5eb02f-notification-1 Removing 
+ Container petclinic-6d5eb02f-notification-1 Removed 
+ Container petclinic-6d5eb02f-db-1 Stopped 
+ Container petclinic-6d5eb02f-db-1 Removing 
+ Container petclinic-6d5eb02f-db-1 Removed 
+ Network petclinic-6d5eb02f_default Removing 
+ Volume petclinic-6d5eb02f_activity Removing 
+ Volume petclinic-6d5eb02f_pgdata Removing 
+ Volume petclinic-6d5eb02f_seed Removing 
+ Volume petclinic-6d5eb02f_activity Removed 
+ Volume petclinic-6d5eb02f_seed Removed 
+ Volume petclinic-6d5eb02f_pgdata Removed 
+ Network petclinic-6d5eb02f_default Removed 
+🛑 petclinic-6d5eb02f
+[video] the app cannot say which commit it is; this run started it itself, from 6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33
+[video] title card: "Demo" / "Link Visit with Vet (#37), reimplemented unguided by Opus", 3.41s
+[video] feature-script.js: 5/5 screens filmed, 13 cues (13 with a box) -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.raw.webm
 [video] viewport 1280x800 @ dpr 1
-[video] narration: 7/7 cues, 19.6s of speech, voice "Samantha"
-[video] cut 36.0s of still footage (21 stretches): 69.8s -> 33.8s
-[annotate] 127 caption states from 127 frames
-[annotate] 7 captions, 7 spotlights, 7 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.webm
-[video] cut 26.2s of still footage (16 stretches): 69.8s -> 43.7s
-[annotate] 142 caption states from 142 frames
-[annotate] 7 captions, 7 spotlights, 7 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-trump.webm
+[video] narration: 13/13 cues, 28.0s of speech, voice "Samantha"
+[video] cut 34.4s of still footage (28 stretches): 79.8s -> 45.3s
+[annotate] 182 caption states from 182 frames
+[annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.webm
+[video] cut 17.7s of still footage (23 stretches): 79.8s -> 62.1s
+[annotate] 201 caption states from 201 frames
+[annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-trump.webm
 [video] 🐘 voice -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-trump.webm
-[video] cut 25.2s of still footage (15 stretches): 69.8s -> 44.7s
-[annotate] 141 caption states from 141 frames
-[annotate] 7 captions, 7 spotlights, 7 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-discovery.webm
+[video] cut 15.2s of still footage (18 stretches): 79.8s -> 64.5s
+[annotate] 201 caption states from 201 frames
+[annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-discovery.webm
 [video] Discovery voice -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-discovery.webm
-[video] 33.880000s, 2.3M
+[video] 45.240000s, 2.3M

@@ -2,7 +2,7 @@
  "base": "664c5b3b453fb758230de01e407064c45d07a844",
  "head": "HEAD",
  "points_file": "review-points.md",
- "commits": 102,
+ "commits": 106,
  "implementation": "1bcf74d4f14a165cabaaa7e9cd1cc5faaa3311b1",
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "session": "82329d0a-55d2-448f-aff5-0363cf80b32f",
@@ -43,7 +43,11 @@
   "f39b342543d5d7b3e029abeee5fbb198f8f2b4e0",
   "056347a042718632674e587155e1320cdfc594cf",
   "49c7f06cefb2e2e6eac35604e788ea7d8458d13a",
-  "1bd1e444f1796cb676349a523a50c8f00e446218"
+  "1bd1e444f1796cb676349a523a50c8f00e446218",
+  "74fbab9595f1a2682b42b3fa0899011cc09e675a",
+  "fe3c171fc03f7ce7de49027674ce67564032ab05",
+  "ce0e3ce404fcf12a6b154ab8e5c06f1ef7c09166",
+  "6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33"
  ],
  "after_detail": [
   {
@@ -260,6 +264,30 @@
    "sha": "1bd1e444f1796cb676349a523a50c8f00e446218",
    "when": "2026-10-20T09:09:29+02:00",
    "subject": "API examples show the visit's vet: one visit with a vet, one without",
+   "auto_fix": false
+  },
+  {
+   "sha": "74fbab9595f1a2682b42b3fa0899011cc09e675a",
+   "when": "2026-10-21T09:52:58+03:00",
+   "subject": "Merge remote-tracking branch 'origin/main' into test-pr",
+   "auto_fix": false
+  },
+  {
+   "sha": "fe3c171fc03f7ce7de49027674ce67564032ab05",
+   "when": "2026-10-21T09:54:29+03:00",
+   "subject": "visit-vet.feature declares the Default dataset it books onto",
+   "auto_fix": false
+  },
+  {
+   "sha": "ce0e3ce404fcf12a6b154ab8e5c06f1ef7c09166",
+   "when": "2026-10-21T09:55:00+03:00",
+   "subject": "review-points: base moved to main's 664c5b3b (merged)",
+   "auto_fix": false
+  },
+  {
+   "sha": "6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33",
+   "when": "2026-10-21T09:55:59+03:00",
+   "subject": "Put ConceptualModel.drawio.png back: ce0e3ce4 swept it up by mistake",
    "auto_fix": false
   }
  ],

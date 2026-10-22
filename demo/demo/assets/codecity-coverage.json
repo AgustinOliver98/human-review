@@ -195,11 +195,11 @@
 },
 "petclinic-backend/src/main/java/victor/training/petclinic/notification/NotificationServiceClient.java":{
 "line":{
-"covered":8,
+"covered":10,
 "total":10
 },
 "acceptance":{
-"covered":8,
+"covered":10,
 "total":10
 }
 },

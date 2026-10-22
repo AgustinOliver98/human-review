@@ -1,11 +1,10 @@
   * city -> city
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/city-coverage.py --in .human-review/assets/test-coverage.json --out .human-review/assets/codecity-coverage.json
-[city-coverage] 127 file(s): line coverage 68.6%, acceptance 50.1% -> .human-review/assets/codecity-coverage.json
+[city-coverage] 127 file(s): line coverage 68.7%, acceptance 50.2% -> .human-review/assets/codecity-coverage.json
     $ git rev-parse HEAD
     $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/regenerate-codecity.sh --out ".human-review/assets/codecity" --title "Code City" --coverage ".human-review/assets/codecity-coverage.json"
 updating the Code City generators in /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/.tools/codecity ...
-using /opt/homebrew/bin/python3.12 for the generators — .pylibs was vendored for python3.12, not for Python 3.14.7
 repo:  /Users/victorrentea/workspace/petclinic-pr-visit-has-vet
 out:   /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/codecity
 coverage: /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/codecity-coverage.json

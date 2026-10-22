@@ -14,7 +14,7 @@
         }
       ]
     },
-    "1st0skh": {
+    "0atwsa0": {
       "title": "insert for victor.training.petclinic.domain.Visit",
       "steps": [
         {
@@ -22,7 +22,7 @@
           "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES (?, ?, ?, ?, ?)",
           "alternate": {
             "label": "",
-            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-10-21', 'annual checkup', 1, 1, ?)"
+            "text": "INSERT INTO visits (visit_date, description, pet_id, visit_time, vet_id)\nVALUES ('2026-10-22', 'annual checkup', 1, 1, ?)"
           }
         }
       ]

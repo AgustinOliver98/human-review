@@ -1,6 +1,6 @@
 {
   "slug": "demo",
-  "title": "Link Visit with Vet",
+  "title": "Link Visit with Vet (#37), reimplemented unguided by Opus",
   "shots": [
     {
       "panel": "review",
@@ -64,7 +64,7 @@
     },
     {
       "panel": "cost",
-      "title": "$11",
+      "title": "$9",
       "file": "cost.jpg"
     }
   ]

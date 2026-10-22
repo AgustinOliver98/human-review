@@ -1,250 +1,232 @@
 {
-  "title": "Link Visit with Vet",
-  "subtitle": "A visit now records the vet that attended it.",
-  "pr": {
-    "number": 49,
-    "title": "Link Visit with Vet (#37), reimplemented unguided by Opus",
-    "url": "https://github.com/victorrentea/petclinic/pull/49",
-    "repo": "https://github.com/victorrentea/petclinic",
-    "branch": "test-pr",
-    "base": "main",
-    "ticket": 37
+ "scope": [
+  {
+   "auto": "diffstat"
   },
-  "scope": [
+  {
+   "auto": "tests",
+   "href": "#requirements"
+  },
+  {
+   "auto": "autofixed",
+   "href": "#review"
+  }
+ ],
+ "findings": {
+  "auto": "review-points"
+ },
+ "autofixes": {
+  "auto": "review-points"
+ },
+ "assumptions": {
+  "auto": "review-points"
+ },
+ "codecity": {
+  "png": "assets/codecity.png",
+  "href": "assets/codecity/codecity.html"
+ },
+ "extraCss": [
+  "assets/openapi-compat.css",
+  "assets/complexity-delta.css",
+  "assets/ds-audit.css"
+ ],
+ "testChanges": "assets/test-changes.json",
+ "playwrightTraces": "assets/traces.json",
+ "tabs": [
+  {
+   "id": "review",
+   "label": "Review",
+   "count": true,
+   "blocks": [
     {
-      "auto": "diffstat"
+     "type": "findings"
     },
     {
-      "auto": "tests",
-      "href": "#requirements"
+     "type": "autofixes"
     },
     {
-      "auto": "autofixed",
-      "href": "#review"
+     "type": "assumptions"
     }
-  ],
-  "verdict": {
-    "score": 7,
-    "bullets": []
+   ]
   },
-  "extraCss": [
-    "assets/openapi-diff.css",
-    "assets/openapi-compat.css",
-    "assets/complexity-delta.css",
-    "assets/ds-audit.css"
-  ],
-  "testChanges": "assets/test-changes.json",
-  "playwrightTraces": "assets/traces.json",
-  "findings": {
-    "auto": "review-points"
-  },
-  "autofixes": {
-    "auto": "review-points"
-  },
-  "assumptions": {
-    "auto": "review-points"
-  },
-  "codecity": {
-    "png": "assets/codecity.png",
-    "href": "assets/codecity/codecity.html"
-  },
-  "sections": [
+  {
+   "id": "behaviour",
+   "label": "Demo",
+   "blocks": [
     {
-      "id": "video",
-      "title": "",
-      "video": "assets/feature.webm"
-    },
-    {
-      "id": "requirements-map",
-      "title": "",
-      "body": "",
-      "includeHtml": "assets/requirements-map.html",
-      "includeFirst": true
-    },
-    {
-      "id": "complexity-delta",
-      "title": "",
-      "includeHtml": "assets/complexity-delta.html"
-    },
-    {
-      "id": "ds-audit",
-      "title": "",
-      "includeHtml": "assets/ds-audit.html"
+     "type": "section",
+     "id": "video"
     }
-  ],
-  "tabs": [
+   ]
+  },
+  {
+   "id": "api",
+   "label": "API",
+   "blocks": [
     {
-      "id": "review",
-      "label": "Review",
-      "count": true,
-      "blocks": [
-        {
-          "type": "findings",
-          "title": "Declined by the coding agent",
-          "body": "Raised by its own reviewers and left as is, each with the reason. Agree or overrule."
-        },
-        {
-          "type": "autofixes",
-          "title": "Fixed after review",
-          "body": "Each diff is against <code>1bcf74d4</code>, the implementation commit, so the review's changes read apart from the feature's."
-        },
-        {
-          "type": "assumptions",
-          "title": "Implementation assumptions",
-          "body": "Where ticket #37 was silent, the reading taken. Each one is a product decision, not a defect."
-        }
-      ],
-      "tip": "What the coding agent left open, fixed and assumed — its own record, committed with the code."
-    },
-    {
-      "id": "behaviour",
-      "label": "Demo",
-      "blocks": [
-        {
-          "type": "section",
-          "id": "video"
-        }
-      ],
-      "tip": "Filmed against an instance this run started from HEAD — not whatever was on :4200."
-    },
-    {
-      "id": "api",
-      "label": "API",
-      "blocks": [
-        {
-          "type": "section",
-          "id": "swaggerdiff"
-        }
-      ],
-      "tip": "Every operation and schema the branch moved, classified."
-    },
-    {
-      "id": "data",
-      "label": "Data",
-      "blocks": [
-        {
-          "type": "diagrams",
-          "only": [
-            "DomainModel",
-            "DB"
-          ]
-        },
-        {
-          "type": "section",
-          "id": "conceptual"
-        }
-      ],
-      "tip": "Structural diff of the committed .puml files."
-    },
-    {
-      "id": "requirements",
-      "label": "Tests",
-      "blocks": [
-        {
-          "type": "section",
-          "id": "requirements-map"
-        }
-      ],
-      "tip": "Each sentence of the ticket against the tests that pin it — and what is still not proven."
-    },
-    {
-      "id": "sequence",
-      "label": "Sequence",
-      "blocks": [
-        {
-          "type": "testpairs",
-          "id": "sequences",
-          "kind": "sequence"
-        }
-      ],
-      "tip": "Real OpenTelemetry traces, drawn — when the traced suite can run."
-    },
-    {
-      "id": "packages",
-      "label": "Structure",
-      "blocks": [
-        {
-          "type": "puml",
-          "src": "petclinic-backend/docs/packages.puml",
-          "name": "Java packages",
-          "status": "unchanged"
-        },
-        {
-          "type": "puml",
-          "src": "petclinic-backend/docs/generated/MavenModules.puml",
-          "name": "Maven modules",
-          "status": "unchanged"
-        },
-        {
-          "type": "diagrams",
-          "manifest": "assets/c2/MANIFEST.tsv",
-          "only": [
-            "C2-Containers"
-          ],
-          "id": "c2-containers"
-        }
-      ],
-      "tip": "Rendered from source and diffed structurally — then the containers, projected from the traced runs."
-    },
-    {
-      "id": "city",
-      "label": "Code City",
-      "blocks": [
-        {
-          "type": "codecity"
-        }
-      ],
-      "tip": "The change lit up in a city of the whole backend."
-    },
-    {
-      "id": "dsaudit",
-      "label": "UX",
-      "blocks": [
-        {
-          "type": "section",
-          "id": "ds-audit"
-        }
-      ],
-      "tip": "Native controls sitting where a standardised component belongs — found by absence, not by labelling."
-    },
-    {
-      "id": "complexity",
-      "label": "Complexity",
-      "blocks": [
-        {
-          "type": "section",
-          "id": "complexity-delta"
-        }
-      ],
-      "tip": "The before → after of every entry point."
-    },
-    {
-      "id": "logging",
-      "label": "Logging",
-      "blocks": [
-        {
-          "type": "logging",
-          "base": "origin/main",
-          "paths": [
-            "petclinic-backend"
-          ],
-          "id": "logging-added"
-        }
-      ],
-      "tip": "Every logging statement the change set added — found by syntax, not by grep."
-    },
-    {
-      "id": "owners",
-      "label": "CODEOWNERS",
-      "blocks": [
-        {
-          "type": "codeowners",
-          "base": "origin/main"
-        }
-      ],
-      "tip": "CODEOWNERS intersected with the change set."
+     "type": "section",
+     "id": "swaggerdiff"
     }
-  ],
-  "footer": "Built by /human-review on 5 Oct 2026.",
-  "testLedger": false
+   ]
+  },
+  {
+   "id": "data",
+   "label": "Data",
+   "blocks": [
+    {
+     "type": "diagrams",
+     "only": [
+      "DomainModel",
+      "DB"
+     ]
+    },
+    {
+     "type": "section",
+     "id": "conceptual"
+    }
+   ]
+  },
+  {
+   "id": "requirements",
+   "label": "Tests",
+   "blocks": [
+    {
+     "type": "section",
+     "id": "requirements-map"
+    },
+    {
+     "type": "tests"
+    },
+    {
+     "type": "traces"
+    }
+   ]
+  },
+  {
+   "id": "sequence",
+   "label": "Sequence",
+   "blocks": [
+    {
+     "type": "testpairs",
+     "id": "sequences",
+     "kind": "sequence"
+    }
+   ]
+  },
+  {
+   "id": "packages",
+   "label": "Structure",
+   "blocks": [
+    {
+     "type": "diagrams",
+     "only": [
+      "Java packages"
+     ],
+     "context": {
+      "src": "petclinic-backend/docs/packages.puml",
+      "name": "Java packages"
+     }
+    },
+    {
+     "type": "diagrams",
+     "only": [
+      "Frontend packages"
+     ],
+     "context": {
+      "src": "petclinic-frontend/docs/frontend-packages.puml",
+      "name": "Frontend packages"
+     }
+    },
+    {
+     "type": "puml",
+     "src": "petclinic-backend/docs/generated/MavenModules.puml",
+     "name": "Maven modules",
+     "status": "unchanged"
+    },
+    {
+     "type": "diagrams",
+     "manifest": "assets/c2/MANIFEST.tsv",
+     "only": [
+      "C2-Containers"
+     ],
+     "id": "c2-containers"
+    }
+   ]
+  },
+  {
+   "id": "city",
+   "label": "Code City",
+   "blocks": [
+    {
+     "type": "codecity"
+    }
+   ]
+  },
+  {
+   "id": "dsaudit",
+   "label": "UX",
+   "blocks": [
+    {
+     "type": "section",
+     "id": "ds-audit"
+    }
+   ]
+  },
+  {
+   "id": "complexity",
+   "label": "Complexity",
+   "blocks": [
+    {
+     "type": "section",
+     "id": "complexity-delta"
+    }
+   ]
+  },
+  {
+   "id": "logging",
+   "label": "Logging",
+   "blocks": [
+    {
+     "type": "logging",
+     "base": "origin/main",
+     "paths": [
+      "petclinic-backend"
+     ],
+     "id": "logging-added"
+    }
+   ]
+  },
+  {
+   "id": "owners",
+   "label": "CODEOWNERS",
+   "blocks": [
+    {
+     "type": "codeowners"
+    }
+   ]
+  }
+ ],
+ "pr": {
+  "number": 49,
+  "title": "Link Visit with Vet (#37), reimplemented unguided by Opus",
+  "url": "https://github.com/victorrentea/petclinic/pull/49",
+  "repo": "https://github.com/victorrentea/petclinic",
+  "branch": "test-pr",
+  "base": "main",
+  "ticket": {
+   "number": 37,
+   "title": "Link Visit with Vet",
+   "url": "https://github.com/victorrentea/petclinic/issues/37"
+  }
+ },
+ "title": "Link Visit with Vet (#37), reimplemented unguided by Opus",
+ "subtitle": "test-pr — issue #37",
+ "footer": "Built by /human-review from test-pr on 22 Oct 2026.",
+ "verdict": {
+  "score": 7,
+  "bullets": [
+   "Human commits after the review include a deliberate native `<select>` on Edit Visit's vet field to show a design-system violation, plus unrelated diagram edits; the select should not merge.",
+   "A PUT without `vetId` clears the vet and is only an assumption at 0.7 confidence, so any client doing partial updates will silently lose the vet."
+  ]
+ }
 }
