@@ -857,6 +857,8 @@ REFRESH_PROGRAM = "refresh-report.py"
 MODEL_PROGRAM = "rerun-model.py"
 #: The other model step: the Demo film's script (+1 LLM script beside the matrix).
 FILM_PROGRAM = "rerun-film.py"
+#: And the page's verdict, the one judgement left in `content.json` (`write-content.py`).
+CONTENT_PROGRAM = "write-content.py"
 
 #: The tabs that get a row of their own in the phase table. Their steps are subtracted from
 #: the build/other split so no turn is billed twice; every *other* step is page building or
@@ -1222,8 +1224,11 @@ def named_build(command: str, programs=BUILD_PROGRAMS) -> str:
 MODEL_RUNS = ".model-runs.json"
 #: And what `rerun-film.py` spent — the film script, the second model-written artifact.
 FILM_RUNS = ".film-runs.json"
+#: And what `write-content.py` spent on the page's verdict.
+CONTENT_RUNS = ".content-runs.json"
 #: Every paid model step's ledger, in the order the page-build row names them.
-MODEL_LEDGERS = ((MODEL_RUNS, "the model step"), (FILM_RUNS, "the film-script step"))
+MODEL_LEDGERS = ((MODEL_RUNS, "the model step"), (FILM_RUNS, "the film-script step"),
+                 (CONTENT_RUNS, "the verdict step"))
 
 
 def model_run_in(review: Path, lo, hi, ledger: str = MODEL_RUNS) -> dict | None:
@@ -2377,8 +2382,9 @@ def ledger(session: str | None, since: "dt.datetime | None", steps_path: Path,
 MODEL_RUN_TABS = {
     MODEL_PROGRAM: ("requirements", "tests"),
     FILM_PROGRAM: ("behaviour", "demo", "video"),
+    CONTENT_PROGRAM: ("review",),
 }
-_PROGRAM_IN_WHAT = re.compile(r"\((rerun-[a-z-]+\.py)\)")
+_PROGRAM_IN_WHAT = re.compile(r"\(((?:rerun|write)-[a-z-]+\.py)\)")
 
 
 def guide_run_end(components: dict | None, session: str | None) -> "dt.datetime | None":

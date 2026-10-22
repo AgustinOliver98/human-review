@@ -97,6 +97,26 @@ process.exit(typeof flow === "function" ? 0 : 3);
 """
 
 
+#: The shell commands the writer may run unasked: reading the diff and the templates, and
+#: `node --check` on its own result. With `--setting-sources ""` the user's allow-list is
+#: not loaded, so anything past this list is denied rather than prompted for.
+FILM_BASH = ("git", "node", "ls", "cat", "head", "tail", "grep", "find", "wc", "sed -n")
+
+
+def film_argv(root: Path) -> list[str]:
+    """`claude_argv` without what a script writer never uses: MCP servers, the user's
+    settings (hooks, plugins, CLAUDE.md), the saved session, and every tool but the six it
+    needs. Measured on 22 Oct 2026, one Bash call on Sonnet: $0.107 with the plain argv,
+    $0.013 with this — and the 60k tokens it no longer carries are re-read on every turn
+    of a twenty-turn run, not only the first."""
+    extra = (os.environ.get("HUMAN_REVIEW_MODEL_ARGS") or "").split()
+    return ["claude", "-p", "--model", MODEL_STEP.MODEL, "--permission-mode", "acceptEdits",
+            "--output-format", "json", "--strict-mcp-config", "--no-session-persistence",
+            "--setting-sources", "", "--tools", "Bash,Read,Write,Edit,Glob,Grep",
+            "--allowedTools", *[f"Bash({c} *)" for c in FILM_BASH],
+            "--add-dir", str(root), *extra]
+
+
 def broken(script: Path, cwd: Path | None = None) -> str | None:
     """Why the recorder could not use this script, or None when it could.
 
@@ -169,9 +189,10 @@ def main(argv=None) -> int:
 
     prompt = PROMPT.read_text(encoding="utf-8")
     root = Path.cwd().resolve()
-    argvec = MODEL_STEP.claude_argv(root)
+    argvec = film_argv(root)
     model = MODEL_STEP.MODEL
-    print("[film] $ " + " ".join(argvec) + f"  < {PROMPT.name} ({len(prompt)} chars)")
+    print("[film] $ " + " ".join(a if a else '""' for a in argvec)
+          + f"  < {PROMPT.name} ({len(prompt)} chars)")
     elsewhere = os.environ.get("HUMAN_REVIEW_FEATURE_SCRIPT")
     if elsewhere:
         # Not a refusal: the variable may be the very file the reader wants kept. But the

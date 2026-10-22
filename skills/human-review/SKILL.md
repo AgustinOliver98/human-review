@@ -44,6 +44,28 @@ done
 Run everything from the repository root. Project-specific commands live in
 `human-review.json` there, not in this file — `human-review.example.json` is the template.
 
+## Run it as one program
+
+```sh
+${SKILL}/scripts/run-review.py --base "$BASE"     # Steps 1–5, end to end; prints the URL last
+```
+
+Steps 1–5 below are a program now, and this is it. It calls a model three times, each a lean
+`claude -p` on Sonnet: the film's script (only when the branch has none), the
+requirements↔tests pairing, and the verdict (`write-content.py`: the layout of `content.json`
+is copied from `reference/content.example.json` and the facts come from `gh`; only the score
+and its two bullets are a judgement). A run measured on 22 Oct 2026 cost what those three
+calls cost. The same run driven by an agent cost $2–3, nearly all of it the agent waiting on
+producers and re-reading its context.
+
+**Your part is to start it and wait for it.** Background it, wait until it exits, again and
+again if a wait times out (the producers take 15–30 minutes), then report what its last
+lines say: a step it stopped on, a skipped or failed producer, a red aftermath band, the
+URL. **When it stops, do not fix the harness from here.** Report the step and its exit code.
+A fix is a separate piece of work on the skill, and its cost must not land on this page.
+Use the step-by-step flow below only where the program cannot run: no `claude` CLI (Copilot),
+or a human asking for one step.
+
 ## Step 1 — What does the branch record about its own review?
 
 ```sh

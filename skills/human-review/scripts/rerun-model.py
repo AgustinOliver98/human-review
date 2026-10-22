@@ -136,10 +136,13 @@ def mapping_argv(model: str) -> list[str]:
     """The pairing's headless invocation: the prompt on stdin, the answer in the JSON
     envelope's `result`. No tools at all — everything the model needs is in the prompt, and
     a run that cannot open a file cannot wander the repository at the invoice's expense —
-    and no MCP servers, which would only slow it down."""
+    no MCP servers, which would only slow it down, and no settings or saved session: the
+    user's settings bring hooks, plugins and CLAUDE.md, 8k tokens a call measured on 22 Oct
+    2026 ($0.034 to say "ok" on Sonnet, $0.0025 without them)."""
     extra = (os.environ.get("HUMAN_REVIEW_MODEL_ARGS") or "").split()
     return ["claude", "-p", "--model", model, "--output-format", "json", "--tools", "",
-            "--strict-mcp-config", *extra]
+            "--strict-mcp-config", "--setting-sources", "", "--no-session-persistence",
+            *extra]
 
 
 def mapping_check(flag: bool | None = None, config: Path = Path("human-review.json"),
