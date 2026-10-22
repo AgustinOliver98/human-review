@@ -98,9 +98,13 @@ process.exit(typeof flow === "function" ? 0 : 3);
 
 
 #: The shell commands the writer may run unasked: reading the diff and the templates, and
-#: `node --check` on its own result. With `--setting-sources ""` the user's allow-list is
-#: not loaded, so anything past this list is denied rather than prompted for.
-FILM_BASH = ("git", "node", "ls", "cat", "head", "tail", "grep", "find", "wc", "sed -n")
+#: running its own route deriver and `node --check` on the result. With `--setting-sources
+#: ""` the user's allow-list is not loaded, so anything past this list is denied rather than
+#: prompted for. `cd`, `env` and `npx` are on it because the deriver is run as
+#: `cd .human-review && NODE_PATH=… node changed-screens.js`: without them, the first run of
+#: this list (22 Oct 2026) shipped a deriver it could not test, and filmed 1 screen of 3.
+FILM_BASH = ("git", "node", "npx", "cd", "env", "ls", "cat", "head", "tail", "grep", "find",
+             "wc", "sed", "jq", "echo")
 
 
 def film_argv(root: Path) -> list[str]:
@@ -113,7 +117,7 @@ def film_argv(root: Path) -> list[str]:
     return ["claude", "-p", "--model", MODEL_STEP.MODEL, "--permission-mode", "acceptEdits",
             "--output-format", "json", "--strict-mcp-config", "--no-session-persistence",
             "--setting-sources", "", "--tools", "Bash,Read,Write,Edit,Glob,Grep",
-            "--allowedTools", *[f"Bash({c} *)" for c in FILM_BASH],
+            "--allowedTools", *[f"Bash({c}:*)" for c in FILM_BASH],
             "--add-dir", str(root), *extra]
 
 

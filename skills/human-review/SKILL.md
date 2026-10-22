@@ -54,9 +54,9 @@ Steps 1–5 below are a program now, and this is it. It calls a model three time
 `claude -p` on Sonnet: the film's script (only when the branch has none), the
 requirements↔tests pairing, and the verdict (`write-content.py`: the layout of `content.json`
 is copied from `reference/content.example.json` and the facts come from `gh`; only the score
-and its two bullets are a judgement). A run measured on 22 Oct 2026 cost what those three
-calls cost. The same run driven by an agent cost $2–3, nearly all of it the agent waiting on
-producers and re-reading its context.
+and its two bullets are a judgement). Measured on demo 1, 22 Oct 2026: **$0.41 in 9 minutes**
+(film $0.27, pairing $0.12, verdict $0.02). The same branch driven by an agent cost $3.28, and
+nearly all of that was the agent waiting on producers and re-reading its context.
 
 **Your part is to start it and wait for it.** Background it, wait until it exits, again and
 again if a wait times out (the producers take 15–30 minutes), then report what its last
