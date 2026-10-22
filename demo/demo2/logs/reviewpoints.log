@@ -1,5 +1,5 @@
   * reviewpoints -> review
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/review-points.py --root . --out .human-review/review-points.json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/review-points.py --root . --out .human-review/review-points.json
 review-points.md: 21 item(s) in 4 fixed, 11 ignored, 6 assumptions
   Fixed        (Fixed)
       · Sort parameter line over 119 chars blocked the push   [2 ref, 2 snippet, medium, from pre-push hook]
@@ -29,4 +29,4 @@ review-points.md: 21 item(s) in 4 fixed, 11 ignored, 6 assumptions
   base: 664c5b3b453fb758230de01e407064c45d07a844 · implementation: 6305ee43b4e27cebdad0ffd75cf66b74be3bfcf9 · reviewers: 4 parallel read-only subagents (sonnet): correctness, security, tests, ticket-fit · session: 498ee103-9160-4f7a-be05-c641ebd16920
   wrote  .human-review/review-points.json
     $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/review-commits.py --base 664c5b3b453fb758230de01e407064c45d07a844 --json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/review-commits.py --base 664c5b3b453fb758230de01e407064c45d07a844 --json

@@ -1,14 +1,10 @@
   * city -> city
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/city-coverage.py --in .human-review/assets/test-coverage.json --out .human-review/assets/codecity-coverage.json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/city-coverage.py --in .human-review/assets/test-coverage.json --out .human-review/assets/codecity-coverage.json
 [city-coverage] 125 file(s): line coverage 68.3%, acceptance 49.6% -> .human-review/assets/codecity-coverage.json
     $ git rev-parse HEAD
     $ git merge-base 664c5b3b453fb758230de01e407064c45d07a844 HEAD
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/regenerate-codecity.sh --out ".human-review/assets/codecity" --title "Code City" --coverage ".human-review/assets/codecity-coverage.json"
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/regenerate-codecity.sh --out ".human-review/assets/codecity" --title "Code City" --coverage ".human-review/assets/codecity-coverage.json"
 updating the Code City generators in /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/.tools/codecity ...
-[0/6] vendoring tree-sitter into /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/.tools/codecity/.pylibs/py3.12 ...
-
-[notice] A new release of pip is available: 26.0.1 -> 26.2.2
-[notice] To update, run: pip install --upgrade pip
 repo:  /Users/victorrentea/workspace/petclinic-visits-paginated
 out:   /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity
 coverage: /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity-coverage.json
@@ -97,4 +93,4 @@ city -> /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/a
 both -> /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/combined.html
 
 open /Users/victorrentea/workspace/petclinic-visits-paginated/.human-review/assets/codecity/codecity.html
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/capture-codecity.sh .human-review/assets/codecity.png highlight .human-review/assets/codecity/codecity.html
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/capture-codecity.sh .human-review/assets/codecity.png highlight .human-review/assets/codecity/codecity.html

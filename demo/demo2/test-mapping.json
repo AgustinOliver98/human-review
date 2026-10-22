@@ -3,18 +3,18 @@
  "sentences": [
   {
    "id": "s0dda55",
-   "coverage": "partial",
+   "coverage": "covered",
    "tests": [
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100",
      "strength": "asserted",
-     "why": "compares the mat-sort-header columns of the grid to date, description, pet, owner",
+     "why": "compares the grid's mat-sort-header columns to date, description, pet and owner, so every column is sortable",
      "line": "expect(sortable).toEqual(['date', 'description', 'pet', 'owner']);"
     },
     {
      "id": "petclinic-test/src/visits.spec.ts:47",
      "strength": "asserted",
-     "why": "clicks the Pet header and compares the grid rows to the API's pet,asc page",
+     "why": "clicks the Pet header and compares the rendered rows to the API's pet,asc page",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);"
     }
    ],
@@ -22,15 +22,14 @@
     {
      "id": "petclinic-test/src/visits.spec.ts:47",
      "verdict": "confirm",
-     "why": "clicks a real column header and checks the resulting row order and URL"
+     "why": "clicks a column header and asserts the rows come back sorted by it"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:100",
      "verdict": "confirm",
-     "why": "asserts every column header of the grid is a sort header"
+     "why": "queries every th[mat-sort-header] and asserts all four columns are sortable"
     }
-   ],
-   "gap": "Only the Pet column is shown actually ordering the rows end to end; the other columns are only shown to be sortable headers."
+   ]
   },
   {
    "id": "s6c13a7",
@@ -39,13 +38,13 @@
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108",
      "strength": "asserted",
-     "why": "compares the page sizes the grid offers to exactly [5, 10, 20]",
+     "why": "compares the page sizes the grid offers to [5, 10, 20]",
      "line": "expect(component.pageSizes).toEqual([5, 10, 20]);"
     },
     {
      "id": "petclinic-test/src/visits.spec.ts:58",
      "strength": "asserted",
-     "why": "picks size 5, goes to the next page and compares the rows to the API's page 1 of size 5",
+     "why": "picks page size 5, goes to the next page and compares the rows to the API's page 2 of size 5",
      "line": "await expect.poll(() => visitsPage.getVisitRows()).toEqual(expected);"
     },
     {
@@ -59,17 +58,17 @@
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:108",
      "verdict": "confirm",
-     "why": "asserts the offered page sizes are exactly 5, 10, 20"
+     "why": "asserts the offered page sizes are exactly 5, 10 and 20"
     },
     {
      "id": "petclinic-test/src/visits.spec.ts:58",
      "verdict": "confirm",
-     "why": "drives the paginator with size 5 and paging, comparing the rendered rows to the API"
+     "why": "chooses 5 rows per page in the grid and checks the next page's rows"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java:225",
      "verdict": "reject",
-     "why": "only counts SQL statements for size=20; asserts nothing about rows per page or the grid"
+     "why": "uses size=20 but only asserts the SQL statement count, not the page size"
     }
    ]
   }

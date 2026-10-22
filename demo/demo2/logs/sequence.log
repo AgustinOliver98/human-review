@@ -1,5 +1,5 @@
   * sequence -> sequence
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/test-changes.py --base 664c5b3b453fb758230de01e407064c45d07a844 --out /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/tmpsycior2f/test-changes.json
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/test-changes.py --base 664c5b3b453fb758230de01e407064c45d07a844 --out /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/tmprr6pmjo4/test-changes.json
     $ git rev-parse HEAD
     $ git rev-parse --short HEAD
     $ ./start-docker.sh up --ref 12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 --name petclinic-12dc99e2-otel --otel --fresh --ttl 1800
@@ -8,291 +8,221 @@
 #1 reading from stdin 2.95kB done
 #1 DONE 0.0s
 
-#2 [backend internal] load build definition from Dockerfile
+#2 [reset internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.67kB 0.0s done
 #2 DONE 0.0s
 
-#3 [frontend internal] load build definition from Dockerfile
-#3 transferring dockerfile: 1.67kB 0.0s done
-#3 ...
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.22kB done
+#3 DONE 0.1s
 
-#2 [backend internal] load build definition from Dockerfile
-#2 transferring dockerfile: 1.22kB 0.0s done
-#2 DONE 0.2s
-
-#3 [frontend internal] load build definition from Dockerfile
-#3 DONE 0.2s
-
-#4 [reset internal] load build definition from Dockerfile
-#4 transferring dockerfile: 1.67kB 0.0s done
+#4 [frontend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 1.67kB done
 #4 DONE 0.2s
 
 #5 [notification internal] load build definition from Dockerfile
-#5 transferring dockerfile: 1.22kB 0.0s done
-#5 DONE 0.3s
+#5 transferring dockerfile: 1.22kB done
+#5 DONE 0.1s
 
-#6 [reset internal] load metadata for docker.io/library/alpine:3.20
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
 #6 DONE 0.0s
 
 #7 [frontend internal] load metadata for docker.io/library/node:18-bookworm-slim
 #7 DONE 0.0s
 
-#8 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
+#8 [reset internal] load metadata for docker.io/library/alpine:3.20
 #8 DONE 0.0s
 
-#9 [notification internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#9 [notification internal] load metadata for docker.io/library/eclipse-temurin:21-jre
 #9 DONE 0.0s
 
-#10 [notification internal] load metadata for docker.io/library/eclipse-temurin:21-jre
+#10 [notification internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
 #10 DONE 0.0s
 
-#11 [backend context commons] load .dockerignore
-#11 transferring commons: 2B done
-#11 DONE 0.1s
+#11 [reset context reference] load .dockerignore
+#11 DONE 0.0s
 
-#12 [reset context reference] load .dockerignore
-#12 transferring reference: 2B 0.0s done
-#12 DONE 0.1s
+#12 [backend context commons] load .dockerignore
+#12 transferring commons: 2B done
+#12 DONE 0.3s
 
-#13 [frontend internal] load .dockerignore
-#13 transferring context: 67B 0.0s done
-#13 DONE 0.1s
+#11 [reset context reference] load .dockerignore
+#11 transferring reference: 2B 0.0s done
+#11 DONE 0.4s
+
+#13 [backend internal] load .dockerignore
+#13 ...
 
 #14 [reset context fixtures] load .dockerignore
 #14 transferring fixtures: 2B 0.0s done
-#14 DONE 0.2s
+#14 DONE 0.9s
 
-#15 [reset internal] load .dockerignore
-#15 ...
+#15 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
+#15 DONE 0.0s
 
-#16 [frontend build 1/7] FROM docker.io/library/node:18-bookworm-slim
+#16 [frontend runtime 1/4] FROM docker.io/library/nginx:1.27-alpine
 #16 DONE 0.0s
 
-#17 [frontend runtime 1/4] FROM docker.io/library/nginx:1.27-alpine
-#17 DONE 0.0s
+#17 [frontend internal] load .dockerignore
+#17 transferring context: 67B 0.0s done
+#17 DONE 0.9s
 
-#18 [backend internal] load .dockerignore
-#18 transferring context: 230B 0.0s done
-#18 DONE 0.1s
+#18 [reset internal] load .dockerignore
+#18 ...
 
-#15 [reset internal] load .dockerignore
-#15 transferring context: 2B 0.0s done
-#15 ...
+#19 [notification internal] load .dockerignore
+#19 transferring context: 60B 0.0s done
+#19 DONE 0.8s
 
-#19 [notification build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
-#19 DONE 0.0s
+#18 [reset internal] load .dockerignore
+#18 transferring context: 2B 0.0s done
+#18 DONE 0.3s
 
 #20 [notification stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre
 #20 DONE 0.0s
 
-#21 [notification internal] load .dockerignore
-#21 transferring context: 60B 0.0s done
-#21 DONE 0.3s
+#21 [notification build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
+#21 DONE 0.0s
 
-#22 [reset stage-0 1/6] FROM docker.io/library/alpine:3.20
+#13 [backend internal] load .dockerignore
+#13 transferring context: 230B 0.0s done
+#13 DONE 0.8s
+
+#22 [notification context commons] load from client
 #22 DONE 0.0s
 
-#15 [reset internal] load .dockerignore
-#15 DONE 0.3s
+#23 [notification context commons] load from client
+#23 DONE 0.0s
 
-#23 [reset context fixtures] load from client
-#23 transferring fixtures: 2.80kB 0.0s done
-#23 ...
-
-#24 [backend context commons] load from client
-#24 transferring commons: 4.01kB 0.0s done
-#24 DONE 0.5s
-
-#23 [reset context fixtures] load from client
-#23 DONE 0.4s
+#24 [notification internal] load build context
+#24 DONE 0.0s
 
 #25 [frontend internal] load build context
-#25 transferring context: 2.90MB 0.5s done
-#25 DONE 0.8s
+#25 ...
 
-#26 [backend internal] load build context
-#26 transferring context: 480.59kB 0.1s done
-#26 DONE 0.6s
+#26 [reset stage-0 1/6] FROM docker.io/library/alpine:3.20
+#26 DONE 0.0s
 
-#27 [notification context commons] load from client
-#27 transferring commons: 12.96kB 0.0s done
-#27 DONE 0.7s
+#20 [backend stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre
+#20 DONE 0.0s
 
-#28 [notification internal] load build context
-#28 transferring context: 9.47kB 0.1s done
-#28 DONE 0.6s
+#21 [backend build 1/8] FROM docker.io/library/maven:3.9-eclipse-temurin-21
+#21 DONE 0.0s
 
-#29 [reset internal] load build context
-#29 transferring context: 7.05kB 0.1s done
-#29 DONE 0.6s
+#25 [frontend internal] load build context
+#25 ...
 
-#30 [reset context reference] load from client
-#30 transferring reference: 2.64kB 0.0s done
-#30 DONE 0.6s
+#22 [notification context commons] load from client
+#22 transferring commons: 29B 0.0s done
+#22 DONE 0.1s
 
-#31 [notification build 3/8] COPY --from=commons src /commons/src
+#24 [notification internal] load build context
+#24 transferring context: 9.47kB 0.0s done
+#24 DONE 0.1s
+
+#27 [reset internal] load build context
+#27 transferring context: 7.05kB 0.0s done
+#27 DONE 0.1s
+
+#25 [frontend internal] load build context
+#25 transferring context: 2.90MB 0.3s done
+#25 DONE 0.5s
+
+#28 [reset stage-0 6/6] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
+#28 CACHED
+
+#29 [notification stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#29 CACHED
+
+#30 [notification stage-1 3/4] WORKDIR /app
+#30 CACHED
+
+#31 [notification stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
 #31 CACHED
 
-#32 [notification build 5/8] WORKDIR /app
-#32 CACHED
+#23 [notification context commons] load from client
+#23 transferring commons: 12.96kB 0.0s done
+#23 DONE 0.2s
 
-#33 [notification build 6/8] COPY pom.xml .
-#33 CACHED
+#32 [reset context fixtures] load from client
+#32 transferring fixtures: 2.80kB done
+#32 DONE 0.2s
 
-#34 [notification build 2/8] COPY --from=commons pom.xml /commons/pom.xml
-#34 CACHED
+#33 [reset context reference] load from client
+#33 transferring reference: 2.64kB done
+#33 DONE 0.2s
 
-#35 [notification build 4/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B -f /commons/pom.xml install
+#34 [backend internal] load build context
+#34 transferring context: 480.59kB 0.1s done
+#34 DONE 0.3s
+
+#35 [frontend runtime 4/4] COPY proxy-backend.conf /etc/nginx/proxy-backend.conf
 #35 CACHED
 
-#36 [notification build 7/8] COPY src ./src
+#29 [backend stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#29 CACHED
+
+#30 [backend stage-1 3/4] WORKDIR /app
+#30 CACHED
+
+#36 [backend stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
 #36 CACHED
 
-#37 [notification build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
-#37 CACHED
+#37 [notification] exporting to image
+#37 exporting layers done
+#37 writing image sha256:6cee18b8ddd7cd4f9e9a9760bdf2f91f7133abb4ba5d56bddfaaa6b46f47467a
+#37 writing image sha256:6cee18b8ddd7cd4f9e9a9760bdf2f91f7133abb4ba5d56bddfaaa6b46f47467a 0.0s done
+#37 naming to docker.io/library/petclinic-env-notification:12dc99e2 0.1s done
+#37 DONE 0.5s
 
-#38 [notification stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
-#38 CACHED
+#38 [frontend] exporting to image
+#38 exporting layers done
+#38 writing image sha256:6725baa6c69f970f197afd5c3fece7fdc02d5aba7a18ed658980a4c2e1e9de6b 0.1s done
+#38 naming to docker.io/library/petclinic-env-frontend:12dc99e2 0.1s done
+#38 DONE 0.4s
 
-#39 [notification stage-1 3/4] WORKDIR /app
-#39 CACHED
+#39 [reset] exporting to image
+#39 exporting layers done
+#39 writing image sha256:12e1f1b8db0fbaa6e47d31ac0a0d33e878e8ce0b89948b720925d04582dd0207 0.1s done
+#39 naming to docker.io/library/petclinic-env-reset:12dc99e2 0.0s done
+#39 DONE 0.4s
 
-#40 [notification stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
-#40 CACHED
+#40 [backend] exporting to image
+#40 exporting layers done
+#40 writing image sha256:7ff7e5f4f1548bb38880d4fa979908485ee0bd67003eed7557a533dfc27fa564 0.1s done
+#40 naming to docker.io/library/petclinic-env-backend:12dc99e2 0.1s done
+#40 DONE 0.4s
 
-#41 [frontend runtime 2/4] COPY --from=build /app/dist/ /usr/share/nginx/html/
-#41 CACHED
+#41 [notification] resolving provenance for metadata file
+#41 DONE 0.0s
 
-#42 [frontend runtime 3/4] COPY nginx.conf /etc/nginx/conf.d/default.conf
-#42 CACHED
+#42 [frontend] resolving provenance for metadata file
+#42 DONE 0.0s
 
-#43 [frontend build 2/7] RUN apt-get update     && apt-get install -y --no-install-recommends python3 make g++     && rm -rf /var/lib/apt/lists/*
-#43 CACHED
+#43 [reset] resolving provenance for metadata file
+#43 DONE 0.0s
 
-#44 [frontend build 4/7] COPY package.json package-lock.json ./
-#44 CACHED
-
-#45 [frontend build 3/7] WORKDIR /app
-#45 CACHED
-
-#46 [frontend build 6/7] COPY . .
-#46 CACHED
-
-#47 [frontend build 7/7] RUN npx ng build --configuration docker
-#47 CACHED
-
-#48 [frontend build 5/7] RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
-#48 CACHED
-
-#49 [frontend runtime 4/4] COPY proxy-backend.conf /etc/nginx/proxy-backend.conf
-#49 CACHED
-
-#50 [reset stage-0 2/6] RUN apk add --no-cache postgresql16-client python3
-#50 CACHED
-
-#51 [reset stage-0 3/6] COPY reset-server.py /reset-server.py
-#51 CACHED
-
-#52 [reset stage-0 4/6] COPY --from=fixtures . /fixtures/
-#52 CACHED
-
-#53 [reset stage-0 5/6] COPY --from=reference R__reference.sql /reference.sql
-#53 CACHED
-
-#54 [reset stage-0 6/6] RUN adduser -D reset && mkdir -p /seed && chown reset:reset /seed
-#54 CACHED
-
-#55 [backend build 6/8] COPY pom.xml .
-#55 CACHED
-
-#31 [backend build 3/8] COPY --from=commons src /commons/src
-#31 CACHED
-
-#56 [backend build 7/8] COPY src ./src
-#56 CACHED
-
-#39 [backend stage-1 3/4] WORKDIR /app
-#39 CACHED
-
-#35 [backend build 4/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B -f /commons/pom.xml install
-#35 CACHED
-
-#32 [backend build 5/8] WORKDIR /app
-#32 CACHED
-
-#57 [backend build 8/8] RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn -q -B clean package -DskipTests
-#57 CACHED
-
-#38 [backend stage-1 2/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
-#38 CACHED
-
-#34 [backend build 2/8] COPY --from=commons pom.xml /commons/pom.xml
-#34 CACHED
-
-#58 [backend stage-1 4/4] COPY --from=build /app/target/*.jar app.jar
-#58 CACHED
-
-#59 [frontend] exporting to image
-#59 exporting layers done
-#59 writing image sha256:6725baa6c69f970f197afd5c3fece7fdc02d5aba7a18ed658980a4c2e1e9de6b
-#59 writing image sha256:6725baa6c69f970f197afd5c3fece7fdc02d5aba7a18ed658980a4c2e1e9de6b 0.2s done
-#59 naming to docker.io/library/petclinic-env-frontend:12dc99e2
-#59 naming to docker.io/library/petclinic-env-frontend:12dc99e2 0.6s done
-#59 DONE 1.1s
-
-#60 [notification] exporting to image
-#60 exporting layers done
-#60 writing image sha256:6cee18b8ddd7cd4f9e9a9760bdf2f91f7133abb4ba5d56bddfaaa6b46f47467a 0.4s done
-#60 naming to docker.io/library/petclinic-env-notification:12dc99e2 0.4s done
-#60 ...
-
-#61 [reset] exporting to image
-#61 exporting layers done
-#61 writing image sha256:12e1f1b8db0fbaa6e47d31ac0a0d33e878e8ce0b89948b720925d04582dd0207 0.2s done
-#61 naming to docker.io/library/petclinic-env-reset:12dc99e2 0.7s done
-#61 DONE 1.7s
-
-#60 [notification] exporting to image
-#60 DONE 1.7s
-
-#62 [backend] exporting to image
-#62 exporting layers done
-#62 writing image sha256:7ff7e5f4f1548bb38880d4fa979908485ee0bd67003eed7557a533dfc27fa564 0.9s done
-#62 naming to docker.io/library/petclinic-env-backend:12dc99e2 0.2s done
-#62 DONE 2.2s
-
-#63 [frontend] resolving provenance for metadata file
-#63 ...
-
-#64 [backend] resolving provenance for metadata file
-#64 DONE 0.2s
-
-#65 [reset] resolving provenance for metadata file
-#65 DONE 0.1s
-
-#63 [frontend] resolving provenance for metadata file
-#63 DONE 0.5s
-
-#66 [notification] resolving provenance for metadata file
-#66 DONE 0.1s
+#44 [backend] resolving provenance for metadata file
+#44 DONE 0.1s
 
 ✅ petclinic-12dc99e2-otel ready — reaps itself after 30 idle minutes
-   Grafana  http://localhost:49164  (admin/admin)
-   http://localhost:49417
+   Grafana  http://localhost:51848  (admin/admin)
+   http://localhost:52074
    (copied to the clipboard)
- Image petclinic-env-backend:12dc99e2 Building 
- Image petclinic-env-notification:12dc99e2 Building 
  Image petclinic-env-frontend:12dc99e2 Building 
  Image petclinic-env-reset:12dc99e2 Building 
+ Image petclinic-env-backend:12dc99e2 Building 
+ Image petclinic-env-notification:12dc99e2 Building 
  Image petclinic-env-notification:12dc99e2 Built 
  Image petclinic-env-backend:12dc99e2 Built 
  Image petclinic-env-frontend:12dc99e2 Built 
  Image petclinic-env-reset:12dc99e2 Built 
  Network petclinic-12dc99e2-otel_default Creating 
  Network petclinic-12dc99e2-otel_default Created 
- Volume petclinic-12dc99e2-otel_activity Creating 
- Volume petclinic-12dc99e2-otel_activity Created 
  Volume petclinic-12dc99e2-otel_pgdata Creating 
  Volume petclinic-12dc99e2-otel_pgdata Created 
+ Volume petclinic-12dc99e2-otel_activity Creating 
+ Volume petclinic-12dc99e2-otel_activity Created 
  Volume petclinic-12dc99e2-otel_seed Creating 
  Volume petclinic-12dc99e2-otel_seed Created 
  Container petclinic-12dc99e2-otel-lgtm-1 Creating 
@@ -307,21 +237,21 @@
  Container petclinic-12dc99e2-otel-backend-1 Created 
  Container petclinic-12dc99e2-otel-reset-1 Creating 
  Container petclinic-12dc99e2-otel-frontend-1 Creating 
- Container petclinic-12dc99e2-otel-reset-1 Created 
  Container petclinic-12dc99e2-otel-frontend-1 Created 
- Container petclinic-12dc99e2-otel-lgtm-1 Starting 
+ Container petclinic-12dc99e2-otel-reset-1 Created 
  Container petclinic-12dc99e2-otel-reaper-1 Starting 
  Container petclinic-12dc99e2-otel-db-1 Starting 
+ Container petclinic-12dc99e2-otel-lgtm-1 Starting 
  Container petclinic-12dc99e2-otel-db-1 Started 
+ Container petclinic-12dc99e2-otel-reaper-1 Started 
  Container petclinic-12dc99e2-otel-lgtm-1 Started 
  Container petclinic-12dc99e2-otel-lgtm-1 Waiting 
- Container petclinic-12dc99e2-otel-reaper-1 Started 
  Container petclinic-12dc99e2-otel-lgtm-1 Healthy 
  Container petclinic-12dc99e2-otel-notification-1 Starting 
  Container petclinic-12dc99e2-otel-notification-1 Started 
+ Container petclinic-12dc99e2-otel-notification-1 Waiting 
  Container petclinic-12dc99e2-otel-lgtm-1 Waiting 
  Container petclinic-12dc99e2-otel-db-1 Waiting 
- Container petclinic-12dc99e2-otel-notification-1 Waiting 
  Container petclinic-12dc99e2-otel-db-1 Healthy 
  Container petclinic-12dc99e2-otel-lgtm-1 Healthy 
  Container petclinic-12dc99e2-otel-notification-1 Healthy 
@@ -333,24 +263,24 @@
  Container petclinic-12dc99e2-otel-frontend-1 Starting 
  Container petclinic-12dc99e2-otel-backend-1 Healthy 
  Container petclinic-12dc99e2-otel-reset-1 Starting 
- Container petclinic-12dc99e2-otel-frontend-1 Started 
  Container petclinic-12dc99e2-otel-reset-1 Started 
- Container petclinic-12dc99e2-otel-db-1 Waiting 
+ Container petclinic-12dc99e2-otel-frontend-1 Started 
  Container petclinic-12dc99e2-otel-lgtm-1 Waiting 
- Container petclinic-12dc99e2-otel-backend-1 Waiting 
  Container petclinic-12dc99e2-otel-notification-1 Waiting 
  Container petclinic-12dc99e2-otel-frontend-1 Waiting 
  Container petclinic-12dc99e2-otel-reset-1 Waiting 
  Container petclinic-12dc99e2-otel-reaper-1 Waiting 
- Container petclinic-12dc99e2-otel-lgtm-1 Healthy 
- Container petclinic-12dc99e2-otel-notification-1 Healthy 
+ Container petclinic-12dc99e2-otel-db-1 Waiting 
+ Container petclinic-12dc99e2-otel-backend-1 Waiting 
+ Container petclinic-12dc99e2-otel-reaper-1 Healthy 
  Container petclinic-12dc99e2-otel-db-1 Healthy 
  Container petclinic-12dc99e2-otel-backend-1 Healthy 
- Container petclinic-12dc99e2-otel-reaper-1 Healthy 
+ Container petclinic-12dc99e2-otel-lgtm-1 Healthy 
+ Container petclinic-12dc99e2-otel-notification-1 Healthy 
  Container petclinic-12dc99e2-otel-frontend-1 Healthy 
  Container petclinic-12dc99e2-otel-reset-1 Healthy 
     $ ./start-docker.sh ports petclinic-12dc99e2-otel
-    $ export BASE_URL=http://localhost:49417 API_URL=http://localhost:49417 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:49417 API_BASE_URL=http://127.0.0.1:49417/api BACKEND_URL=http://127.0.0.1:49334 GRAFANA_URL=http://127.0.0.1:49164 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:49163 NOTIFICATIONSERVICE_URL=http://127.0.0.1:49286; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-test && GENSEQ_SELECT='visits.spec.ts::shows the ten latest visits on initial load
+    $ export BASE_URL=http://localhost:52074 API_URL=http://localhost:52074 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:52074 API_BASE_URL=http://127.0.0.1:52074/api BACKEND_URL=http://127.0.0.1:52047 GRAFANA_URL=http://127.0.0.1:51848 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:51849 NOTIFICATIONSERVICE_URL=http://127.0.0.1:52018; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-test && GENSEQ_SELECT='visits.spec.ts::shows the ten latest visits on initial load
 visits.spec.ts::clicking a column header sorts by it and keeps the sort in the URL
 visits.spec.ts::a page of 5 visits, then the next one
 visits.spec.ts::Visits Page' ./run-tests-with-tracing.sh
@@ -360,19 +290,19 @@ visits.spec.ts::Visits Page' ./run-tests-with-tracing.sh
 
 Running 6 tests using 1 worker
 
-  ✓  1 [chromium] › src/add-visit.spec.ts:34:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (8.5s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/shows_the_ten_latest_visits_on_initial_load_2026-10-21T17-34-48-524Z.png
-  ✓  2 [chromium] › src/visits.spec.ts:37:7 › Visits Page › shows the ten latest visits on initial load (3.7s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/clicking_a_column_header_sorts_by_it_and_keeps_the_sort_in_the_url_2026-10-21T17-34-52-305Z.png
-  ✓  3 [chromium] › src/visits.spec.ts:47:7 › Visits Page › clicking a column header sorts by it and keeps the sort in the URL (2.8s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/a_page_of_5_visits__then_the_next_one_2026-10-21T17-34-56-633Z.png
-  ✓  4 [chromium] › src/visits.spec.ts:58:7 › Visits Page › a page of 5 visits, then the next one (4.0s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-21T17-34-59-020Z.png
-  ✓  5 [chromium] › src/visits.spec.ts:70:7 › Visits Page › rows are sorted descending by date (1.6s)
-Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-21T17-35-00-682Z.png
-  ✓  6 [chromium] › src/visits.spec.ts:78:7 › Visits Page › owner link navigates to owner detail (1.7s)
+  ✓  1 [chromium] › src/add-visit.spec.ts:34:5 › Add a visit to an existing pet from the owner detail page @generate_sequence (2.3s)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/shows_the_ten_latest_visits_on_initial_load_2026-10-22T08-21-33-012Z.png
+  ✓  2 [chromium] › src/visits.spec.ts:37:7 › Visits Page › shows the ten latest visits on initial load (1.5s)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/clicking_a_column_header_sorts_by_it_and_keeps_the_sort_in_the_url_2026-10-22T08-21-34-506Z.png
+  ✓  3 [chromium] › src/visits.spec.ts:47:7 › Visits Page › clicking a column header sorts by it and keeps the sort in the URL (1.5s)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/a_page_of_5_visits__then_the_next_one_2026-10-22T08-21-36-388Z.png
+  ✓  4 [chromium] › src/visits.spec.ts:58:7 › Visits Page › a page of 5 visits, then the next one (1.9s)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/rows_are_sorted_descending_by_date_2026-10-22T08-21-37-790Z.png
+  ✓  5 [chromium] › src/visits.spec.ts:70:7 › Visits Page › rows are sorted descending by date (406ms)
+Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/test-results/screenshots/owner_link_navigates_to_owner_detail_2026-10-22T08-21-38-183Z.png
+  ✓  6 [chromium] › src/visits.spec.ts:78:7 › Visits Page › owner link navigates to owner detail (428ms)
 🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
-🔭 Tempo behind http://127.0.0.1:49164
+🔭 Tempo behind http://127.0.0.1:51848
 ✅ "Add a visit to an existing pet from the owner detail page": 8 trace(s)
 ✅ "shows the ten latest visits on initial load": 1 trace(s)
 ✅ "clicking a column header sorts by it and keeps the sort in the URL": 4 trace(s)
@@ -387,14 +317,15 @@ Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petcl
    🔍 12 revealable arrow(s) → /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.json
 📊 Generated 4 diagram(s)
 
-  6 passed (58.7s)
+  6 passed (32.9s)
 [1;36m[tracing][0m Running the .feature scenarios (Cucumber)…
 
 > qa@1.0.0 test:cucumber
 > SKIP_SERVER_START=1 cucumber-js
 
 ..........................................🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
-🔭 Tempo behind http://127.0.0.1:49164
+🔭 Tempo behind http://127.0.0.1:51848
+⏳ Waiting 2.8s for the last trace window to close…
 ✅ "Searching with an empty last name lists every owner": 3 trace(s)
 📊 src/owner-search.feature: “Searching with an empty last name lists every owner” → /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml
    🔍 60 revealable arrow(s) → /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.json
@@ -403,7 +334,7 @@ Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petcl
 
 7 scenarios (7 passed)
 28 steps (28 passed)
-3m49.933s (executing steps: 3m47.370s)
+0m23.516s (executing steps: 0m14.505s)
 [1;36m[tracing][0m 📊 Collected 5 sequence diagram(s):
       - petclinic-test/generated/add-visit.spec.ts.add-a-visit-to-an-existing-pet-from-the-owner-detail-page.genseq.puml
       - petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml
@@ -411,7 +342,7 @@ Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petcl
       - petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml
       - petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml
 [1;36m[tracing][0m ✅ Tests passed.
-    $ export BASE_URL=http://localhost:49417 API_URL=http://localhost:49417 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:49417 API_BASE_URL=http://127.0.0.1:49417/api BACKEND_URL=http://127.0.0.1:49334 GRAFANA_URL=http://127.0.0.1:49164 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:49163 NOTIFICATIONSERVICE_URL=http://127.0.0.1:49286; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq
+    $ export BASE_URL=http://localhost:52074 API_URL=http://localhost:52074 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:52074 API_BASE_URL=http://127.0.0.1:52074/api BACKEND_URL=http://127.0.0.1:52047 GRAFANA_URL=http://127.0.0.1:51848 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:51849 NOTIFICATIONSERVICE_URL=http://127.0.0.1:52018; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------< victor.training.agentic:petclinic-backend >--------------
@@ -442,9 +373,9 @@ Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petcl
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running victor.training.petclinic.rest.AddVisitApiTest
-20:40:30.363 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [victor.training.petclinic.rest.AddVisitApiTest]: AddVisitApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-20:40:31.626 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration victor.training.petclinic.PetClinicApplication for test class victor.training.petclinic.rest.AddVisitApiTest
-20:40:34.254 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+11:22:35.265 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [victor.training.petclinic.rest.AddVisitApiTest]: AddVisitApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+11:22:35.456 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration victor.training.petclinic.PetClinicApplication for test class victor.training.petclinic.rest.AddVisitApiTest
+11:22:35.649 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -455,122 +386,122 @@ Screenshot saved: /Users/victorrentea/workspace/petclinic-visits-paginated/petcl
 
  :: Spring Boot ::               (v3.5.11)
 
-2026-10-21T20:40:36.884+03:00  INFO 82356 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : Starting AddVisitApiTest using Java 21.0.6 with PID 82356 (started by victorrentea in /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend)
-2026-10-21T20:40:36.888+03:00  INFO 82356 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : No active profile set, falling back to 1 default profile: "default"
-2026-10-21T20:40:47.805+03:00  INFO 82356 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-21T20:40:49.568+03:00  INFO 82356 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1511 ms. Found 7 JPA repository interfaces.
-2026-10-21T20:40:50.300+03:00  INFO 82356 --- [           main] EmbeddedDatabaseContextCustomizerFactory : Replacing 'dataSource' DataSource bean with embedded version
-2026-10-21T20:40:53.269+03:00  WARN 82356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:40:53.289+03:00  WARN 82356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:40:53.343+03:00  WARN 82356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:40:53.350+03:00  WARN 82356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:40:53.542+03:00  WARN 82356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration' of type [io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [flywayDatabaseExtension] is declared through a non-static factory method on that class; consider declaring it as static instead.
-2026-10-21T20:40:56.915+03:00  INFO 82356 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Detected a Darwin aarch64 system
-2026-10-21T20:40:56.935+03:00  INFO 82356 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : Detected distribution: 'Unknown'
-2026-10-21T20:40:56.940+03:00  INFO 82356 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : System specific postgres binaries found: 'postgres-darwin-arm_64.txz'
-2026-10-21T20:40:57.523+03:00  INFO 82356 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Postgres binaries at /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9
-2026-10-21T20:40:57.662+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : The files belonging to this database system will be owned by user "victorrentea".
-2026-10-21T20:40:57.662+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : This user must also own the server process.
-2026-10-21T20:40:57.662+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : The database cluster will be initialized with this locale configuration:
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   provider:    libc
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_COLLATE:  C
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_CTYPE:    UTF-8
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MESSAGES: C
-2026-10-21T20:40:57.663+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MONETARY: C
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_NUMERIC:  C
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_TIME:     C
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : initdb: could not find suitable text search configuration for locale "UTF-8"
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : The default text search configuration will be set to "simple".
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : Data page checksums are disabled.
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:40:57.664+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : fixing permissions on existing directory /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg12760522780094318272 ... ok
-2026-10-21T20:40:57.666+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating subdirectories ... ok
-2026-10-21T20:40:57.666+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting dynamic shared memory implementation ... posix
-2026-10-21T20:40:57.718+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default max_connections ... 100
-2026-10-21T20:40:57.763+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default shared_buffers ... 128MB
-2026-10-21T20:40:57.769+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default time zone ... Europe/Bucharest
-2026-10-21T20:40:57.773+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating configuration files ... ok
-2026-10-21T20:40:59.692+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : running bootstrap script ... ok
-2026-10-21T20:41:01.727+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : performing post-bootstrap initialization ... ok
-2026-10-21T20:41:01.785+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : syncing data to disk ... ok
-2026-10-21T20:41:01.785+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:41:01.785+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : Success. You can now start the database server using:
-2026-10-21T20:41:01.785+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:41:01.786+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      :     /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9/bin/pg_ctl -D /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg12760522780094318272 -l logfile start
-2026-10-21T20:41:01.786+03:00  INFO 82356 --- [itdb:pid(15985)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:41:01.786+03:00  INFO 82356 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 70379080-669e-46fa-b069-1325c139b107 initdb completed in 00:00:04.257
-2026-10-21T20:41:01.823+03:00  INFO 82356 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 70379080-669e-46fa-b069-1325c139b107 postmaster started as Process[pid=18276, exitValue="not exited"] on port 50165.  Waiting up to PT20S for server startup to finish.
-2026-10-21T20:41:01.941+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : waiting for server to start....2026-10-21 20:41:01.941 EEST [18287] LOG:  starting PostgreSQL 16.2 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
-2026-10-21T20:41:01.945+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:41:01.945 EEST [18287] LOG:  listening on IPv6 address "::1", port 50165
-2026-10-21T20:41:01.946+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:41:01.945 EEST [18287] LOG:  listening on IPv4 address "127.0.0.1", port 50165
-2026-10-21T20:41:01.946+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:41:01.946 EEST [18287] LOG:  listening on Unix socket "/tmp/.s.PGSQL.50165"
-2026-10-21T20:41:01.949+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:41:01.949 EEST [18300] LOG:  database system was shut down at 2026-10-21 20:41:01 EEST
-2026-10-21T20:41:01.956+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:41:01.956 EEST [18287] LOG:  database system is ready to accept connections
-2026-10-21T20:41:02.003+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      :  done
-2026-10-21T20:41:02.003+03:00  INFO 82356 --- [gres:pid(18276)] i.z.t.d.p.embedded.EmbeddedPostgres      : server started
-2026-10-21T20:41:04.355+03:00  INFO 82356 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 70379080-669e-46fa-b069-1325c139b107 postmaster startup finished in 00:00:02.560
-2026-10-21T20:41:05.553+03:00  INFO 82356 --- [  prefetching-1] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:50165/hvkbvfjfolwo (PostgreSQL 16.2)
-2026-10-21T20:41:05.863+03:00  INFO 82356 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
-2026-10-21T20:41:05.975+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.141s)
-2026-10-21T20:41:06.047+03:00  INFO 82356 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
-2026-10-21T20:41:06.295+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
-2026-10-21T20:41:06.388+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - core owners pets"
-2026-10-21T20:41:06.528+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - add vets and security"
-2026-10-21T20:41:06.725+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - visit and specialty details"
-2026-10-21T20:41:06.770+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" with repeatable migration "reference"
-2026-10-21T20:41:06.791+03:00  INFO 82356 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
+2026-10-22T11:22:35.984+03:00  INFO 82555 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : Starting AddVisitApiTest using Java 21.0.6 with PID 82555 (started by victorrentea in /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend)
+2026-10-22T11:22:35.985+03:00  INFO 82555 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T11:22:37.720+03:00  INFO 82555 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-22T11:22:37.975+03:00  INFO 82555 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 237 ms. Found 7 JPA repository interfaces.
+2026-10-22T11:22:38.081+03:00  INFO 82555 --- [           main] EmbeddedDatabaseContextCustomizerFactory : Replacing 'dataSource' DataSource bean with embedded version
+2026-10-22T11:22:38.323+03:00  WARN 82555 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:38.325+03:00  WARN 82555 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:38.331+03:00  WARN 82555 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:38.334+03:00  WARN 82555 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:38.356+03:00  WARN 82555 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration' of type [io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [flywayDatabaseExtension] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-10-22T11:22:38.758+03:00  INFO 82555 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Detected a Darwin aarch64 system
+2026-10-22T11:22:38.760+03:00  INFO 82555 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : Detected distribution: 'Unknown'
+2026-10-22T11:22:38.761+03:00  INFO 82555 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : System specific postgres binaries found: 'postgres-darwin-arm_64.txz'
+2026-10-22T11:22:38.842+03:00  INFO 82555 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Postgres binaries at /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : The files belonging to this database system will be owned by user "victorrentea".
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : This user must also own the server process.
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : The database cluster will be initialized with this locale configuration:
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   provider:    libc
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_COLLATE:  C
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_CTYPE:    UTF-8
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MESSAGES: C
+2026-10-22T11:22:39.074+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MONETARY: C
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_NUMERIC:  C
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_TIME:     C
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : initdb: could not find suitable text search configuration for locale "UTF-8"
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : The default text search configuration will be set to "simple".
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : Data page checksums are disabled.
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.075+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : fixing permissions on existing directory /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg11384671652666094593 ... ok
+2026-10-22T11:22:39.076+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating subdirectories ... ok
+2026-10-22T11:22:39.076+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting dynamic shared memory implementation ... posix
+2026-10-22T11:22:39.112+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default max_connections ... 100
+2026-10-22T11:22:39.134+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default shared_buffers ... 128MB
+2026-10-22T11:22:39.137+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default time zone ... Europe/Bucharest
+2026-10-22T11:22:39.138+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating configuration files ... ok
+2026-10-22T11:22:39.311+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : running bootstrap script ... ok
+2026-10-22T11:22:39.720+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : performing post-bootstrap initialization ... ok
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : syncing data to disk ... ok
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : Success. You can now start the database server using:
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      :     /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9/bin/pg_ctl -D /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg11384671652666094593 -l logfile start
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [itdb:pid(85815)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:39.744+03:00  INFO 82555 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : bb957a01-366f-4906-a676-ffe5f85c6010 initdb completed in 00:00:00.900
+2026-10-22T11:22:39.754+03:00  INFO 82555 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : bb957a01-366f-4906-a676-ffe5f85c6010 postmaster started as Process[pid=86154, exitValue="not exited"] on port 52712.  Waiting up to PT20S for server startup to finish.
+2026-10-22T11:22:39.808+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : waiting for server to start....2026-10-22 11:22:39.808 EEST [86158] LOG:  starting PostgreSQL 16.2 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2026-10-22T11:22:39.812+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:39.812 EEST [86158] LOG:  listening on IPv6 address "::1", port 52712
+2026-10-22T11:22:39.812+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:39.812 EEST [86158] LOG:  listening on IPv4 address "127.0.0.1", port 52712
+2026-10-22T11:22:39.813+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:39.812 EEST [86158] LOG:  listening on Unix socket "/tmp/.s.PGSQL.52712"
+2026-10-22T11:22:39.814+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:39.814 EEST [86163] LOG:  database system was shut down at 2026-10-22 11:22:39 EEST
+2026-10-22T11:22:39.816+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:39.816 EEST [86158] LOG:  database system is ready to accept connections
+2026-10-22T11:22:39.892+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      :  done
+2026-10-22T11:22:39.892+03:00  INFO 82555 --- [gres:pid(86154)] i.z.t.d.p.embedded.EmbeddedPostgres      : server started
+2026-10-22T11:22:40.017+03:00  INFO 82555 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : bb957a01-366f-4906-a676-ffe5f85c6010 postmaster startup finished in 00:00:00.269
+2026-10-22T11:22:40.160+03:00  INFO 82555 --- [  prefetching-1] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:52712/dpgdgtejwxmk (PostgreSQL 16.2)
+2026-10-22T11:22:40.196+03:00  INFO 82555 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-22T11:22:40.199+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.022s)
+2026-10-22T11:22:40.214+03:00  INFO 82555 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-22T11:22:40.243+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-22T11:22:40.251+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - core owners pets"
+2026-10-22T11:22:40.277+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - add vets and security"
+2026-10-22T11:22:40.294+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - visit and specialty details"
+2026-10-22T11:22:40.305+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" with repeatable migration "reference"
+2026-10-22T11:22:40.309+03:00  INFO 82555 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
 | setval |
 +--------+
 | 7      |
 +--------+
 
-2026-10-21T20:41:06.841+03:00  INFO 82356 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
+2026-10-22T11:22:40.310+03:00  INFO 82555 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
 | setval |
 +--------+
 | 3      |
 +--------+
 
-2026-10-21T20:41:06.896+03:00  INFO 82356 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "public", now at version v3 (execution time 00:00.356s)
-2026-10-21T20:41:07.210+03:00  INFO 82356 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-21T20:41:07.630+03:00  INFO 82356 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.42.Final
-2026-10-21T20:41:08.871+03:00  INFO 82356 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-21T20:41:10.758+03:00  INFO 82356 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-21T20:41:11.120+03:00  INFO 82356 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'io.zonky.test.db.provider.support.BlockingDatabaseWrapper@4eb4be91']
+2026-10-22T11:22:40.317+03:00  INFO 82555 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "public", now at version v3 (execution time 00:00.034s)
+2026-10-22T11:22:40.454+03:00  INFO 82555 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-22T11:22:40.516+03:00  INFO 82555 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.42.Final
+2026-10-22T11:22:40.548+03:00  INFO 82555 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-22T11:22:40.802+03:00  INFO 82555 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-22T11:22:40.899+03:00  INFO 82555 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'io.zonky.test.db.provider.support.BlockingDatabaseWrapper@55ebaa33']
 	Database driver: undefined/unknown
 	Database version: 16.2
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-21T20:41:17.808+03:00  INFO 82356 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-21T20:41:17.829+03:00  INFO 82356 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-21T20:41:19.140+03:00  INFO 82356 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-21T20:41:24.713+03:00  WARN 82356 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-21T20:41:24.956+03:00  WARN 82356 --- [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-22T11:22:41.839+03:00  INFO 82555 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-22T11:22:41.841+03:00  INFO 82555 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-22T11:22:42.152+03:00  INFO 82555 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-22T11:22:43.239+03:00  WARN 82555 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-22T11:22:43.276+03:00  WARN 82555 --- [           main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 6db14945-750c-496b-84d6-9491c13039ad
+Using generated security password: 464b769f-10ab-4e8e-8352-1ae2cd77abad
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-21T20:41:24.977+03:00  INFO 82356 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-21T20:41:29.144+03:00  INFO 82356 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-21T20:41:32.530+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable tools capabilities, notification: true
-2026-10-21T20:41:32.532+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 5
-2026-10-21T20:41:32.532+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-10-21T20:41:32.533+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-10-21T20:41:32.533+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-10-21T20:41:32.534+03:00  INFO 82356 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-10-21T20:41:34.847+03:00  INFO 82356 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-10-21T20:41:34.848+03:00  INFO 82356 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-10-21T20:41:34.850+03:00  INFO 82356 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-10-21T20:41:35.104+03:00  INFO 82356 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : Started AddVisitApiTest in 60.877 seconds (process running for 107.238)
-2026-10-21T20:41:35.375+03:00  WARN 82356 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-2026-10-21T20:41:35.375+03:00  WARN 82356 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-2026-10-21T20:41:38.182+03:00  INFO 82356 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:50165/xrkrzoyymwre?user=postgres', scope='AddVisitApiTest#addsAVisitToAnExistingPet'
-2026-10-21T20:41:38.206+03:00  WARN 82356 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/owners' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-10-22T11:22:43.284+03:00  INFO 82555 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-22T11:22:43.762+03:00  INFO 82555 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-22T11:22:44.184+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable tools capabilities, notification: true
+2026-10-22T11:22:44.185+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 5
+2026-10-22T11:22:44.185+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-10-22T11:22:44.185+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-10-22T11:22:44.186+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-10-22T11:22:44.186+03:00  INFO 82555 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-10-22T11:22:44.424+03:00  INFO 82555 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T11:22:44.425+03:00  INFO 82555 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T11:22:44.426+03:00  INFO 82555 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T11:22:44.495+03:00  INFO 82555 --- [           main] v.t.petclinic.rest.AddVisitApiTest       : Started AddVisitApiTest in 8.857 seconds (process running for 12.954)
+2026-10-22T11:22:44.553+03:00  WARN 82555 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-22T11:22:44.553+03:00  WARN 82555 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-22T11:22:44.985+03:00  INFO 82555 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:52712/hjhkeubaowgw?user=postgres', scope='AddVisitApiTest#addsAVisitToAnExistingPet'
+2026-10-22T11:22:44.993+03:00  WARN 82555 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/owners' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
 Hibernate: /* <criteria> */ select o1_0.id,o1_0.address,o1_0.city,o1_0.first_name,o1_0.last_name,o1_0.telephone from owners o1_0 where o1_0.last_name like ? escape '\'
 Hibernate: select p1_0.owner_id,p1_0.id,p1_0.birth_date,p1_0.name,t1_0.id,t1_0.name from pets p1_0 left join types t1_0 on t1_0.id=p1_0.type_id where p1_0.owner_id=?
 Hibernate: select v1_0.pet_id,v1_0.id,v1_0.visit_date,v1_0.description,v1_0.visit_time from visits v1_0 where v1_0.pet_id=?
@@ -639,7 +570,7 @@ Hibernate: select p1_0.owner_id,p1_0.id,p1_0.birth_date,p1_0.name,t1_0.id,t1_0.n
 Hibernate: select o1_0.id,o1_0.address,o1_0.city,o1_0.first_name,o1_0.last_name,o1_0.telephone from owners o1_0 where o1_0.id=?
 Hibernate: select p1_0.owner_id,p1_0.id,p1_0.birth_date,p1_0.name,t1_0.id,t1_0.name from pets p1_0 left join types t1_0 on t1_0.id=p1_0.type_id where p1_0.owner_id=?
 Hibernate: select v1_0.pet_id,v1_0.id,v1_0.visit_date,v1_0.description,v1_0.visit_time from visits v1_0 where v1_0.pet_id=?
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 74.56 s -- in victor.training.petclinic.rest.AddVisitApiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.41 s -- in victor.training.petclinic.rest.AddVisitApiTest
 [INFO] 
 [INFO] Results:
 [INFO] 
@@ -652,18 +583,18 @@ Hibernate: select v1_0.pet_id,v1_0.id,v1_0.visit_date,v1_0.description,v1_0.visi
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  02:07 min
-[INFO] Finished at: 2026-10-21T20:41:48+03:00
+[INFO] Total time:  16.221 s
+[INFO] Finished at: 2026-10-22T11:22:46+03:00
 [INFO] ------------------------------------------------------------------------
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-[otel.javaagent 2026-10-21 20:39:52:960 +0300] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.20.1
+[otel.javaagent 2026-10-22 11:22:31:932 +0300] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.20.1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/Users/victorrentea/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-    $ export BASE_URL=http://localhost:49417 API_URL=http://localhost:49417 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:49417 API_BASE_URL=http://127.0.0.1:49417/api BACKEND_URL=http://127.0.0.1:49334 GRAFANA_URL=http://127.0.0.1:49164 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:49163 NOTIFICATIONSERVICE_URL=http://127.0.0.1:49286; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-backend && GENSEQ_SELECT='VisitListTest#defaultPage_isTheTenLatestVisits,VisitListTest#aVisitCarriesItsPetAndOwner' mvn -o -Pgenseq test -Dtest='VisitListTest#defaultPage_isTheTenLatestVisits,VisitListTest#aVisitCarriesItsPetAndOwner' -Dsurefire.failIfNoSpecifiedTests=false
+    $ export BASE_URL=http://localhost:52074 API_URL=http://localhost:52074 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:52074 API_BASE_URL=http://127.0.0.1:52074/api BACKEND_URL=http://127.0.0.1:52047 GRAFANA_URL=http://127.0.0.1:51848 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:51849 NOTIFICATIONSERVICE_URL=http://127.0.0.1:52018; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-backend && GENSEQ_SELECT='VisitListTest#defaultPage_isTheTenLatestVisits,VisitListTest#aVisitCarriesItsPetAndOwner' mvn -o -Pgenseq test -Dtest='VisitListTest#defaultPage_isTheTenLatestVisits,VisitListTest#aVisitCarriesItsPetAndOwner' -Dsurefire.failIfNoSpecifiedTests=false
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------< victor.training.agentic:petclinic-backend >--------------
@@ -694,9 +625,9 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running victor.training.petclinic.rest.VisitListTest
-20:42:30.251 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [victor.training.petclinic.rest.VisitListTest]: VisitListTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-20:42:30.904 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration victor.training.petclinic.PetClinicApplication for test class victor.training.petclinic.rest.VisitListTest
-20:42:31.524 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+11:22:51.335 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [victor.training.petclinic.rest.VisitListTest]: VisitListTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+11:22:51.490 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration victor.training.petclinic.PetClinicApplication for test class victor.training.petclinic.rest.VisitListTest
+11:22:51.651 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -707,132 +638,130 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 
  :: Spring Boot ::               (v3.5.11)
 
-2026-10-21T20:42:34.707+03:00  INFO 48274 --- [           main] v.training.petclinic.rest.VisitListTest  : Starting VisitListTest using Java 21.0.6 with PID 48274 (started by victorrentea in /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend)
-2026-10-21T20:42:34.709+03:00  INFO 48274 --- [           main] v.training.petclinic.rest.VisitListTest  : No active profile set, falling back to 1 default profile: "default"
-2026-10-21T20:42:44.483+03:00  INFO 48274 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-21T20:42:46.972+03:00  INFO 48274 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 2454 ms. Found 7 JPA repository interfaces.
-2026-10-21T20:42:47.538+03:00  INFO 48274 --- [           main] EmbeddedDatabaseContextCustomizerFactory : Replacing 'dataSource' DataSource bean with embedded version
-2026-10-21T20:42:49.023+03:00  WARN 48274 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:42:49.026+03:00  WARN 48274 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:42:49.050+03:00  WARN 48274 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:42:49.075+03:00  WARN 48274 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
-2026-10-21T20:42:49.215+03:00  WARN 48274 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration' of type [io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [flywayDatabaseExtension] is declared through a non-static factory method on that class; consider declaring it as static instead.
-2026-10-21T20:42:52.480+03:00  INFO 48274 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Detected a Darwin aarch64 system
-2026-10-21T20:42:52.483+03:00  INFO 48274 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : Detected distribution: 'Unknown'
-2026-10-21T20:42:52.499+03:00  INFO 48274 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : System specific postgres binaries found: 'postgres-darwin-arm_64.txz'
-2026-10-21T20:42:52.869+03:00  INFO 48274 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Postgres binaries at /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9
-2026-10-21T20:42:52.983+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : The files belonging to this database system will be owned by user "victorrentea".
-2026-10-21T20:42:52.984+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : This user must also own the server process.
-2026-10-21T20:42:52.984+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:52.984+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : The database cluster will be initialized with this locale configuration:
-2026-10-21T20:42:52.984+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   provider:    libc
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_COLLATE:  C
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_CTYPE:    UTF-8
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MESSAGES: C
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MONETARY: C
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_NUMERIC:  C
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_TIME:     C
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : initdb: could not find suitable text search configuration for locale "UTF-8"
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : The default text search configuration will be set to "simple".
-2026-10-21T20:42:52.985+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:52.986+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : Data page checksums are disabled.
-2026-10-21T20:42:52.986+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:52.986+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : fixing permissions on existing directory /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg11534214520525662034 ... ok
-2026-10-21T20:42:52.986+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating subdirectories ... ok
-2026-10-21T20:42:52.986+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting dynamic shared memory implementation ... posix
-2026-10-21T20:42:53.029+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default max_connections ... 100
-2026-10-21T20:42:53.070+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default shared_buffers ... 128MB
-2026-10-21T20:42:53.073+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default time zone ... Europe/Bucharest
-2026-10-21T20:42:53.077+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating configuration files ... ok
-2026-10-21T20:42:53.404+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : running bootstrap script ... ok
-2026-10-21T20:42:54.812+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : performing post-bootstrap initialization ... ok
-2026-10-21T20:42:54.884+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : syncing data to disk ... ok
-2026-10-21T20:42:54.884+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:54.884+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : Success. You can now start the database server using:
-2026-10-21T20:42:54.885+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:54.885+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      :     /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9/bin/pg_ctl -D /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg11534214520525662034 -l logfile start
-2026-10-21T20:42:54.885+03:00  INFO 48274 --- [itdb:pid(74076)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
-2026-10-21T20:42:54.888+03:00  INFO 48274 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : b5d4fe9d-d1c5-4b17-a759-be987f755828 initdb completed in 00:00:02.015
-2026-10-21T20:42:54.920+03:00  INFO 48274 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : b5d4fe9d-d1c5-4b17-a759-be987f755828 postmaster started as Process[pid=75252, exitValue="not exited"] on port 50336.  Waiting up to PT20S for server startup to finish.
-2026-10-21T20:42:55.089+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : waiting for server to start....2026-10-21 20:42:55.084 EEST [75291] LOG:  starting PostgreSQL 16.2 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
-2026-10-21T20:42:55.142+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:42:55.141 EEST [75291] LOG:  listening on IPv6 address "::1", port 50336
-2026-10-21T20:42:55.143+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:42:55.141 EEST [75291] LOG:  listening on IPv4 address "127.0.0.1", port 50336
-2026-10-21T20:42:55.143+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:42:55.142 EEST [75291] LOG:  listening on Unix socket "/tmp/.s.PGSQL.50336"
-2026-10-21T20:42:55.166+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:42:55.166 EEST [75374] LOG:  database system was shut down at 2026-10-21 20:42:54 EEST
-2026-10-21T20:42:55.188+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:42:55.188 EEST [75291] LOG:  database system is ready to accept connections
-2026-10-21T20:42:55.219+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      :  done
-2026-10-21T20:42:55.220+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : server started
-2026-10-21T20:42:57.970+03:00  INFO 48274 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : b5d4fe9d-d1c5-4b17-a759-be987f755828 postmaster startup finished in 00:00:03.062
-2026-10-21T20:42:58.672+03:00  INFO 48274 --- [  prefetching-1] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:50336/fckanxllolwk (PostgreSQL 16.2)
-2026-10-21T20:42:58.867+03:00  INFO 48274 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
-2026-10-21T20:42:58.874+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.072s)
-2026-10-21T20:42:58.947+03:00  INFO 48274 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
-2026-10-21T20:42:59.074+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
-2026-10-21T20:42:59.102+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - core owners pets"
-2026-10-21T20:42:59.299+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - add vets and security"
-2026-10-21T20:42:59.436+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - visit and specialty details"
-2026-10-21T20:42:59.470+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" with repeatable migration "reference"
-2026-10-21T20:42:59.483+03:00  INFO 48274 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
+2026-10-22T11:22:51.918+03:00  INFO 88687 --- [           main] v.training.petclinic.rest.VisitListTest  : Starting VisitListTest using Java 21.0.6 with PID 88687 (started by victorrentea in /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-backend)
+2026-10-22T11:22:51.919+03:00  INFO 88687 --- [           main] v.training.petclinic.rest.VisitListTest  : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T11:22:53.230+03:00  INFO 88687 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-22T11:22:53.399+03:00  INFO 88687 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 161 ms. Found 7 JPA repository interfaces.
+2026-10-22T11:22:53.505+03:00  INFO 88687 --- [           main] EmbeddedDatabaseContextCustomizerFactory : Replacing 'dataSource' DataSource bean with embedded version
+2026-10-22T11:22:53.742+03:00  WARN 88687 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:53.744+03:00  WARN 88687 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:53.751+03:00  WARN 88687 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:53.754+03:00  WARN 88687 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-22T11:22:53.777+03:00  WARN 88687 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration' of type [io.zonky.test.db.config.EmbeddedDatabaseAutoConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [flywayDatabaseExtension] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-10-22T11:22:54.113+03:00  INFO 88687 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Detected a Darwin aarch64 system
+2026-10-22T11:22:54.114+03:00  INFO 88687 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : Detected distribution: 'Unknown'
+2026-10-22T11:22:54.117+03:00  INFO 88687 --- [  prefetching-1] .z.t.d.p.e.DefaultPostgresBinaryResolver : System specific postgres binaries found: 'postgres-darwin-arm_64.txz'
+2026-10-22T11:22:54.217+03:00  INFO 88687 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : Postgres binaries at /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9
+2026-10-22T11:22:54.254+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : The files belonging to this database system will be owned by user "victorrentea".
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : This user must also own the server process.
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : The database cluster will be initialized with this locale configuration:
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   provider:    libc
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_COLLATE:  C
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_CTYPE:    UTF-8
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MESSAGES: C
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_MONETARY: C
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_NUMERIC:  C
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :   LC_TIME:     C
+2026-10-22T11:22:54.255+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : initdb: could not find suitable text search configuration for locale "UTF-8"
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : The default text search configuration will be set to "simple".
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : Data page checksums are disabled.
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : fixing permissions on existing directory /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg17590229089980551529 ... ok
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating subdirectories ... ok
+2026-10-22T11:22:54.256+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting dynamic shared memory implementation ... posix
+2026-10-22T11:22:54.277+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default max_connections ... 100
+2026-10-22T11:22:54.297+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default shared_buffers ... 128MB
+2026-10-22T11:22:54.299+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : selecting default time zone ... Europe/Bucharest
+2026-10-22T11:22:54.302+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : creating configuration files ... ok
+2026-10-22T11:22:54.466+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : running bootstrap script ... ok
+2026-10-22T11:22:54.806+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : performing post-bootstrap initialization ... ok
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : syncing data to disk ... ok
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : Success. You can now start the database server using:
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      :     /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/embedded-pg/PG-85857fd13115b172e564d9e8497681e9/bin/pg_ctl -D /var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/epg17590229089980551529 -l logfile start
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [itdb:pid(91044)] i.z.t.d.p.embedded.EmbeddedPostgres      : 
+2026-10-22T11:22:54.829+03:00  INFO 88687 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 40c5f8a5-abcd-41d4-a6f5-583a6326ff12 initdb completed in 00:00:00.610
+2026-10-22T11:22:54.837+03:00  INFO 88687 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 40c5f8a5-abcd-41d4-a6f5-583a6326ff12 postmaster started as Process[pid=91325, exitValue="not exited"] on port 52744.  Waiting up to PT20S for server startup to finish.
+2026-10-22T11:22:54.880+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : waiting for server to start....2026-10-22 11:22:54.880 EEST [91327] LOG:  starting PostgreSQL 16.2 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2026-10-22T11:22:54.882+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:54.882 EEST [91327] LOG:  listening on IPv6 address "::1", port 52744
+2026-10-22T11:22:54.883+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:54.882 EEST [91327] LOG:  listening on IPv4 address "127.0.0.1", port 52744
+2026-10-22T11:22:54.883+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:54.883 EEST [91327] LOG:  listening on Unix socket "/tmp/.s.PGSQL.52744"
+2026-10-22T11:22:54.885+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:54.884 EEST [91331] LOG:  database system was shut down at 2026-10-22 11:22:54 EEST
+2026-10-22T11:22:54.886+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-22 11:22:54.886 EEST [91327] LOG:  database system is ready to accept connections
+2026-10-22T11:22:54.964+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      :  done
+2026-10-22T11:22:54.964+03:00  INFO 88687 --- [gres:pid(91325)] i.z.t.d.p.embedded.EmbeddedPostgres      : server started
+2026-10-22T11:22:55.100+03:00  INFO 88687 --- [  prefetching-1] i.z.t.d.p.embedded.EmbeddedPostgres      : 40c5f8a5-abcd-41d4-a6f5-583a6326ff12 postmaster startup finished in 00:00:00.266
+2026-10-22T11:22:55.236+03:00  INFO 88687 --- [  prefetching-1] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:52744/jkjxgiklfqml (PostgreSQL 16.2)
+2026-10-22T11:22:55.268+03:00  INFO 88687 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-22T11:22:55.271+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.019s)
+2026-10-22T11:22:55.285+03:00  INFO 88687 --- [  prefetching-1] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-22T11:22:55.321+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-22T11:22:55.329+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - core owners pets"
+2026-10-22T11:22:55.358+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - add vets and security"
+2026-10-22T11:22:55.373+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - visit and specialty details"
+2026-10-22T11:22:55.382+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Migrating schema "public" with repeatable migration "reference"
+2026-10-22T11:22:55.386+03:00  INFO 88687 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
 | setval |
 +--------+
 | 7      |
 +--------+
 
-2026-10-21T20:42:59.486+03:00  INFO 48274 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
+2026-10-22T11:22:55.386+03:00  INFO 88687 --- [  prefetching-1] o.f.c.i.s.DefaultSqlScriptExecutor       : +--------+
 | setval |
 +--------+
 | 3      |
 +--------+
 
-2026-10-21T20:42:59.598+03:00  INFO 48274 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "public", now at version v3 (execution time 00:00.246s)
-2026-10-21T20:42:59.926+03:00  INFO 48274 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-21T20:43:00.308+03:00  INFO 48274 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.42.Final
-2026-10-21T20:43:00.632+03:00  INFO 48274 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-21T20:43:03.422+03:00  INFO 48274 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-21T20:43:03.868+03:00  INFO 48274 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'io.zonky.test.db.provider.support.BlockingDatabaseWrapper@4b861e4b']
+2026-10-22T11:22:55.392+03:00  INFO 88687 --- [  prefetching-1] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "public", now at version v3 (execution time 00:00.032s)
+2026-10-22T11:22:55.505+03:00  INFO 88687 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-22T11:22:55.562+03:00  INFO 88687 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.42.Final
+2026-10-22T11:22:55.593+03:00  INFO 88687 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-22T11:22:55.837+03:00  INFO 88687 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-22T11:22:55.921+03:00  INFO 88687 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'io.zonky.test.db.provider.support.BlockingDatabaseWrapper@7206bfe5']
 	Database driver: undefined/unknown
 	Database version: 16.2
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-21T20:43:09.580+03:00  INFO 48274 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-21T20:43:09.588+03:00  INFO 48274 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-21T20:43:13.061+03:00  INFO 48274 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-21T20:43:22.455+03:00  WARN 48274 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-21T20:43:22.648+03:00  WARN 48274 --- [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-22T11:22:56.856+03:00  INFO 88687 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-22T11:22:56.858+03:00  INFO 88687 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-22T11:22:57.123+03:00  INFO 88687 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-22T11:22:58.102+03:00  WARN 88687 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-22T11:22:58.136+03:00  WARN 88687 --- [           main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 70ca7723-0ed2-4dfc-bfc9-785558a17952
+Using generated security password: 816a3261-3ce5-4d8c-842d-a4fb9e65b83e
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-21T20:43:22.668+03:00  INFO 48274 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-21T20:43:26.037+03:00  INFO 48274 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-21T20:43:30.611+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable tools capabilities, notification: true
-2026-10-21T20:43:30.648+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 5
-2026-10-21T20:43:30.648+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-10-21T20:43:30.653+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-10-21T20:43:30.654+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-10-21T20:43:30.654+03:00  INFO 48274 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-10-21T20:43:33.240+03:00  INFO 48274 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-10-21T20:43:33.241+03:00  INFO 48274 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-10-21T20:43:33.243+03:00  INFO 48274 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-10-21T20:43:34.315+03:00  INFO 48274 --- [           main] v.training.petclinic.rest.VisitListTest  : Started VisitListTest in 62.843 seconds (process running for 89.648)
-2026-10-21T20:43:35.706+03:00  WARN 48274 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-2026-10-21T20:43:35.706+03:00  WARN 48274 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-22T11:22:58.143+03:00  INFO 88687 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-22T11:22:58.554+03:00  INFO 88687 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-22T11:22:58.946+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable tools capabilities, notification: true
+2026-10-22T11:22:58.947+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 5
+2026-10-22T11:22:58.947+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-10-22T11:22:58.947+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-10-22T11:22:58.948+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-10-22T11:22:58.948+03:00  INFO 88687 --- [           main] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-10-22T11:22:59.180+03:00  INFO 88687 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T11:22:59.180+03:00  INFO 88687 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T11:22:59.181+03:00  INFO 88687 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T11:22:59.253+03:00  INFO 88687 --- [           main] v.training.petclinic.rest.VisitListTest  : Started VisitListTest in 7.61 seconds (process running for 10.627)
+2026-10-22T11:22:59.305+03:00  WARN 88687 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-22T11:22:59.305+03:00  WARN 88687 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
 Hibernate: /* DELETE FROM Visit */ delete from visits v1_0
-2026-10-21T20:43:40.666+03:00  INFO 48274 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:50336/aafwktkcyyxp?user=postgres', scope='VisitListTest#aVisitCarriesItsPetAndOwner'
+2026-10-22T11:22:59.755+03:00  INFO 88687 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:52744/bsqyxcoemixo?user=postgres', scope='VisitListTest#aVisitCarriesItsPetAndOwner'
 Hibernate: /* insert for victor.training.petclinic.domain.Owner */insert into owners (address,city,first_name,last_name,telephone) values (?,?,?,?,?)
 Hibernate: /* <criteria> */ select pt1_0.id,pt1_0.name from types pt1_0
 Hibernate: /* insert for victor.training.petclinic.domain.Pet */insert into pets (birth_date,name,owner_id,type_id) values (?,?,?,?)
 Hibernate: /* insert for victor.training.petclinic.domain.Visit */insert into visits (visit_date,description,pet_id,visit_time) values (?,?,?,?)
-2026-10-21T20:43:42.184+03:00  WARN 48274 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/visits' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-10-22T11:22:59.874+03:00  WARN 88687 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/visits' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
 Hibernate: /* SELECT v FROM Visit v JOIN FETCH v.pet p JOIN FETCH p.owner order by v.date desc, v.id asc */ select v1_0.id,v1_0.visit_date,v1_0.description,p1_0.id,p1_0.birth_date,p1_0.name,o1_0.id,o1_0.address,o1_0.city,o1_0.first_name,o1_0.last_name,o1_0.telephone,p1_0.type_id,v1_0.visit_time from visits v1_0 join pets p1_0 on p1_0.id=v1_0.pet_id join owners o1_0 on o1_0.id=p1_0.owner_id order by v1_0.visit_date desc,v1_0.id fetch first ? rows only
-2026-10-21T20:43:44.333+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:43:44.333 EEST [75366] LOG:  checkpoint starting: immediate force wait
-2026-10-21T20:43:44.500+03:00  INFO 48274 --- [gres:pid(75252)] i.z.t.d.p.embedded.EmbeddedPostgres      : 2026-10-21 20:43:44.500 EEST [75366] LOG:  checkpoint complete: wrote 979 buffers (6.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.096 s, sync=0.001 s, total=0.167 s; sync files=0, longest=0.000 s, average=0.000 s; distance=8989 kB, estimate=8989 kB; lsn=0/2146BA0, redo lsn=0/1DD4630
 Hibernate: /* DELETE FROM Visit */ delete from visits v1_0
-2026-10-21T20:43:44.618+03:00  INFO 48274 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:50336/ismdpgssajhb?user=postgres', scope='VisitListTest#defaultPage_isTheTenLatestVisits'
+2026-10-22T11:23:00.230+03:00  INFO 88687 --- [           main] i.z.t.d.l.EmbeddedDatabaseReporter       : JDBC URL to connect to 'dataSource': url='jdbc:postgresql://localhost:52744/qnifizosckbr?user=postgres', scope='VisitListTest#defaultPage_isTheTenLatestVisits'
 Hibernate: /* insert for victor.training.petclinic.domain.Owner */insert into owners (address,city,first_name,last_name,telephone) values (?,?,?,?,?)
 Hibernate: /* <criteria> */ select pt1_0.id,pt1_0.name from types pt1_0
 Hibernate: /* insert for victor.training.petclinic.domain.Pet */insert into pets (birth_date,name,owner_id,type_id) values (?,?,?,?)
@@ -850,7 +779,7 @@ Hibernate: /* insert for victor.training.petclinic.domain.Visit */insert into vi
 Hibernate: /* insert for victor.training.petclinic.domain.Visit */insert into visits (visit_date,description,pet_id,visit_time) values (?,?,?,?)
 Hibernate: /* SELECT v FROM Visit v JOIN FETCH v.pet p JOIN FETCH p.owner order by v.date desc, v.id asc */ select v1_0.id,v1_0.visit_date,v1_0.description,p1_0.id,p1_0.birth_date,p1_0.name,o1_0.id,o1_0.address,o1_0.city,o1_0.first_name,o1_0.last_name,o1_0.telephone,p1_0.type_id,v1_0.visit_time from visits v1_0 join pets p1_0 on p1_0.id=v1_0.pet_id join owners o1_0 on o1_0.id=p1_0.owner_id order by v1_0.visit_date desc,v1_0.id fetch first ? rows only
 Hibernate: /* SELECT count(v) FROM Visit v JOIN v.pet p JOIN p.owner */ select count(v1_0.id) from visits v1_0 join pets p1_0 on p1_0.id=v1_0.pet_id join owners o1_0 on o1_0.id=p1_0.owner_id
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 75.11 s -- in victor.training.petclinic.rest.VisitListTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.047 s -- in victor.training.petclinic.rest.VisitListTest
 [INFO] 
 [INFO] Results:
 [INFO] 
@@ -863,24 +792,25 @@ Hibernate: /* SELECT count(v) FROM Visit v JOIN v.pet p JOIN p.owner */ select c
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  01:57 min
-[INFO] Finished at: 2026-10-21T20:43:52+03:00
+[INFO] Total time:  13.660 s
+[INFO] Finished at: 2026-10-22T11:23:01+03:00
 [INFO] ------------------------------------------------------------------------
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-[otel.javaagent 2026-10-21 20:42:06:648 +0300] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.20.1
+[otel.javaagent 2026-10-22 11:22:48:972 +0300] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.20.1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/Users/victorrentea/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-    $ export BASE_URL=http://localhost:49417 API_URL=http://localhost:49417 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:49417 API_BASE_URL=http://127.0.0.1:49417/api BACKEND_URL=http://127.0.0.1:49334 GRAFANA_URL=http://127.0.0.1:49164 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:49163 NOTIFICATIONSERVICE_URL=http://127.0.0.1:49286; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram
+    $ export BASE_URL=http://localhost:52074 API_URL=http://localhost:52074 HUMAN_REVIEW_APP_COMMIT=12dc99e2f93d11e5fd3c9b2d301053ca90e217b7 HUMAN_REVIEW_APP_STARTED=1 PETCLINIC_INSTANCE=petclinic-12dc99e2-otel BASE_URL=http://127.0.0.1:52074 API_BASE_URL=http://127.0.0.1:52074/api BACKEND_URL=http://127.0.0.1:52047 GRAFANA_URL=http://127.0.0.1:51848 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:51849 NOTIFICATIONSERVICE_URL=http://127.0.0.1:52018; export PLAYWRIGHT_HTML_OUTPUT_DIR=/var/folders/xc/rnyn51gd081_5x9gz5cxxc1r0000gn/T/hr-sequence-report-ced1ae8ed1 PLAYWRIGHT_HTML_OPEN=never; cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram
 
 > qa@1.0.0 trace:diagram
 > ts-node src/genseq/generate.ts
 
 🎚️  Detail: simplified · click an arrow to reveal its SQL / JSON payloads
-🔭 Tempo behind http://127.0.0.1:49164
+🔭 Tempo behind http://127.0.0.1:51848
+⏳ Waiting 3.0s for the last trace window to close…
 ✅ "Add a visit to an existing pet from the owner detail page": 8 trace(s)
 ✅ "shows the ten latest visits on initial load": 1 trace(s)
 ✅ "clicking a column header sorts by it and keeps the sort in the URL": 4 trace(s)
@@ -906,48 +836,48 @@ OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader clas
 📊 ../petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitListTest.java: “default page is the ten latest visits” → /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml
    🔍 17 revealable arrow(s) → /Users/victorrentea/workspace/petclinic-visits-paginated/petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.json
 📊 Generated 8 diagram(s)
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/playwright-python.sh
-    $ /Users/victorrentea/.cache/human-review/shots-venv/bin/python /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/trace-shot.py --grafana http://127.0.0.1:49164 --since 1792603831 --out .human-review/assets/sequence.trace.png --diagram petclinic-test/generated/AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.puml --diagram petclinic-test/generated/VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.puml --diagram petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml --diagram petclinic-test/generated/add-visit.spec.ts.add-a-visit-to-an-existing-pet-from-the-owner-detail-page.genseq.puml --diagram petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml
-[trace-shot] .human-review/assets/sequence.trace.png: visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml: trace 87a92593f6b839c09919ca17feac8de2 — 12 spans, petclinic-backend, petclinic-frontend
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/playwright-python.sh
+    $ /Users/victorrentea/.cache/human-review/shots-venv/bin/python /Users/victorrentea/workspace/human-review/skills/human-review/scripts/trace-shot.py --grafana http://127.0.0.1:51848 --since 1792657188 --out .human-review/assets/sequence.trace.png --diagram petclinic-test/generated/AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.puml --diagram petclinic-test/generated/VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.puml --diagram petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml --diagram petclinic-test/generated/add-visit.spec.ts.add-a-visit-to-an-existing-pet-from-the-owner-detail-page.genseq.puml --diagram petclinic-test/generated/owner-search.feature.searching-with-an-empty-last-name-lists-every-owner.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml --diagram petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.a-page-of-5-visits-then-the-next-one.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.clicking-a-column-header-sorts-by-it-and-keeps-the-sort-in-the-url.genseq.puml --prefer petclinic-test/generated/visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml
+[trace-shot] .human-review/assets/sequence.trace.png: visits.spec.ts.shows-the-ten-latest-visits-on-initial-load.genseq.puml: trace a78bb60097d2571ed0bcf30bc2396bd3 — 12 spans, petclinic-frontend, petclinic-backend
     $ ./start-docker.sh down petclinic-12dc99e2-otel
+ Container petclinic-12dc99e2-otel-reaper-1 Stopping 
  Container petclinic-12dc99e2-otel-reset-1 Stopping 
  Container petclinic-12dc99e2-otel-frontend-1 Stopping 
- Container petclinic-12dc99e2-otel-reaper-1 Stopping 
  Container petclinic-12dc99e2-otel-frontend-1 Stopped 
  Container petclinic-12dc99e2-otel-frontend-1 Removing 
  Container petclinic-12dc99e2-otel-frontend-1 Removed 
- Container petclinic-12dc99e2-otel-reset-1 Stopped 
- Container petclinic-12dc99e2-otel-reset-1 Removing 
  Container petclinic-12dc99e2-otel-reaper-1 Stopped 
  Container petclinic-12dc99e2-otel-reaper-1 Removing 
+ Container petclinic-12dc99e2-otel-reaper-1 Removed 
+ Container petclinic-12dc99e2-otel-reset-1 Stopped 
+ Container petclinic-12dc99e2-otel-reset-1 Removing 
  Container petclinic-12dc99e2-otel-reset-1 Removed 
  Container petclinic-12dc99e2-otel-backend-1 Stopping 
- Container petclinic-12dc99e2-otel-reaper-1 Removed 
  Container petclinic-12dc99e2-otel-backend-1 Stopped 
  Container petclinic-12dc99e2-otel-backend-1 Removing 
  Container petclinic-12dc99e2-otel-backend-1 Removed 
  Container petclinic-12dc99e2-otel-notification-1 Stopping 
  Container petclinic-12dc99e2-otel-db-1 Stopping 
- Container petclinic-12dc99e2-otel-db-1 Stopped 
- Container petclinic-12dc99e2-otel-db-1 Removing 
- Container petclinic-12dc99e2-otel-db-1 Removed 
  Container petclinic-12dc99e2-otel-notification-1 Stopped 
  Container petclinic-12dc99e2-otel-notification-1 Removing 
  Container petclinic-12dc99e2-otel-notification-1 Removed 
+ Container petclinic-12dc99e2-otel-db-1 Stopped 
+ Container petclinic-12dc99e2-otel-db-1 Removing 
+ Container petclinic-12dc99e2-otel-db-1 Removed 
  Container petclinic-12dc99e2-otel-lgtm-1 Stopping 
  Container petclinic-12dc99e2-otel-lgtm-1 Stopped 
  Container petclinic-12dc99e2-otel-lgtm-1 Removing 
  Container petclinic-12dc99e2-otel-lgtm-1 Removed 
+ Volume petclinic-12dc99e2-otel_seed Removing 
  Volume petclinic-12dc99e2-otel_pgdata Removing 
  Network petclinic-12dc99e2-otel_default Removing 
- Volume petclinic-12dc99e2-otel_seed Removing 
  Volume petclinic-12dc99e2-otel_activity Removing 
- Volume petclinic-12dc99e2-otel_activity Removed 
  Volume petclinic-12dc99e2-otel_pgdata Removed 
  Volume petclinic-12dc99e2-otel_seed Removed 
+ Volume petclinic-12dc99e2-otel_activity Removed 
  Network petclinic-12dc99e2-otel_default Removed 
 🛑 petclinic-12dc99e2-otel
-    $ /Users/victorrentea/.claude/plugins/cache/human-review/human-review/46b353e89c9e/skills/human-review/scripts/puml-diff.sh 664c5b3b453fb758230de01e407064c45d07a844 .human-review/assets/diagrams
+    $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/puml-diff.sh 664c5b3b453fb758230de01e407064c45d07a844 .human-review/assets/diagrams
 [puml-diff] petclinic-test/generated/AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.puml (sequence, modified) -> .human-review/assets/diagrams/petclinic-test_generated_AddVisitApiTest.java.adds-a-visit-to-an-existing-pet.genseq.diff.puml
 [puml-diff] petclinic-test/generated/VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_VisitListTest.java.a-visit-carries-its-pet-and-owner.genseq.diff.puml
 [puml-diff] petclinic-test/generated/VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.puml (sequence, added) -> .human-review/assets/diagrams/petclinic-test_generated_VisitListTest.java.default-page-is-the-ten-latest-visits.genseq.diff.puml
