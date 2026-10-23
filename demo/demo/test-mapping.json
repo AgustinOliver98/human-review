@@ -6,71 +6,67 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:343",
      "strength": "asserted",
-     "why": "PUTs a vetId on a visit and reads it back, comparing the stored vetId to the vet's id",
+     "why": "PUTs a visit with a vetId, reloads it and compares its vetId to the vet's id",
      "line": "assertThat(callGet(visitId).getVetId()).isEqualTo(vet.getId());"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
+     "id": "petclinic-backend/src/test/resources/features/functional/visits.feature:11",
      "strength": "asserted",
-     "why": "creates a visit with a vet and asserts the stored vetId equals the vet's id",
-     "line": "assertThat(created.getVetId()).isEqualTo(vet.getId());"
+     "why": "books a visit choosing a vet, GETs it and compares vetId to the chosen vet's id",
+     "line": "assertThat(response.jsonPath().getInt(\"vetId\")).isEqualTo(http.idOf(\"vet:\" + vetName));"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
-     "why": "books a visit with a chosen vet and asserts the owner page reads that vet",
-     "line": "And the visit on the owner's page reads the chosen vet"
+     "why": "books with a chosen vet and checks the all-visits screen reads that vet",
+     "line": "Then the visit on the all visits screen reads the chosen vet"
     }
    ],
    "review": [
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "verdict": "confirm",
-     "why": "books with a chosen vet and asserts the saved visit reads that vet"
+     "why": "books a visit with a chosen vet, then checks the stored visit shows that vet on two screens"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:7",
      "verdict": "reject",
-     "why": "only formats vet fields already on a visit object; does not link a visit to a vet"
+     "why": "only formats vet names from an in-memory object; it never links a visit to a vet"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:343",
      "verdict": "confirm",
-     "why": "PUTs a vetId and asserts the stored visit has that vetId"
+     "why": "PUT with vetId, then GET asserts the visit's vetId equals the vet's id"
     }
    ]
   },
   {
    "id": "s076ab2",
-   "coverage": "covered",
+   "coverage": "partial",
    "tests": [
-    {
-     "id": "petclinic-test/src/visit-vet.feature:11",
-     "strength": "asserted",
-     "why": "asserts the vet is shown on the owner page and on the all-visits screen",
-     "line": "Then the visit on the all visits screen reads the chosen vet"
-    },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "compares the all-visits vet cells to the expected vet names",
+     "why": "asserts the all-visits cells show the vet name or 'No vet'",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "compares the visit-list vet cells to the expected vet names",
+     "why": "asserts the visit list cells show the vet name or 'No vet'",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);"
     },
     {
      "id": "petclinic-backend/src/test/java/victor/training/petclinic/mcp/ListVisitsToolTest.java:81",
      "strength": "asserted",
-     "why": "asserts the MCP visit listing carries the vet name",
+     "why": "asserts listVisits returns the vet name for a visit that has one",
      "line": "tuple(\"seen by Helen\", \"Helen Leary\"),"
     }
    ],
+   "gap": "'Everywhere' is open-ended; vet display is asserted on the owner page, the all-visits screen and the MCP listing, but no test checks that the edit form shows a visit's existing vet.",
+   "gapKind": "requirement",
    "review": []
   },
   {
@@ -78,77 +74,89 @@
    "coverage": "covered",
    "tests": [
     {
+     "id": "petclinic-backend/src/test/resources/features/functional/visits.feature:11",
+     "strength": "asserted",
+     "why": "books choosing a vet and compares the stored vetId to that vet",
+     "line": "assertThat(response.jsonPath().getInt(\"vetId\")).isEqualTo(http.idOf(\"vet:\" + vetName));"
+    },
+    {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
-     "why": "chooses a vet in the form, submits, and asserts the owner page reads the chosen vet",
+     "why": "picks a vet in the form, submits, and the owner page reads that vet",
      "line": "And the visit on the owner's page reads the chosen vet"
-    },
-    {
-     "id": "petclinic-test/src/visit-vet.feature:22",
-     "strength": "asserted",
-     "why": "submits without choosing a vet and asserts the visit reads No vet",
-     "line": "Then the visit on the all visits screen reads \"No vet\""
-    },
-    {
-     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
-     "strength": "asserted",
-     "why": "asserts addVisit is called with vetId 2",
-     "line": "expect(visitService.addVisit).toHaveBeenCalledWith(jasmine.objectContaining({vetId: 2}));"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
      "strength": "asserted",
-     "why": "asserts the form starts with no vet chosen",
+     "why": "asserts the form starts with no vet chosen (and offers the vets)",
      "line": "expect(component.visit.vetId).toBeNull();"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
+     "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
-     "why": "books without a vetId and asserts the stored vet is null",
+     "why": "books without choosing a vet and the owner page reads 'No vet'",
+     "line": "And the visit on the owner's page reads \"No vet\""
+    },
+    {
+     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
+     "strength": "asserted",
+     "why": "asserts addVisit is called with the chosen vetId",
+     "line": "expect(visitService.addVisit).toHaveBeenCalledWith(jasmine.objectContaining({vetId: 2}));"
+    },
+    {
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312",
+     "strength": "asserted",
+     "why": "books without a vet and asserts the stored visit's vet is null",
      "line": ".isNull();"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "strength": "asserted",
-     "why": "books with a vetId and asserts the owner page returns that vet's last name",
-     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetLastName\")"
+     "why": "books with a vet from the owner page and asserts the owner response carries its vetId",
+     "line": ".andExpect(jsonPath(\"$.pets[0].visits[?(@.description == 'ear infection')].vetId\")"
+    },
+    {
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
+     "strength": "asserted",
+     "why": "creates a visit with no vet and asserts vetId is null",
+     "line": "assertThat(created.getVetId()).isNull();"
     }
    ],
    "review": [
     {
+     "id": "petclinic-backend/src/test/resources/features/functional/visits.feature:11",
+     "verdict": "confirm",
+     "why": "POSTs a booking with vetId and asserts the stored vetId and names"
+    },
+    {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "verdict": "confirm",
-     "why": "picks a vet in the booking form and asserts it on the saved visit"
+     "why": "chooses a vet in the booking form and checks it is shown after submit"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
      "verdict": "confirm",
-     "why": "asserts the form offers vets and starts with vetId null"
+     "why": "asserts vet options are offered and the vet starts unchosen (null)"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "verdict": "confirm",
-     "why": "books without choosing a vet and asserts No vet"
+     "why": "books without choosing a vet and checks 'No vet' is read back"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
      "verdict": "confirm",
-     "why": "submits with vetId 2 and asserts it is sent"
+     "why": "submits with vetId 2 and asserts addVisit receives it"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312",
      "verdict": "confirm",
-     "why": "books with no vetId and asserts the stored vet is null"
+     "why": "POSTs a booking with no vet and asserts the stored Visit::getVet is null"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:330",
      "verdict": "reject",
-     "why": "only checks an unknown vetId gives 404; not the choice of a vet or of none"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "verdict": "confirm",
-     "why": "books with a vetId and asserts the vet comes back on the owner"
+     "why": "only asserts an unknown vetId gives 404; it proves neither choosing nor not choosing"
     }
    ]
   },
@@ -157,106 +165,66 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-test/src/visit-vet.feature:22",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312",
      "strength": "asserted",
-     "why": "submits the form without a vet and asserts the visit is saved and reads No vet",
-     "line": "And the visit on the owner's page reads \"No vet\""
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
-     "strength": "asserted",
-     "why": "books without a vetId, expects 201, and asserts the stored vet is null",
+     "why": "a booking with no vet is accepted (201) and stored with a null vet",
      "line": ".isNull();"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
      "strength": "asserted",
-     "why": "creates a visit without a vet and asserts vetId is null on read-back",
+     "why": "create without a vet succeeds and reads back vetId null",
      "line": "assertThat(created.getVetId()).isNull();"
     },
     {
+     "id": "petclinic-test/src/visit-vet.feature:22",
+     "strength": "asserted",
+     "why": "submits the form with no vet chosen and the visit appears reading 'No vet'",
+     "line": "And the visit on the owner's page reads \"No vet\""
+    },
+    {
      "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
      "strength": "asserted",
-     "why": "asserts the form starts with vetId null, so no choice is forced",
+     "why": "the form starts with no vet chosen",
      "line": "expect(component.visit.vetId).toBeNull();"
     }
    ],
-   "review": [
-    {
-     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
-     "verdict": "confirm",
-     "why": "asserts the vet starts unset (null) on the booking form"
-    },
-    {
-     "id": "petclinic-test/src/visit-vet.feature:11",
-     "verdict": "reject",
-     "why": "always chooses a vet; does not touch optionality"
-    },
-    {
-     "id": "petclinic-test/src/visit-vet.feature:22",
-     "verdict": "confirm",
-     "why": "submits without a vet and asserts the booking succeeds as No vet"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
-     "verdict": "confirm",
-     "why": "POSTs with no vetId, 201, stored vet null"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
-     "verdict": "reject",
-     "why": "tests an unknown vetId, not an absent one"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "verdict": "reject",
-     "why": "books with a vet; says nothing about booking without one"
-    },
-    {
-     "id": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
-     "verdict": "reject",
-     "why": "submits with vetId 2; does not touch the no-vet case"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277",
-     "verdict": "confirm",
-     "why": "creates a visit with no vet and asserts vetId and names are null"
-    }
-   ]
+   "review": []
   },
   {
    "id": "s40c393",
-   "coverage": "covered",
+   "coverage": "partial",
    "tests": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:343",
      "strength": "asserted",
-     "why": "PUTs vetId null on a visit that had a vet and asserts it reads back null",
-     "line": "assertThat(updated.getVetId()).isNull();"
+     "why": "PUT with a vetId, then GET asserts the vet was set",
+     "line": "assertThat(callGet(visitId).getVetId()).isEqualTo(vet.getId());"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372",
      "strength": "asserted",
-     "why": "PUTs a vetId and asserts the visit then carries that vet",
-     "line": "assertThat(callGet(visitId).getVetId()).isEqualTo(vet.getId());"
+     "why": "PUT with null vetId on a visit that had a vet, then GET asserts vetId is null",
+     "line": "assertThat(updated.getVetId()).isNull();"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
      "strength": "asserted",
-     "why": "asserts the edit form sends vetId null when the vet is cleared",
+     "why": "edit form submits a cleared vet as a null vetId",
      "line": "expect(body.vetId).toBeNull();"
     }
    ],
+   "gap": "Removing the vet is asserted at both layers, but no test changes from one vet to another, and no UI test selects a different vet in the edit form.",
    "review": [
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
      "verdict": "confirm",
-     "why": "submits an edited visit with vetId null and asserts the body sent"
+     "why": "submits the edit form with vetId null and asserts the PUT body carries null"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372",
      "verdict": "confirm",
-     "why": "PUTs a null vetId on a visit with a vet and reads back null"
+     "why": "PUTs the visit with a null vet and asserts the vet is gone"
     }
    ]
   },
@@ -265,33 +233,32 @@
    "coverage": "covered",
    "tests": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372",
      "strength": "asserted",
-     "why": "after flushAndClear, re-reads the visit and asserts vetId is null",
+     "why": "after PUT with null vet and a cleared persistence context, GET shows vetId and vet name null",
      "line": "assertThat(updated.getVetId()).isNull();"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
-     "strength": "asserted",
-     "why": "asserts the cleared vet is sent as null, not '' or the old value",
-     "line": "expect(body.vetId).toBeNull();"
+     "strength": "exercised",
+     "why": "asserts the form sends null for a cleared vet, but not that anything persists it"
     }
    ],
    "review": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372",
      "verdict": "confirm",
-     "why": "clears the vet via PUT and asserts the re-read visit has none"
+     "why": "sets a vet, clears it via PUT, reloads and asserts empty"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
      "verdict": "confirm",
-     "why": "asserts the submitted body has vetId null after clearing"
+     "why": "clearing the combo leads to vetId null in the update body"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:429",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:408",
      "verdict": "reject",
-     "why": "deletes a vet and checks visits keep no vet; not clearing the field"
+     "why": "deletes a vet and checks visits lose it; no field is cleared by the user"
     }
    ]
   },
@@ -301,9 +268,9 @@
    "tests": [],
    "review": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "verdict": "reject",
-     "why": "history about pet types; this test checks the vet on the owner page"
+     "why": "books with a vet and reads it on the owner page; nothing about an old value returning"
     }
    ]
   },
@@ -314,48 +281,48 @@
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
-     "why": "asserts the chosen vet on the owner page and the all-visits screen",
+     "why": "owner page and all-visits screen read the chosen vet",
      "line": "Then the visit on the all visits screen reads the chosen vet"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
-     "why": "asserts No vet on the owner page and the all-visits screen",
-     "line": "Then the visit on the all visits screen reads \"No vet\""
+     "why": "owner page and all-visits screen read 'No vet'",
+     "line": "And the visit on the owner's page reads \"No vet\""
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "compares the rendered vet cells of the all-visits page",
+     "why": "all-visits cells show vet name per visit",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "compares the rendered vet cells of the visit list",
+     "why": "visit list cells show vet name per visit",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "strength": "exercised",
-     "why": "asserts the owner endpoint returns vetId and vetLastName on visits"
+     "why": "asserts the owner API response carries the vet, not what a screen shows"
     }
    ],
    "review": [
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "verdict": "confirm",
-     "why": "asserts the owner endpoint returns vetId and vetLastName on visits"
+     "why": "GETs the owner with visits and checks vetId and vetLastName in the JSON"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "verdict": "confirm",
-     "why": "asserts the vet text on the owner page and the all-visits screen"
+     "why": "checks the vet label on the owner page and all-visits screen"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "verdict": "confirm",
-     "why": "asserts the chosen vet on both screens"
+     "why": "checks the chosen vet is read on the owner page and all-visits screen"
     }
    ]
   },
@@ -366,58 +333,52 @@
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "strength": "asserted",
-     "why": "asserts the vet on the owner's page, then on the all-visits screen",
+     "why": "checks the vet on both the owner's page and the all-visits screen",
      "line": "Then the visit on the all visits screen reads the chosen vet"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
-     "why": "asserts No vet on the owner's page, then on the all-visits screen",
+     "why": "checks 'No vet' on both the owner's page and the all-visits screen",
      "line": "And the visit on the owner's page reads \"No vet\""
     },
     {
      "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "asserts the all-visits screen's vet cells",
+     "why": "all-visits screen cells show vet or 'No vet'",
      "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
     },
     {
-     "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
-     "strength": "asserted",
-     "why": "asserts the visit list's vet cells",
-     "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);"
-    },
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "strength": "exercised",
-     "why": "checks the owner API payload carries the vet, not what the screen renders"
+     "why": "owner endpoint JSON includes vet fields; not a screen assertion"
     }
    ],
    "review": [
     {
      "id": "petclinic-test/src/visit-vet.feature:11",
      "verdict": "confirm",
-     "why": "opens the owner page and the all-visits screen and asserts the vet on each"
+     "why": "opens the owner's page and the all visits screen and asserts the vet on each"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "verdict": "confirm",
-     "why": "asserts No vet on the owner page and the all-visits screen"
+     "why": "opens the owner's page and the all visits screen and asserts 'No vet' on each"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
      "verdict": "confirm",
-     "why": "GETs the owner and checks vet fields on its visits"
+     "why": "GETs the owner's page data and checks the vet fields on its visits"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312",
      "verdict": "reject",
-     "why": "books a visit and checks storage; shows nothing"
+     "why": "books a visit without a vet and checks the repository; shows nothing on a page"
     },
     {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:330",
      "verdict": "reject",
-     "why": "checks a 404 for an unknown vet; shows nothing"
+     "why": "only asserts a 404 for an unknown vet on booking"
     }
    ]
   },
@@ -428,25 +389,25 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12",
      "strength": "asserted",
-     "why": "asserts a null or absent vetId renders as NO_VET",
+     "why": "pipe returns NO_VET for a null or missing vetId",
      "line": "expect(pipe.transform({vetId: null} as Visit)).toBe(NO_VET);"
-    },
-    {
-     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
-     "strength": "asserted",
-     "why": "asserts visits without a vet render as No vet in the all-visits grid",
-     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts a visit without a vet renders as No vet",
+     "why": "visit list cell reads 'No vet' for a visit without one",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);"
+    },
+    {
+     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
+     "strength": "asserted",
+     "why": "all-visits cells read 'No vet' for visits without one",
+     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
     },
     {
      "id": "petclinic-test/src/visit-vet.feature:22",
      "strength": "asserted",
-     "why": "asserts a saved vetless visit reads No vet on both screens",
+     "why": "a visit booked with no vet reads 'No vet' on the all visits screen",
      "line": "Then the visit on the all visits screen reads \"No vet\""
     }
    ],
@@ -459,63 +420,63 @@
     {
      "id": "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12",
      "strength": "asserted",
-     "why": "asserts the vetless text is exactly the NO_VET label, for null and absent",
+     "why": "both a null vetId and a missing field give exactly NO_VET, not 'Unknown', blank or a throw",
      "line": "expect(pipe.transform({} as Visit)).toBe(NO_VET);"
     },
     {
      "id": "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
      "strength": "asserted",
-     "why": "asserts the cell text is exactly No vet, rendered without error",
+     "why": "cells equal exactly 'No vet' for the visit without a vet",
      "line": "expect(cells).toEqual(['No vet', 'Helen Leary']);"
     },
     {
-     "id": "petclinic-test/src/visit-vet.feature:22",
+     "id": "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:78",
      "strength": "asserted",
-     "why": "a vetless booking succeeds and both screens read No vet",
-     "line": "And the visit on the owner's page reads \"No vet\""
+     "why": "cells equal exactly 'No vet' for visits without a vet",
+     "line": "expect(cells).toEqual(['Helen Leary', 'No vet', 'No vet']);"
+    },
+    {
+     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
+     "strength": "asserted",
+     "why": "a vetless visit is created and read back without error, with null vet fields",
+     "line": "assertThat(created.getVetLastName()).isNull();"
     }
    ],
    "review": []
   },
   {
    "id": "saa032f",
-   "coverage": "partial",
-   "tests": [
-    {
-     "id": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-     "strength": "asserted",
-     "why": "asserts an existing vetless visit reads vetId null on the owner page",
-     "line": ".value(contains(nullValue())));"
-    }
-   ],
-   "gap": "No test applies the change to pre-existing rows or checks that no vet is backfilled; only a vetless visit reading null is asserted.",
+   "coverage": "missing",
+   "tests": [],
+   "gap": "No test starts from a visit row that predates the change (migration) and asserts it still has no vet.",
    "review": []
   }
  ],
  "offered": [
   "petclinic-test/src/visit-vet.feature:11",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:7",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:343",
   "petclinic-test/src/visits.spec.ts:55",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:89",
+  "petclinic-backend/src/test/resources/features/functional/visits.feature:11",
   "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120",
   "petclinic-test/src/visit-vet.feature:22",
   "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:330",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:17",
   "petclinic-backend/src/test/java/victor/training/petclinic/mcp/ListVisitsToolTest.java:81",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:296",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:380",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:275",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:359",
   "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:429",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:408",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372",
   "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:100",
-  "petclinic-backend/src/test/resources/features/functional/visits.feature:11",
+  "petclinic-backend/src/test/resources/features/functional/visits.feature:17",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:110",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:114",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:133",
@@ -529,33 +490,33 @@
   "petclinic-test/src/visits.spec.ts:30",
   "petclinic-test/src/visits.spec.ts:47",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:59",
-  "petclinic-test/src/add-owner.spec.ts:59",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256"
+  "petclinic-test/src/add-owner.spec.ts:59"
  ],
  "offeredDigest": {
   "petclinic-test/src/visit-vet.feature:11": "3c64b2321fb12ae9",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:7": "3c33c8d735283e76",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:364": "f9bbecae9b87aaf2",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:343": "f9bbecae9b87aaf2",
   "petclinic-test/src/visits.spec.ts:55": "e72bc87476c59b93",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:89": "66aca1411f356889",
+  "petclinic-backend/src/test/resources/features/functional/visits.feature:11": "65ded9d648bb3a98",
   "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:120": "c63bcfae0aea09d6",
   "petclinic-test/src/visit-vet.feature:22": "dd147cb9257c2ac9",
   "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts:125": "1e34cb29cd5103bd",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:333": "c0b44934de07bc46",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:351": "b8d4becb84b2675e",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:310": "6c9c443486caaee7",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:277": "aa5d8e154f4cb2fc",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:312": "c0b44934de07bc46",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:330": "b8d4becb84b2675e",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:289": "6c9c443486caaee7",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256": "aa5d8e154f4cb2fc",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:124": "1accafc3f0cca654",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:17": "9a3ab6b26c038612",
   "petclinic-backend/src/test/java/victor/training/petclinic/mcp/ListVisitsToolTest.java:81": "c50255def8b33b84",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:296": "bce8495adacc8861",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:380": "377ed5f0e21a2192",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:275": "bce8495adacc8861",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:359": "377ed5f0e21a2192",
   "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:94": "1629ba8b007c826d",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:429": "78f33f22970c4b40",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:408": "78f33f22970c4b40",
   "petclinic-frontend/src/app/visits/visit-vet.pipe.spec.ts:12": "15e2e35e244703bf",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:393": "89461d0fdcf7b677",
+  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:372": "89461d0fdcf7b677",
   "petclinic-frontend/src/app/visits/visit-list/visit-list.component.spec.ts:100": "4d3cdd1f310da354",
-  "petclinic-backend/src/test/resources/features/functional/visits.feature:11": "a0a30903bbe159e6",
+  "petclinic-backend/src/test/resources/features/functional/visits.feature:17": "bafc5bc20619c132",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:110": "24b21a993da12e63",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:114": "56dc2b540977b0c9",
   "petclinic-frontend/src/app/visits/visit-edit/visit-edit.component.spec.ts:133": "7f9be5f0a2bbddfd",
@@ -569,7 +530,6 @@
   "petclinic-test/src/visits.spec.ts:30": "53f9884553885e4d",
   "petclinic-test/src/visits.spec.ts:47": "172fcf03796a4778",
   "petclinic-frontend/src/app/visits/visits-page/visits-page.component.spec.ts:59": "6fd2c12b0d7bf5c6",
-  "petclinic-test/src/add-owner.spec.ts:59": "51486479ace9df6b",
-  "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256": "be2e3c67621a57c5"
+  "petclinic-test/src/add-owner.spec.ts:59": "51486479ace9df6b"
  }
 }

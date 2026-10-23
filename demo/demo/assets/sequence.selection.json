@@ -11,7 +11,7 @@
   },
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
-   "name": "create_withVet",
+   "name": "create_withoutVet",
    "line": 256,
    "status": "added",
    "why": "written by this branch",
@@ -27,14 +27,23 @@
   },
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
-   "name": "create_withoutVet",
-   "line": 277,
+   "name": "create_withUnknownVet_notFound",
+   "line": 275,
    "status": "added",
    "why": "written by this branch",
    "suite": "java"
   }
  ],
  "left": [
+  {
+   "path": "petclinic-backend/src/test/resources/features/functional/visits.feature",
+   "name": "Book a visit choosing its vet",
+   "line": 11,
+   "status": "added",
+   "why": "written by this branch",
+   "suite": null,
+   "left": "no traced suite runs this file"
+  },
   {
    "path": "petclinic-frontend/src/app/visits/visit-add/visit-add.component.spec.ts",
    "name": "offers the vets, starting with no vet chosen",
@@ -109,17 +118,8 @@
   },
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
-   "name": "create_withUnknownVet_notFound",
-   "line": 296,
-   "status": "added",
-   "why": "written by this branch",
-   "suite": "java",
-   "left": "over its suite's cap"
-  },
-  {
-   "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "bookFromOwnerPage_withVet_isShownOnOwnerPage",
-   "line": 310,
+   "line": 289,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -128,7 +128,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "bookFromOwnerPage_withoutVet",
-   "line": 333,
+   "line": 312,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -137,7 +137,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "bookFromOwnerPage_withUnknownVet_notFound",
-   "line": 351,
+   "line": 330,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -146,7 +146,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "update_assignsVet",
-   "line": 364,
+   "line": 343,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -155,7 +155,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "update_withUnknownVet_notFound",
-   "line": 380,
+   "line": 359,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -164,7 +164,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "update_clearsVet",
-   "line": 393,
+   "line": 372,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -173,7 +173,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "getAll_returnsVetNames",
-   "line": 415,
+   "line": 394,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -182,7 +182,7 @@
   {
    "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
    "name": "deletingAVet_leavesTheirVisitsWithNoVet",
-   "line": 429,
+   "line": 408,
    "status": "added",
    "why": "written by this branch",
    "suite": "java",
@@ -220,7 +220,7 @@
   "java": [
    {
     "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
-    "name": "create_withVet",
+    "name": "create_withoutVet",
     "line": 256,
     "status": "added",
     "why": "written by this branch",
@@ -228,8 +228,8 @@
    },
    {
     "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
-    "name": "create_withoutVet",
-    "line": 277,
+    "name": "create_withUnknownVet_notFound",
+    "line": 275,
     "status": "added",
     "why": "written by this branch",
     "suite": "java"
@@ -239,20 +239,20 @@
  "runs": [
   {
    "command": "cd petclinic-test && GENSEQ_SELECT={tests.e2e} ./run-tests-with-tracing.sh",
-   "seconds": 28.5
+   "seconds": 60.4
   },
   {
    "command": "cd petclinic-backend && mvn -o -Pgenseq test -Dgroups=genseq",
-   "seconds": 15.4
+   "seconds": 34.0
   },
   {
    "command": "cd petclinic-backend && GENSEQ_SELECT={tests.java} mvn -o -Pgenseq test -Dtest={tests.java} -Dsurefire.failIfNoSpecifiedTests=false",
-   "seconds": 13.9
+   "seconds": 39.2
   },
   {
    "command": "cd petclinic-test && GENSEQ_REFRESH=1 npm run trace:diagram",
-   "seconds": 6.7
+   "seconds": 5.5
   }
  ],
- "at": "2026-10-22T06:38:57+00:00"
+ "at": "2026-10-23T13:53:21+00:00"
 }

@@ -1,6 +1,6 @@
 {
 "source":"human-review testcov.py (assets/test-coverage.json)",
-"commit":"6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33",
+"commit":"7ac6fd59aa81873b46749629cfcf7fe44abe28d1",
 "acceptance":true,
 "files":{
 "petclinic-backend/src/main/java/victor/training/petclinic/PetClinicApplication.java":{
@@ -195,11 +195,11 @@
 },
 "petclinic-backend/src/main/java/victor/training/petclinic/notification/NotificationServiceClient.java":{
 "line":{
-"covered":10,
+"covered":8,
 "total":10
 },
 "acceptance":{
-"covered":10,
+"covered":8,
 "total":10
 }
 },

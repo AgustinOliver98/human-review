@@ -1,17 +1,17 @@
-[video] the app cannot say which commit it is; this run started it itself, from 6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33
-[video] title card: "Demo" / "Link Visit with Vet (#37), reimplemented unguided by Opus", 3.41s
+[video] the app cannot say which commit it is; this run started it itself, from ec9fac9037d7ef714362324e24bf5ed57e8f612f
+[video] title card: "Demo" / "Link Visit with Vet (#37), reimplemented unguided by Opus", 3.44s
 [video] feature-script.js: 5/5 screens filmed, 13 cues (13 with a box) -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.raw.webm
 [video] viewport 1280x800 @ dpr 1
-[video] narration: 13/13 cues, 28.0s of speech, voice "Samantha"
-[video] cut 34.4s of still footage (28 stretches): 79.8s -> 45.3s
-[annotate] 182 caption states from 182 frames
+[video] narration: 13/13 cues, 28.1s of speech, voice "Samantha"
+[video] cut 70.6s of still footage (28 stretches): 117.2s -> 46.6s
+[annotate] 181 caption states from 181 frames
 [annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.webm
-[video] cut 17.7s of still footage (23 stretches): 79.8s -> 62.1s
+[video] cut 53.9s of still footage (23 stretches): 117.2s -> 63.2s
 [annotate] 201 caption states from 201 frames
 [annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-trump.webm
 [video] 🐘 voice -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-trump.webm
-[video] cut 15.2s of still footage (18 stretches): 79.8s -> 64.5s
+[video] cut 51.5s of still footage (18 stretches): 117.2s -> 65.7s
 [annotate] 201 caption states from 201 frames
 [annotate] 13 captions, 13 spotlights, 13 spoken -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-discovery.webm
 [video] Discovery voice -> /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/assets/feature.voice-discovery.webm
-[video] 45.240000s, 2.3M
+[video] 46.640000s, 2.3M

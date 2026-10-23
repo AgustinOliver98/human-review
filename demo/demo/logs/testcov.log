@@ -2,10 +2,10 @@
     $ /Users/victorrentea/workspace/human-review/skills/human-review/scripts/testcov.py --base 664c5b3b453fb758230de01e407064c45d07a844 --out .human-review/assets/test-coverage.json
 [testcov] $ (cd /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-backend && ./test-on-own-db.sh mvn -o test -Dmaven.test.failure.ignore=true -Dmaven.test.additionalClasspath=/Users/victorrentea/.cache/human-review/testcov/6652344be07a2762/hr-testcov-listener.jar -Dhr.testcov.dir=/Users/victorrentea/workspace/petclinic-pr-visit-has-vet/.human-review/coverage/junit-0)  > .human-review/coverage/junit-0.log
 [testcov] $ (cd /Users/victorrentea/workspace/petclinic-pr-visit-has-vet/petclinic-frontend && npx ng test --watch=false --code-coverage --browsers=ChromeHeadless --karma-config=/Users/victorrentea/workspace/human-review/skills/human-review/scripts/testcov/karma/karma.conf.js)  > .human-review/coverage/karma-0.log
-[testcov] 351 test(s) in 6 suite(s); 126 changed line(s) in 20 file(s) -> .human-review/assets/test-coverage.json
-[testcov]   Backend JUnit          ran       197 test(s)    39.2s  exit 1, see .human-review/coverage/junit-0.log
-[testcov]   Backend Cucumber       ran         9 test(s)    39.2s  exit 1, see .human-review/coverage/junit-0.log
-[testcov]   Backend ArchUnit       ran         1 test(s)    39.2s  exit 1, see .human-review/coverage/junit-0.log
-[testcov]   Frontend Karma         ran       129 test(s)     6.6s  
-[testcov]   E2E Playwright         ran         6 test(s)     0.8s  
-[testcov]   E2E Cucumber           ran         9 test(s)     0.9s  
+[testcov] 352 test(s) in 6 suite(s); 126 changed line(s) in 20 file(s) -> .human-review/assets/test-coverage.json
+[testcov]   Backend JUnit          ran       197 test(s)   104.8s  
+[testcov]   Backend Cucumber       ran        10 test(s)   104.8s  
+[testcov]   Backend ArchUnit       ran         1 test(s)   104.8s  
+[testcov]   Frontend Karma         ran       129 test(s)    11.5s  
+[testcov]   E2E Playwright         ran         6 test(s)     0.9s  
+[testcov]   E2E Cucumber           ran         9 test(s)     1.2s  

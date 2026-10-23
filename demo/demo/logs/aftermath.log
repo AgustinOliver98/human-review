@@ -41,3 +41,4 @@
     $ git show --numstat --format= fe3c171fc03f7ce7de49027674ce67564032ab05
     $ git show --numstat --format= ce0e3ce404fcf12a6b154ab8e5c06f1ef7c09166
     $ git show --numstat --format= 6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33
+    $ git show --numstat --format= ec9fac9037d7ef714362324e24bf5ed57e8f612f

@@ -3,7 +3,7 @@
 hide footbox
 skinparam hyperlinkUnderline false
 skinparam hyperlinkColor #1A4FA0
-title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:256{Click to open the test} Test: VisitTest: create with vet]]
+title [[src://petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java:275{Click to open the test} Test: VisitTest: create with unknown vet not found]]
 footer traced because this branch wrote it in petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java — generated from real traces of end-to-end test runs, do not edit ❗
 participant Test
 participant Backend
@@ -16,22 +16,10 @@ Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petc
 activate Backend
 Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VetRepository.java:16{Click to open VetRepository.findById} VetRepository.findById ↗]]
 activate Backend
-Backend -> DB: [[genseq://0lzfk60{Click for the statement behind this call} SELECT v FROM Vet v LEFT JOIN FETCH v.specialties WHERE v.id = :id ⊕]]
+Backend -> DB: [[genseq://1imt0as{Click for the statement behind this call} SELECT v FROM Vet v LEFT JOIN FETCH v.specialties WHERE v.id = :id ⊕]]
 deactivate Backend
 deactivate Backend
-Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:14{Click to open VisitRepository.save} VisitRepository.save ↗]]
-activate Backend
-Backend -> DB: [[genseq://0atwsa0{Click for the statement behind this call} insert for victor.training.petclinic.domain.Visit ⊕]]
 deactivate Backend
-deactivate Backend
-Backend --> Test: 201
-deactivate Backend
-Test -> Backend: getVisit\nGET /api/visits/{visitId}
-activate Backend
-Backend -> Backend: [[src://petclinic-backend/src/main/java/victor/training/petclinic/repository/VisitRepository.java:12{Click to open VisitRepository.findById} VisitRepository.findById ↗]]
-activate Backend
-Backend -> DB: [[genseq://1ra5mul{Click for the statement behind this call} VisitRepository.findById ⊕]]
-deactivate Backend
-Backend --> Test: 200
+Backend --> Test: 404
 deactivate Backend
 @enduml

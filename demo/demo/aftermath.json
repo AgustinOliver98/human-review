@@ -1,7 +1,7 @@
 {
  "review": "be762955d5f477feeca0f7db55e32fa1c2fb8db5",
  "review_short": "be762955",
- "head": "6d5eb02ffa36b1c8e2d6e69b6f86a56a4c886e33",
+ "head": "ec9fac9037d7ef714362324e24bf5ed57e8f612f",
  "takeover": null,
  "generated_globs": [
   "**/generated/**",
@@ -1642,17 +1642,66 @@
    "measured": true,
    "taken_over": false,
    "takeover": false
+  },
+  {
+   "sha": "ec9fac9037d7ef714362324e24bf5ed57e8f612f",
+   "short": "ec9fac90",
+   "when": "2026-10-23T16:22:47+03:00",
+   "subject": "visits.feature: 'Create with vet' moves from VisitTest to Gherkin",
+   "files": [
+    {
+     "path": "petclinic-backend/docs/ConceptualModel.drawio.png",
+     "added": 0,
+     "deleted": 0,
+     "binary": true,
+     "generated": true
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/functional/VetSteps.java",
+     "added": 5,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/functional/VisitSteps.java",
+     "added": 26,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/java/victor/training/petclinic/rest/VisitTest.java",
+     "added": 0,
+     "deleted": 21,
+     "binary": false,
+     "generated": false
+    },
+    {
+     "path": "petclinic-backend/src/test/resources/features/functional/visits.feature",
+     "added": 6,
+     "deleted": 0,
+     "binary": false,
+     "generated": false
+    }
+   ],
+   "added": 37,
+   "deleted": 21,
+   "generated_only": false,
+   "measured": true,
+   "taken_over": false,
+   "takeover": false
   }
  ],
  "totals": {
-  "commits": 40,
-  "files": 106,
-  "added": 2068,
-  "deleted": 565,
+  "commits": 41,
+  "files": 110,
+  "added": 2105,
+  "deleted": 586,
   "code": {
-   "files": 93,
-   "added": 1913,
-   "deleted": 432
+   "files": 97,
+   "added": 1950,
+   "deleted": 453
   },
   "generated": {
    "files": 13,
